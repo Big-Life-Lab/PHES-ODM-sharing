@@ -1,0 +1,5 @@
+left_closed_interval_pattern: str = r"^\["
+right_closed_interval_pattern: str = r"\]$"
+left_open_interval_pattern: str = r"^\("
+right_open_interval_pattern: str = r"\)$"
+date_time_pattern_iso_8601: str = r"(\d+-\d+-\d+\s*\d*:*\d*:*\d+\.*\d*)"
