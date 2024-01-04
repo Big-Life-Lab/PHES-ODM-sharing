@@ -1774,7 +1774,7 @@ output_117 = {
 
 def test_all_table_single_column_interval_open_open_upper_inf():
     """
-    Rule 119 filters rows based on a single column from each table and single
+    Rule 117 filters rows based on a single column from each table and single
     value from each column or any of the columns being an interval between
     two values where the upper bound limit is infinity with ().
     """
