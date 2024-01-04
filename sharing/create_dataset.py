@@ -1,8 +1,3 @@
-import pandas as pd  # pylint: disable=import-error
-from numpy import nan  # pylint: disable=import-error
-from pandas import Timestamp  # pylint: disable=import-error
-
-
 def create_dataset(rules: list, data: dict = {}, org: str = '') -> dict:
   """Filters data and returns filtered data and shared summary in dictionary.
   
