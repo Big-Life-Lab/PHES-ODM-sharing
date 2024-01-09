@@ -49,38 +49,42 @@ Some examples are given below:
 
 1. Selecting the `type` column in the `Sample` table
 
-    | tableName | variableName |
-    |-----------|--------------|
-    | Sample    | type         |
+    | ruleId | tableName  | variableName |
+    | ------ | ---------- | ------------ |
+    | 1      | Sample     | type         |
 
 2. Selecting the `qualityFlag` and the `type` column in the `WWMeasure` table
 
-    | tableName        | variableName        |
-    |------------------|---------------------|
-    | WWMeasure        | qualityFlag;type    |
+    | ruleId | tableName   | variableName     |
+    | ------ | ----------- | ---------------- |
+    | 2      | WWMeasure   | qualityFlag;type |
 
-3. Selecting all the columns in the `WWMeasure` table
+ 3. Selecting all the columns in the `WWMeasure` table
 
-    | tableName        | variableName |
-    |------------------|--------------|
-    | WWMeasure        | all          |
+    | ruleId         | tableName   | variableName |
+    | -------------- | ----------- | ------------ |
+    | ww_measure_all | WWMeasure   | all          |
 
-4. Selecting a the `type` column in the `WWmeasure` and the `Sample` table
+ 4. Selecting a the `type` column in the `WWmeasure` and the `Sample` table
 
-    | tableName               | variableName  |
-    |-------------------------|---------------|
-    | WWMeasure;Sample        | type          |
+    | ruleId | tableName        | variableName |
+    | ------ | ---------------- | ------------ |
+    | 3      | WWMeasure;Sample | type         |
 
-5. Selecting the `type` column in all tables
+ 5. Selecting the `type` column in all tables
 
-    | tableName               | variableName  |
-    |-------------------------|---------------|
-    | all                     | type          |
+    | ruleId | tableName | variableName |
+    | ------ | --------- | ------------ |
+    | 4      | all       | type         |
+    
+  
+Notes:
 
-Some things to note:
+* In examples 2 and 4 where multiple columns and tables were selected respectively, a `;` was used to seperate the values. The same symbol was used to seperate multiple organizations in the previous step. In fact, throughout the entire document when multiple values need to put into a cell, the `;` symbol should be used to seperate them.
 
-* In examples 2 and 4 where multiple columns and tables were selected respectively, a **;** was used to seperate the values. The same symbol was used to seperate multiple organizations in the previous step. In fact, throughout the entire document when multiple values need to put into a cell, the **;** symbol should be used to seperate them.
-* In examples 3 and 5 where all the columns in a table and all the tables were selected respectively, the keyword **all** was used. Similar to the **;** symbol, the keyword **all** may be used in a cell to mean everything.
+* In examples 3 and 5 where all the columns in a table and all the tables were selected respectively, the keyword `all` was used. Similar to the `;` symbol, the keyword `all` may be used in a cell to mean everything.
+
+* The **ruleId** column is mandatory for all rules and each value is unique across the entire sheet. The value can be a number or a string. If it is a string, it should not have any spaces in it. The recommended standard is to use [snake_case](https://en.wikipedia.org/wiki/Snake_case) for values in this column.
 
 ### 3. Selecting the Direction of the Rule
 
@@ -139,61 +143,63 @@ The data we will be working with has two tables from the ODM, **Sample** and **S
 | 3        | 2      | 2021-08-17 | pstGrit | 15    | Note 3 |
 | 4        | 2      | 2020-01-10 | water   | 45    | Note 4 |
 
-| siteID | name                 | publicHealthDepartment | type   |
-|--------|----------------------|------------------------|--------|
-| 1      | University of Ottawa | Ottawa Public Health   | school |
-| 1      | University of Laval  | Laval Public Health    | school |
+| siteID | name                 | publicHealthDepartment          | type   |
+|--------|----------------------|---------------------------------|--------|
+| 1      | University of Ottawa | Ottawa Public Health.           | school |
+| 2      | University of Laval  | City of Quebec Public Health    | school |
 
 
 1. Remove rows whose site ID in the Sample table is 2 for Ottawa Public Health (OPH)
 
-    | sharedWith | tableName | variableName | direction | filterValue |
-    |------------|-----------|--------------|-----------|-------------|
-    | OPH        | Sample    | siteID       | row       | 1           |
+    | ruleId | sharedWith | tableName  | variableName | direction | filterValue |
+    | ------ | ---------- | ---------- | ------------ | --------- | ----------- |
+    | 1      | OPH        | Sample     | siteID       | row       | 1           |
 
-2. Remove rows from the Sample table whose type is `rawWW` or `sweSed` for the Public Health Agency of Canada (PHAC)
+ 2. Remove rows from the Sample table whose type is `rawWW` or `sweSed` for the Public Health Agency of Canada (PHAC)
 
-    | sharedWith | tableName | variableName | direction | filterValue  |
-    |------------|-----------|--------------|-----------|--------------|
-    | PHAC       | Sample    | type         | row       | rawWW;sweSed |
+    | ruleId | sharedWith | tableName  | variableName | direction | filterValue  |
+    | ------ | ---------- | ---------- | ------------ | --------- | ------------ |
+    | 2      | PHAC       | Sample     | type         | row       | rawWW;sweSed |
 
-3. Remove the type column from all tables for Laval Public Health (LPH)
+ 3. Remove the type column from all tables for Laval Public Health (LPH)
 
-    | sharedWith | tableName | variableName | direction | filterValue  |
-    |------------|-----------|--------------|-----------|--------------|
-    | LPH        | all       | type         | column    | all          |
+    | ruleId | sharedWith | tableName  | variableName | direction | filterValue |
+    | ------ | ---------- | ---------- | ------------ | --------- | ----------- |
+    | 3      | LPH        | all        | type         | column    | all         |
 
 4. Remove samples taken in the year 2021 and those whose volume is less than 5 for OPH and PHAC
 
-    | sharedWith | tableName | variableName | direction | filterValue             |
-    |------------|-----------|--------------|-----------|-------------------------|
-    | OPH;PHAC   | Sample    | dateTime     | row       | [2021-01-01,2021-12-01] |
-    | OPH;PHAC   | Sample    | sizeL        | row       | [Inf,5]                 |
+    | ruleId | sharedWith | tableName | variableName | direction | filterValue             |
+    | ------ |------------|-----------|--------------|-----------|-------------------------|
+    | 4      | OPH;PHAC   | Sample    | dateTime     | row       | [2021-01-01,2021-12-01] |
+    | 5      | OPH;PHAC   | Sample    | sizeL        | row       | [Inf,5]                 |
 
 5. Remove the notes column from the Sample table and rows from the Site table that belong to the University of Ottawa for LPH
 
-    | sharedWith | tableName | variableName           | direction | filterValue             |
-    |------------|-----------|------------------------|-----------|-------------------------|
-    | LPH        | Site      | notes                  | column    | all                     |
-    | LPH        | Sample    | publicHealthDepartment | row       | Ottawa Public Health    |
+    | ruleId | sharedWith | tableName | variableName           | direction | filterValue             |
+    | ------ |------------|-----------|------------------------|-----------|-------------------------|
+    | 6      | LPH        | Site      | notes                  | column    | all                     |
+    | 7      | LPH        | Sample    | publicHealthDepartment | row       | Ottawa Public Health    |
 
 ## Sharing CSV Columns
 
 This section summarizes all the columns part of the file
 
-**sharedWith**: The name(s) of the organizations for this rule. Multiple organizations can be seperated by a **;**
+**ruleId**: Mandatory for all rules. Can be a number or a string. If a string, then its recommended to use [snake_case](https://en.wikipedia.org/wiki/Snake_case). Each value should be unique across an entire sharing file.
+ 
+**sharedWith**: The name(s) of the organizations for this rule. Multiple organizations can be separated by a `;`.
 
-**tableName**: The name(s) of the tables for this rule. Allowable values are names of the tables seperated by a **;** or **all** to select all tables.
+**tableName**: The name(s) of the tables for this rule. Allowable values are names of the tables separated by a `;` or `all` to select all tables.
 
-**variableName**: The name(s) of the columns for this rule. Allowable values are names of the columns seperated by a **;** or **all** to select all columns.
+**variableName**: The name(s) of the columns for this rule. Allowable values are names of the columns separated by a `;` or `all` to select all columns.
 
 **direction**: The direction to apply the filtering. Allowable values are **row** or **column**.
 
-**filterValue**: The values of the selected entities to exclude. These can include an interval, single values or a combination of both. Multiple values can be seperated using the **;** symbol. **all** can also be used. For intervals, the mathematical notation for it is used.
+**filterValue**: The values of the selected entities to exclude. These can include an interval, single values or a combination of both. Multiple values can be separated using the `;` symbol. `all` can also be used. For intervals, the mathematical notation for it is used.
 
-**description**: Optional description explaining this rule
+**description**: Optional description explaining this rule.
 
-**license**: The shortform identifier of a license for this data.
+**license**: The short-form identifier of a license for this data.
 
 # Implementation
 
