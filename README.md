@@ -9,16 +9,16 @@ The ODM supports data sharing in two ways:
 
 The data sharing schema will be a csv file (sharing.csv) where each row in the `sharing` file corresponds to a header or table in the PHES-ODM. Attributes in the row describe who the data is shared with and what data is included. See below for an example.
 
-| ruleId | sharedWith | table    | variable   | direction | ruleValue               | notes       |
-|--------|------------|----------|------------|-----------|-------------------------|-------------|
-| 1      | OPH        | samples  | siteID     | row       | ottawa-1                | link to DSA |
-| 2      | PHAC       | samples  | saMaterial | row       | rawWW;sweSwd            | NA          |
-| 3      | LPH        | all      | collType   | column    | all.                    |             |
-| 4      | OPH;PHAC   | samples  | collDT     | row       | [2021-01-01,2021-12-01] |             |
-| 5      | OPH;PHAC   | samples  | collPer    | row       | [Inf,5]                 |             |
-| 6      | LPH        | measures | reportable | column    | all                     |             |
+| ruleId | sharedWith | table    | header     | direction | filterValue             | valid_period            | status     | firstReleased | lastUpdated | changes             | notes       |
+|------|------|------|------|------|------|------|------|------|------|------|------|
+| 1      | OPH        | samples  | siteID     | row       | ottawa-1                | [2022-02-01,2023-01-31] | active     | 2022-02-01    | 2022-02-01  | added               | link to DSA |
+| 2      | PHAC       | samples  | saMaterial | row       | rawWW;sweSwd            | NA                      | active     | 2022-02-01    | 2022-02-01  | added               | NA          |
+| 3      | LPH        | all      | collType   | column    | all.                    | NA                      | active     | 2022-02-01    | 2022-02-01  | added               |             |
+| 4      | OPH;PHAC   | samples  | collDT     | row       | [2021-01-01,2021-12-01] | [2021-02-01,2022-01-31] | deprecated | 2022-02-01    | 2022-02-01  | changed for new DSA |             |
+| 5      | OPH;PHAC   | samples  | collPer    | row       | [Inf,5]                 | [2023-12-01,2024-01-31] | active     | 2022-02-01    | 2022-02-01  | NA                  |             |
+| 6      | LPH        | measures | reportable | column    | all                     | [2024-01-31,2024-12-31] | active     | 2022-02-01    | 2022-02-01  | added               |             |
 
-The data filter is a Python module (or function) that builds the shareable data based on the inclusion criteria in the data sharing schema. The function accepts ODM-formatted data tables and a sharing schema. The function includes (filters) data variables and rows according to the schema rules. The function then returns a data table with only the data that is to be shared. This new, returned data is ready to be shared and used with a partner.
+The data filter is a Python module (or function) that builds the shareable data based on the inclusion criteria in the data sharing schema. The function accepts ODM-formatted data tables and a sharing schema. The function includes (filters) data according to the schema rules. The function then returns a data table with only the data that is to be shared. This new, returned data is ready to be shared and used with a partner.
 
 # Features
 
@@ -58,39 +58,39 @@ The second step involves selecting the parts of the PHES-ODM or entities within 
 -   Data contained in a table
 -   Data contained in column(s) of table(s)
 
-This step uses two columns, `tableName` and `variableName`. The `tableName` column can specify the name(s) of the table(s) this rule applies to and the `variableName` column can specify the name(s) of the column(s) this rule applies to.
+This step uses two columns, `table` and `header`. The `table` column can specify the name(s) of the table(s) this rule applies to and the `header` column can specify the name(s) of the column(s) this rule applies to.
 
 Some examples are given below:
 
 1.  Selecting the `saMaterial` column in the `samples` table
 
-    | ruleId | ... | tableName | variableName | ... |
-    |--------|-----|-----------|--------------|-----|
-    | 1      | ... | samples   | saMaterial   | ... |
+    | ruleId | ... | table   | header     | ... |
+    |--------|-----|---------|------------|-----|
+    | 1      | ... | samples | saMaterial | ... |
 
 2.  Selecting the `reportable` and the `pooled` columns in the `measures` table
 
-    | ruleId | ... | tableName | variableName      | ... |
-    |--------|-----|-----------|-------------------|-----|
-    | 2      | ... | measures  | reportable;pooled | ... |
+    | ruleId | ... | table    | header            | ... |
+    |--------|-----|----------|-------------------|-----|
+    | 2      | ... | measures | reportable;pooled | ... |
 
 3.  Selecting all the columns in the `measures` table
 
-    | ruleId.      | ... | tableName | variableName | ... |
-    |--------------|-----|-----------|--------------|-----|
-    | all_measures | ... | measures  | all          | ... |
+    | ruleId.      | ... | table    | header | ... |
+    |--------------|-----|----------|--------|-----|
+    | all_measures | ... | measures | all    | ... |
 
 4.  Selecting a the `purposeID` column in the `measures` and the `samples` table
 
-    | ruleId | ... | tableName        | variableName | ... |
-    |--------|-----|------------------|--------------|-----|
-    | 4      | ... | measures;samples | purposeID    | ... |
+    | ruleId | ... | table            | header    | ... |
+    |--------|-----|------------------|-----------|-----|
+    | 4      | ... | measures;samples | purposeID | ... |
 
 5.  Selecting the `siteID` column in all tables
 
-    | ruleId | ... | tableName | variableName | ... |
-    |--------|-----|-----------|--------------|-----|
-    | 5      | ... | all       | siteID       | ... |
+    | ruleId | ... | table | header | ... |
+    |--------|-----|-------|--------|-----|
+    | 5      | ... | all   | siteID | ... |
 
 Notes:
 
@@ -111,11 +111,11 @@ This step uses the `direction` column which accepts one of two values, `column` 
 
 ### 5. Selecting the Values to Filter for Sharing
 
-The final step involves inputting the values of the selected entities to filter on. This step uses the `filterValue` column, in combination with the other columns in the `sharing.csv` table. Generally speaking, the `filterValue` column's values depend on the data type (boolean, numeric etc. - defined in the `parts` table column `dataType`) and the statistical type (continuous or categorical - defined in the `parts` table column `aggregationScale`) of the variable. The filtering using the license field is a specific case with the categorical type, explored below.
+The final step involves inputting the values of the selected entities to filter on. This step uses the `filterValue` column, in combination with the other columns in the `sharing.csv` table. Generally speaking, the `filterValue` column's values depend on the data type (boolean, numeric etc. - defined in the `parts` table column `dataType`) and the statistical type (continuous or categorical - defined in the `parts` table column `aggregationScale`) of the tables' headers. The filtering using the license field is a specific case with the categorical type, explored below.
 
 #### General approach - defined Values
 
-For the statistical type:
+This applies to the `filterValue` field, as well as the `valid_period`, `firstReleased`, and `lastUpdated` fields in the sharing csv.
 
 -   **Continuous Type**: For continuous entities, the `filterValue` column can either specify an interval with a lower and upper limit, a specific value, or a combination of the two. We use the mathematical notation to define an [interval](https://en.wikipedia.org/wiki/Interval_(mathematics)). Examples are:
 
@@ -134,11 +134,11 @@ For the statistical type:
     -   [1, inf) : All values greater than or equal to 1 will be filtered and selected for sharing
 
     -   [1, 2];(7,8);9 : All values between 1 and 2, inclusive of 1 and 2, all values between 7 and 8, excluding 7 and 8, and all entries where the value is exactly equal to 9 will be filtered and selected for sharing
-    
+
     This same structure applies to date-type data. For example:
-    
+
     -   [2021-03-01,2021-12-01] : Share all values between March 1st 2021 and December 1st 2021, including the endpoints
-    
+
     -   [2021-12-01, 2022-04-01];[2022-06-01,2022-12-01] : Share all values between December 1st, 2021 and April 1st, 2022, and between June 1st, 2022, and December 1st, 2022, including the endpoints
 
 -   **Categorical Type**: For categorical entities, the `filterValue` column should specify the categorical values to filter on for sharing and dissemination. For multiple values, the discrete values can be listed and separated by the **;** symbol, as with the numeric values and sharing organizations. For example:
@@ -155,15 +155,15 @@ For more details on the data type, please refer to the [ODM metadata](https://gi
 
 One special case for filtering is using the license type (`license` in the `datasets` table, or `measureLic` in the `measures` table). This is more useful for data generators and custodians who work with a mix of open and private data. By only filtering on open data, or open data with a specific license, all of the data and metadata that are open can be shared, without needing to specify additional sharing filters. For example, to share all data in a given dataset:
 
-| ruleId | sharedWith | table    | variable   | direction | ruleValue               | notes       |
-|--------|------------|----------|------------|-----------|-------------------------|-------------|
-| 1      | all        | datasets | license    | row       | open                    |             |
+| ruleId | sharedWith | table    | header  | direction | filterValue | ... | notes |
+|--------|------------|----------|---------|-----------|-------------|-----|-------|
+| 1      | all        | datasets | license | row       | open        | ... |       |
 
 For an example pulling just specific open measures:
 
-| ruleId | sharedWith | table    | variable   | direction | ruleValue               | notes       |
-|--------|------------|----------|------------|-----------|-------------------------|-------------|
-| 1      | all        | measures | measureLic | row       | open                    |             |
+| ruleId | sharedWith | table    | header     | direction | filterValue | ... | notes |
+|--------|------------|----------|------------|-----------|-------------|-----|-------|
+| 1      | all        | measures | measureLic | row       | open        | ... |       |
 
 ## Example Scenarios
 
@@ -178,44 +178,77 @@ The data we will be working with has two tables from the ODM, **samples** and **
 | ottWa17-1 | laval-1  | 2021-08-17 | pstGrit    | TRUE       | Note 3 |
 | ottWa10-1 | laval-1  | 2020-01-10 | water      | FALSE      | Note 4 |
 
+| siteID   | name                 | repOrg1 | sampleshed |
+|----------|----------------------|---------|------------|
+| ottawa-1 | University of Ottawa | OPH     | school     |
+| laval-1  | University of Laval  | LPH     | school     |
 
-| siteID   | name                 | repOrg1  | sampleshed |
-|----------|----------------------|----------|------------|
-| ottawa-1 | University of Ottawa | OPH      | school     |
-| laval-1  | University of Laval  | LPH      | school     |
-
+### Basic Example
 
 1.  Select rows whose site ID in the samples table is "ottawa-1" for Ottawa Public Health (OPH)
 
-    | ruleId | sharedWith | tableName | variableName | direction | filterValue | notes       |
-    |--------|------------|-----------|--------------|-----------|-------------|-------------|
-    | 1      | OPH        | samples   | siteID       | row       | ottawa-1    |             |
+    | ruleId | sharedWith | table   | header | direction | filterValue | ... | notes |
+    |--------|------------|---------|--------|-----------|-------------|-----|-------|
+    | 1      | OPH        | samples | siteID | row       | ottawa-1    | ... |       |
 
 2.  Select rows from the samples table whose sample material (`saMaterial`) is `rawWW` or `sweSed` for the Public Health Agency of Canada (PHAC)
 
-    | ruleId | sharedWith | tableName | variableName | direction | filterValue  | notes       |
-    |--------|------------|-----------|--------------|-----------|--------------|-------------|
-    | 2      | PHAC       | samples   | saMaterial   | row       | rawWW;sweSed |             |
+    | ruleId | sharedWith | table   | header     | direction | filterValue  | ... | notes |
+    |--------|------------|---------|------------|-----------|--------------|-----|-------|
+    | 2      | PHAC       | samples | saMaterial | row       | rawWW;sweSed | ... |       |
 
 3.  Select the notes column from all tables for Laval Public Health (LPH)
 
-    | ruleId | sharedWith | tableName | variableName | direction | filterValue | notes       |
-    |--------|------------|-----------|--------------|-----------|-------------|-------------|
-    | 3      | LPH        | all       | notes        | column    | all         |             |
+    | ruleId | sharedWith | table | header | direction | filterValue | ... | notes |
+    |--------|------------|-------|--------|-----------|-------------|-----|-------|
+    | 3      | LPH        | all   | notes  | column    | all         | ... |       |
 
 4.  Select all samples taken in the year 2021 and who have been marked as 'reportable' for Ottawa Public Health (OPH) and the Public Health Agency of Canada (PHAC)
 
-    | ruleId | sharedWith | tableName  | variableName | direction | filterValue             | notes       |
-    |--------|------------|------------|--------------|-----------|-------------------------|-------------|
-    | 4      | OPH;PHAC   | samples    | dateTime     | row       | [2021-01-01,2021-12-31] |             |
-    | 5      | OPH;PHAC   | samples    | reportable   | row       | TRUE                    |             |
+    | ruleId | sharedWith | table   | header     | direction | filterValue             | ... | notes |
+    |---------|---------|---------|---------|---------|---------|---------|---------|
+    | 4      | OPH;PHAC   | samples | dateTime   | row       | [2021-01-01,2021-12-31] | ... |       |
+    | 5      | OPH;PHAC   | samples | reportable | row       | TRUE                    | ... |       |
 
 5.  Select all columns from the samples table and rows from the sites table that belong to the University of Laval for Laval Public Health (LPH)
 
-    | ruleId | sharedWith | tableName | variableName  | direction | filterValue  | notes       |
-    |--------|------------|-----------|---------------|-----------|--------------|-------------|
-    | 6      | LPH        | samples   | all           | column    | all          |             |
-    | 7      | LPH        | sites     | siteID        | row       | laval-1      |             |
+    | ruleId | sharedWith | table   | header | direction | filterValue | ... | notes |
+    |--------|------------|---------|--------|-----------|-------------|-----|-------|
+    | 6      | LPH        | samples | all    | column    | all         | ... |       |
+    | 7      | LPH        | sites   | siteID | row       | laval-1     | ... |       |
+
+### Mixed Direction Filtering
+
+When specifying a filter to work on rows with a given filterValue of a column, this **does not** also specifies that that column should be included in the `filtered_data` output. The column direction rules serve to list the columns to be included in the `filtered_data` output.
+
+As such, if you wanted to share data with Laval Public Health (LPH) with all the columns of the `samples` table, but only for rows for the siteID that belong to the University of Laval, the rules would be:
+
+```         
+| ruleId | sharedWith | table     | header  | direction | filterValue | ... | notes       |
+|--------|------------|-----------|---------|-----------|-------------|-----|-------------|
+| 8      | LPH        | samples   | all     | column    | all         | ... |             |
+| 9      | LPH        | samples   | siteID  | row       | laval-1     | ... |             |
+```
+
+Similarly, if you only wanted to share the siteID, measure, value, and unit columns for the siteID that belong to the University of Laval, the rules would be:
+
+```         
+| ruleId | sharedWith | table     | header                         | direction | filterValue  | ... | notes       |
+|--------|------------|-----------|--------------------------------|-----------|--------------|-----|-------------|
+| 10     | LPH        | samples   | siteID;measure;value; unit     | column    | all          | ... |             |
+| 11     | LPH        | samples   | siteID                         | row       | laval-1      | ... |             |
+```
+
+If you were to specify the same rule, but not mention the siteID column in the column rules, as below:
+
+```         
+| ruleId | sharedWith | table     | header                  | direction | filterValue  | ... | notes       |
+|--------|------------|-----------|-------------------------|-----------|--------------|-----|-------------|
+| 10     | LPH        | samples   | measure;value; unit     | column    | all          | ... |             |
+| 11     | LPH        | samples   | siteID                  | row       | laval-1      | ... |             |
+```
+
+You would generate a `filtered_data` output with the measure, value, and unit headers for which the siteID in the original data was equal to `laval-1`. The siteID column would not be included in the output, however.
 
 ## Sharing CSV Columns
 
@@ -225,16 +258,25 @@ This section summarizes all the columns part of the file
 
 **sharedWith**: The name(s) of the organizations for this rule. Multiple organizations can be separated by a `;`. Also supports key word `all`. The organizations here reference the organizations table in the ODM data.
 
-**tableName**: The name(s) of the tables for this rule. Allowable values are names (partIDs) of the tables separated by a `;` or `all` to select all tables.
+**table**: The name(s) of the tables for this rule. Allowable values are names (partIDs) of the tables separated by a `;` or `all` to select all tables.
 
-**variableName**: The name(s) of the columns for this rule. Allowable values are names (partIDs) of the columns separated by a `;` or `all` to select all columns.
+**header**: The name(s) of the columns for this rule. Allowable values are names (partIDs) of the columns separated by a `;` or `all` to select all columns.
 
 **direction**: The direction to apply the filtering. Allowable values are **row** or **column**.
 
 **filterValue**: The values of the selected entities to include. These can include an interval, single values or a combination of both. Multiple values can be separated using the `;` symbol. `all` can also be used. For intervals, the mathematical notation is used.
 
-**notes**: Optional description or notes explaining this rule, or other related information deemed worthy of sharing.
+**valid_period**: A date period that uses the same interval notation format as the continuous values in the `filterValue` field. Specifies the period for which a rule is valid. If the schema is being used outside of the period, this rule will be ignored.
 
+**status**: Reflects whether a rule is currently in use. Possible values are either `active` or `deprecated`. If the schema being used has a rule where status is marked as `deprecated`, this rule will be ignored.
+
+**firstReleased**: A date to specify when a rule was made.
+
+**lastUpdated**: A date to specify when a rule was last editted or updated.
+
+**changes**: A free-text field to record changes made at the last update to the rule.
+
+**notes**: An optional, free-text description or notes explaining this rule, or other related information deemed worthy of sharing.
 
 # Implementation
 
@@ -280,7 +322,7 @@ The function which implements the sharing feature takes three arguments:
             {
                 "sampleID": "pgsOttS102",
                 "siteID": "ottawa-1",
-                "collDT": "2021-02-01  9:00:00 PM",
+                "collDT": "2021-02-26  9:00:00 PM",
                 "saMaterial": "RawWW",
             },
         ],
@@ -307,111 +349,131 @@ The function which implements the sharing feature takes three arguments:
     [
         {
             "ruleID": "1",
-            "sharedWith": "Public;PHAC;Local;Provincial;Quebec;OntarioWSI;CanadianWasteWaterDatabase",
+            "sharedWith": "Public;PHAC",
             "table": "ALL",
-            "variable": "sampleID",
+            "header": "sampleID",
             "direction": "row",
-            "ruleValue": "pgsOttS101;pgsOttS102",
+            "filterValue": "pgsOttS101;pgsOttS102",
         },
         {
             "ruleID": "2",
             "sharedWith": "Public",
             "table": "samples",
-            "variable": "collDT",
+            "header": "collDT",
             "direction": "row",
-            "ruleValue": "[2021-01-25, 2021-02-26); (2021-02-26,2021-02-31]",
+            "filterValue": "[2021-01-25, 2021-02-26); (2021-02-26,2021-02-31]",
+        },
+        {
+            "ruleID": "3",
+            "sharedWith": "Public;PHAC",
+            "table": "ALL",
+            "header": "ALL",
+            "direction": "column",
+            "filterValue": "ALL",
         },
     ]
     ```
 
-    The above `sharing_rules` example contains two rules to apply to the data.
+    The above `sharing_rules` example contains three rules to apply to the data.
 
 3.  `organization`: A string containing the name of the organization for whom the filtered data will be shared with. The value of this argument should match up with an organization provided in the `sharing_rules` argument and the `organizationID` in the `organizations` table.
 
 The function will return a dictionary whose keys and values are given below:
 
--   **filtered_data**: The data to share with an organization. This is a copy of the `data` parameter with the columns and rows that meet the inclusion rules defined in the sharing rules for the passed organization filtered out. It has the same structure as the `data` argument described above.
-
--   **sharing_summary**: A list of dictionaries containing the columns/rows included, the name(s) of the table(s) they were included from and the ID of the rule that included them. An example is shown below,
+-   **filtered_data**: The data to share with an organization. This is a copy of the `data` parameter with the columns and rows that meet the inclusion rules defined in the sharing rules for the passed organization filtered out. It has the same structure as the `data` argument described above. To continue our example:
 
     ```         
-    [
-        {
-            "rule_id": "1",
-            "entities_filtered": [
-                {
-                    "table": "measures",
-                    "columns_included": {
-                        "type": [
-                            {
-                                "measureRepID": "ottWW101",
-                                "sampleID": "pgsOttS101",
-                                "measure": "covN1",
-                                "value": 0.0023,
-                                "unit": "gcml",
-                                "aggregation": "sin",
-                            }
-                        ]
-                  },
-                    "table": "samples",
-                    "columns_included": {
-                            {
-                                "sampleID": "pgsOttS101",
-                                "siteID": "ottawa-1",
-                                "collDT": "2021-02-01  9:00:00 PM",
-                                "saMaterial": "RawWW",
-                            },
-                            {
-                                "sampleID": "pgsOttS102",
-                                "siteID": "ottawa-1",
-                                "collDT": "2021-02-01  9:00:00 PM",
-                                "saMaterial": "RawWW",
-                            }
-                }
-            ]
-        },
-        {
-            "rule_id: "2",
-            "entities_filtered": [
-                {
-                    "table": "samples",
-                    "rows_included": [
-                            {
-                               "sampleID": "pgsOttS100",
-                               "siteID": "ottawa-1",
-                               "collDT": "2021-02-01  9:00:00 PM",
-                               "saMaterial": "RawWW",
-                            },
-                            {
-                               "sampleID": "pgsOttS101",
-                               "siteID": "ottawa-1",
-                               "collDT": "2021-02-01  9:00:00 PM",
-                               "saMaterial": "RawWW",
-                            },
-                            {
-                               "sampleID": "pgsOttS102",
-                               "siteID": "ottawa-1",
-                               "collDT": "2021-02-01  9:00:00 PM",
-                               "saMaterial": "RawWW",
-                            }
-                    ]
-                }
-            ]
-        }
+    {**Public** 
+        "measures": [
+            {
+                "measureRepID": "ottWW101",
+                "sampleID": "pgsOttS101",
+                "measure": "covN1",
+                "value": 0.0023,
+                "unit": "gcml",
+                "aggregation": "sin",
+            },
+        ],
+        "samples": [
+            {
+                "sampleID": "pgsOttS101",
+                "siteID": "ottawa-1",
+                "collDT": "2021-02-01  9:00:00 PM",
+                "saMaterial": "RawWW",
+            },
+        ],
+        "organizations": [
+            {
+                "organizationID": "labL100",
+                "name": "University L100 Lab",
+                "orgType": "academ",
+            },
+            {
+                "organizationID": "labL101",
+                "name": "University L101 Lab",
+                "orgType": "academ",
+            },
+        ],
+    }
+
+        {**PHAC** 
+        "measures": [
+            {
+                "measureRepID": "ottWW101",
+                "sampleID": "pgsOttS101",
+                "measure": "covN1",
+                "value": 0.0023,
+                "unit": "gcml",
+                "aggregation": "sin",
+            },
+        ],
+        "samples": [
+            {
+                "sampleID": "pgsOttS101",
+                "siteID": "ottawa-1",
+                "collDT": "2021-02-01  9:00:00 PM",
+                "saMaterial": "RawWW",
+            },
+            {
+                "sampleID": "pgsOttS102",
+                "siteID": "ottawa-1",
+                "collDT": "2021-02-26  9:00:00 PM",
+                "saMaterial": "RawWW",
+            },
+        ],
+        "organizations": [
+            {
+                "organizationID": "labL100",
+                "name": "University L100 Lab",
+                "orgType": "academ",
+            },
+            {
+                "organizationID": "labL101",
+                "name": "University L101 Lab",
+                "orgType": "academ",
+            },
+        ],
+    }
+    ```
+
+    The above data can then be exported as two separate excel files (or sets of csv files), with one for the public and one for PHAC.
+
+-   **sharing_summary**: A tabular breakdown of entities for whom sharing data was generated, and for each organization it lists the ruleIDs of the applied rules, the tables included in the shared data, and the number of rows for each shared table. An example is shown below:
+
+    ```         
+    [ summary_table: {
+     {'destination_org': 'public', 'rule_ids_used': '1;2;3', 'tables_shared': 'measures', 'number_rows_output': 1},
+     {'destination_org': 'public', 'rule_ids_used': '1;2;3', 'tables_shared': 'samples', 'number_rows_output': 1},
+     {'destination_org': 'public', 'rule_ids_used': '1;2;3', 'tables_shared': 'organizations', 'number_rows_output': 2},
+     {'destination_org': 'PHAC', 'rule_ids_used': '1;3', 'tables_shared': 'measures', 'number_rows_output': 1},
+     {'destination_org': 'PHAC', 'rule_ids_used': '1;3', 'tables_shared': 'samples', 'number_rows_output': 2},
+     {'destination_org': 'PHAC', 'rule_ids_used': '1;3', 'tables_shared': 'organizations', 'number_rows_output': 2}
+     }
     ]
     ```
 
-    The above example contains two dictionaries which describes the entities filtered for due to the rule with ID 1 and 2.
-
-    The `rule_id` field in each dictionary gives the ID of the rule due to which the entities in the `entities_filtered` field were filtered.
-
-    The `entities_filtered` field is a list of dictionaries where each dictionary gives the name of the table and the rows/columns that were included. The keys in each dictionary are described below:
-
-    -   `table`: The name of table from where the rows/columns were filtered.
-    -   `rows_included`: A list of dictionaries, where each dictionary is the row that was included from the table
-    -   `columns_included`: A list of dictionaries where the key in each dictionary is the name of the column that was included from the table and the value is a list of dictionaries containing the value of each cell in the included column along with the value of the primary key of the row.
-
     Describing the example above,
 
-    1.  For the rule with ID 1, the rows with the **sampleID** of "pgsOttS101" or "pgsOttS102" were included across all tables. In thi case, this meant both the `measures` table and the `samples` table. This meant that only one row that ment this criteria in the **measures** table was included, and the two rows from the **samples** table that met that criteria were included. The primary keys of the included rows were also reported, with the `measureRepID1 of **ottWW101**, and the filtered sample IDs.
-    2.  The For the rule with ID 2, all rows were selected from the **samples** as all data matched the inclusion criteria. The **organizations** table was not included as no rules mentioned it's inclusion and it does not have sample ID (`sampleID`) or collection date and time (`collDT`) headers that would correspond to these rules.
+    1.  For the rule with ID 1, the rows with the **sampleID** of "pgsOttS101" or "pgsOttS102" were included across all tables. In thi case, this meant both the `measures` table and the `samples` table. This meant that only one row that met this criteria in the **measures** table was included, and the two rows from the **samples** table that met that criteria were included. The primary keys of the included rows were also reported, with the \`measureRepID1 of **ottWW101**, and the filtered sample IDs.
+    2.  The For the rule with ID 2, an additional row was filtered out of **samples** as one the of entries did not match the inclusion criteria.
+    3.  The final rule said to include all tables and columns. So all tables and columns were included in the output `filtered_data`, with only the rows that matched inclusion criteria. If no filtration on rows was provided, the column-based rules set the definition to include all rows in the included columns.
