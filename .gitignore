@@ -1,0 +1,20 @@
+# R project files to ignore
+
+.Rproj.user/
+.Rhistory
+.RData
+
+# Temporary or generated files to ignore
+
+.Rapp.history
+_.rdb
+_.rdx
+
+# Operating system generated files
+
+Thumbs.db
+\*\*/.DS_Store
+
+# R package cache (optional, see notes)
+
+.renv/
