@@ -1,7 +1,6 @@
-ruleId,sharedWith,table,header,direction,filterValue,valid_period,status,firstReleased,lastUpdated,changes,notes
-1,OPH,samples,siteID,row,ottawa-1,"[2022-02-01,2023-01-31]",active,2022-02-01,2022-02-01,added,link to DSA
-2,PHAC,samples,saMaterial,row,rawWW;sweSwd,NA,active,2022-02-01,2022-02-01,added,NA
-3,LPH,all,collType,column,all.,NA,active,2022-02-01,2022-02-01,added,
-4,OPH;PHAC,samples,collDT,row,"[2021-01-01,2021-12-01]","[2021-02-01,2022-01-31]",deprecated,2022-02-01,2022-02-01,changed for new DSA,
-5,OPH;PHAC,samples,collPer,row,"[Inf,5]","[2023-12-01,2024-01-31]",active,2022-02-01,2022-02-01,NA,
-6,LPH,measures,reportable,column,all,"[2024-01-31,2024-12-31]",active,2022-02-01,2022-02-01,added,
+ruleId,table,mode,key,operator,value,notes
+1,all,select,NA,NA,all,
+2,samples,filter,collDT,in,2021-01-25:2021-02-25,
+3,samples;measures,filter,sampleID,=,pgsOttS101;pgsOttS102,
+4,NA,share,PHAC,NA,1;3,
+5,NA,share,public,NA,1;2;3,
