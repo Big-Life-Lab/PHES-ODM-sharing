@@ -121,8 +121,8 @@ After defining the unique ID for a rule, the next step is to determine the
    rows based on row values. The full rule will require the `key` and
    `operator` columns to be fully specified.
 3. `group`: This defines activities for a rule that groups or combines rules
-   together for execution. The full rule will require the `key` and `operator`
-   columns to be fully specified.
+   together for execution. The full rule will require the `operator` column to
+   be fully specified.
 4. `share`: This defines a rule that specifies the `organizationID` or
    `contactID` with which an output will be shared, as well as the rules to
    apply to generate the specific output data. The full rule will require the
