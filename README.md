@@ -17,8 +17,8 @@ The data sharing schema will be a csv file (sharing.csv) where each row in the `
 | 1      | measures | select | NA         | NA       | measureRepID,measure,value,unit,aggregation | basic measures details |
 | 2      | measures | filter | measure    | =        | mPox                                        |                        |
 | 3      | measures | filter | reportable | =        | TRUE                                        | NA                     |
-| 4      | measures | share  | OPH        | NA       | 1; 2                                        | link to DSA            |
-| 5      | measures | share  | PHAC       | NA       | 1; 2; 3                                     | changed for new DSA    |
+| 4      | NA       | share  | OPH        | NA       | 1; 2                                        | link to DSA            |
+| 5      | NA       | share  | PHAC       | NA       | 1; 2; 3                                     | changed for new DSA    |
 
 The `sharing` file should be accompanied by a metadata file, `sharing_metadata.csv`. This csv file provides additional information about the sharing schema, as shown in the example below:
 
