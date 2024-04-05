@@ -361,8 +361,6 @@ is exactly equal to February 1st, 2022 (2022-02-01) or February 1st, 2023
 
 ### 5. Selecting an Organization for Sharing
 
-### 5. Selecting an Organization for Sharing
-
 Once the rules in the sharing csv are defined, the next step is deciding to
 which organization(s) or person/people a rule applies. This is done using the
 an additional rule row with the `mode` columns value specified as `share`. A
