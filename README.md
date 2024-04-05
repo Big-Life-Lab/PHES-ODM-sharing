@@ -184,25 +184,25 @@ table
 
     | ruleId       | table    | mode   | key | operator | value      | notes     |
     |--------------|----------|--------|-----|----------|------------|-----------|
-    | all_measures | measures | select | NA  | NA       | all        | NA        |
+    | 3            | measures | select | NA  | NA       | all        | NA        |
 
 4.  Selecting only the `purposeID` column in the `measures` and the `samples` table
 
     | ruleId       | table    | mode   | key | operator | value      | notes     |
     |--------------|----------|--------|-----|----------|------------|-----------|
-    | 3            | measures;samples | select | NA  | NA | purposeID | NA       |
+    | 4            | measures;samples | select | NA  | NA | purposeID | NA       |
 
 5.  Selecting the `siteID` column in all tables
 
     | ruleId       | table    | mode   | key | operator | value      | notes     |
     |--------------|----------|--------|-----|----------|------------|-----------|
-    | 4            | all      | select | NA  | NA       | siteID     | NA        |
+    | 5            | all      | select | NA  | NA       | siteID     | NA        |
 
 6.  Selecting all of the columns in the `polygons` table except for `reflink`, `lastEditted`, and `notes`.
 
     | ruleId | table    | mode   | key | operator | value                                           | notes |
     |--------|----------|--------|-----|----------|-------------------------------------------------|-------|
-    | 5      | polygons | select | NA  | NA       | polygonID:fileLocation;organizationID;conatctID | NA    |
+    | 6      | polygons | select | NA  | NA       | polygonID:fileLocation;organizationID;conatctID | NA    |
 
 Notes:
 
@@ -220,12 +220,7 @@ Notes:
     also used to specify two more additional columns for inclusion.
 
 -   The **ruleId** column is mandatory for all rules and each value is unique
-    across the entire sheet (`sharing.csv`). While the recommended value is a
-    number, the `ruleId` column can take either a number or a string as a
-    value. If it is a string, it should not have any spaces in it. The
-    recommended standard is to use
-    [snake_case](https://en.wikipedia.org/wiki/Snake_case) for values in this
-    column. See example 3 for an illustration of this case.
+    across the entire sheet (`sharing.csv`). It must be a number.
 
 #### 3.2. Filtering Rows
 
