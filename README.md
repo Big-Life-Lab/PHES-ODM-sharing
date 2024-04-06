@@ -280,16 +280,16 @@ given below:
 2.  Selecting only the rows where the value of "Collection period" (`collPer`)
 is greater than or equal to 5 in the `samples` table.
 
-    | ruleId | table    | mode   | key     | operator | value     | notes     |
-    |--------|----------|--------|---------|----------|-----------|-----------|
-    | 7      | samples  | filter | >=      | collPer  | 5         |           |
+    | ruleId | table   | mode   | key     | operator | value | notes |
+    |--------|---------|--------|---------|----------|-------|-------|
+    | 7      | samples | filter | collPer | >=       | 5     |       |
 
 3.  Selecting only the rows where the value of "Collection period" (`collPer`)
 is less than 5 in the `samples` table.
 
     | ruleId | table    | mode   | key     | operator | value     | notes     |
     |--------|----------|--------|---------|----------|-----------|-----------|
-    | 8      | samples  | filter | <=      | collPer  | 5         |           |
+    | 8      | samples  | filter | collPer | <=       | 5         |           |
 
 4.  Selecting only the rows where the value of "Analysis date end" (`aDateEnd`)
 is exactly equal to February 1st, 2022 (2022-02-01) from the `measures` table.
