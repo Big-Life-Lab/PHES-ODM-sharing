@@ -446,7 +446,7 @@ dataset:
 | 2      | all   | filter | license    | =        | open  | This rules takes all rows where the license is open                                                       |
 | 3      | all   | filter | measureLic | =        | open  | This rules takes all rows where the measure license is open                                               |
 | 4      | NA    | group  | NA         | OR       | 2; 3  | This rule groups rules 2 and 3 together with "OR", such that if either rule is true, the data is selected |
-| 5      | NA    | share  | NA         | PHAC     | 1; 4  | This rule specifies that the data should be filtered using rules 1 and 4, and shared with PHAC            |
+| 5      | NA    | share  | PHAC       | NA       | 1; 4  | This rule specifies that the data should be filtered using rules 1 and 4, and shared with PHAC            |
 
 For an example pulling specifically open measures:
 
@@ -454,7 +454,7 @@ For an example pulling specifically open measures:
 |--------|----------|--------|------------|----------|-------|------------------------------------------------------------------------------------------------|
 | 1      | measures | select | NA         | NA       | all   | This rule selects all the columns from the measures tables for inclusion                       |
 | 2      | measures | filter | measureLic | =        | open  | This rules takes all rows in the measures table where the measure license is open              |
-| 3      | NA       | share  | NA         | PHAC     | 1; 2  | This rule specifies that the data should be filtered using rules 1 and 2, and shared with PHAC |
+| 3      | NA       | share  | PHAC       | NA       | 1; 2  | This rule specifies that the data should be filtered using rules 1 and 2, and shared with PHAC |
 
 ### General Example
 
