@@ -145,9 +145,13 @@ that can be selected are:
 
 This step uses four columns, `table`, `mode`, `key`, and/or `value`. The
 `table` column specifies the name(s) of the table(s) to which this rule
-applies. The `mode` column specifies the action of a rule the name(s) of the
-column(s) to be included in the shared data output as specified by this rule.
-For rules that select entities, the `filter` and `select` modes will be used.
+applies. To list multiple tables in the `table` column, list each table 
+separated by a ";". The `mode` column specifies the action of a rule. For 
+`mode = filter` rules, the `key` column lists the name(s) of the column(s) to be 
+included in the shared data output as specified by filtering  rule. For 
+`mode = select` rules, the names of the selected columns are specified in the 
+`value` column. For rules that select entities, the `filter` and `select` modes 
+will be used.
 
 #### 3.1. Selecting Columns
 
@@ -158,9 +162,10 @@ list `select` in the `mode` column, and then list the column or columns to be
 shared in the `value` column. When specifying the columns, you can separate
 distinct column names with a ";", or if choosing several sequential columns you
 can list the first and last of the sequential series separated by a ":" (ex:
-column2:column5). The `key` and `operator` columns should be left blank (or
-`NA`) as they are not used in these rules, and any values in these columns for
-`select`-mode rows will be ignored.
+column2:column5). This will match to how the columns are sequenced in the data.
+The `key` and `operator` columns should be left blank (or `NA`) as they are not 
+used in these rules, and any values in these columns for `select`-mode rows will 
+be ignored.
 
 To select all tables or all columns, an `all` value can be used in the `table`
 and/or `value` columns of the sharing csv.
@@ -308,12 +313,15 @@ is a date in February from the `measures` table.
 
 ### 4. Grouping Rules
 
-To stack particular rules to be applied together, users can rely on the `group`
-mode. To create a `group` rule, the mode column needs to be specified to
-`group`, and the rule IDs of the rules to be groups should be listed in the
-`value` column, separated by a ";". To specify how the rules are being grouped,
-the operator needs to be specified as `AND` or `OR`. Group-type rules can also
-be grouped together, creating nested group rules.
+By default, all `filter` and `select` rules that are applied together are 
+combined with an implicit `AND`. That is to say, data to be shared must meet all
+the criteria together. To stack particular rules to be applied together, or to 
+combine rules with an `OR`, users can rely on the `group` mode. To create a 
+`group` rule, the mode column needs to be specified to `group`, and the rule IDs
+of the rules to be groups should be listed in the `value` column, separated by a
+";". To specify how the rules are being grouped, the operator needs to be 
+specified as `AND` or `OR`. Group-type rules can also be grouped together, 
+creating nested group rules.
 
 Some examples are given below:
 
