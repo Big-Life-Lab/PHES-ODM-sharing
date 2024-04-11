@@ -12,8 +12,8 @@ _.rdx
 
 # Operating system generated files
 
+.DS_Store
 Thumbs.db
-\*\*/.DS_Store
 
 # R package cache (optional, see notes)
 
