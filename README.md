@@ -38,56 +38,54 @@ partner.
 
 High level features include:
 
--   The data custodian should be able to define all the sharing rules in a CSV
-    file (`sharing.csv`). A standard schema for defining the rules will be
-    developed.
--   The schema should allow a data custodian to define the partner
-    (organization or person - matching to an `organizationID` and/or
-    `contactID` within the model) that each rule pertains to. For example, a
-    certain rule or set of rules may be applicable only to the Public Health
-    Agency of Canada (PHAC) while another rule may be applicable to not only
-    the PHAC but also to Ottawa Public Health.
--   The schema should allow data custodians to define rules that apply to rows
-    or to columns. For example, a rule can be made to share all the rows from
-    the `samples` table, and/or to only include the `collType` column from the
-    `samples` table.
--   The schema is built using the logic and arguments of the `filter()` and
-    `select()` functions of the Dplyr package in R. When specifying details of
-    the filter function (mode), use of the `=`, `>`, `<`, `>=`, and `<=`
-    operators are supported, along with `in` for ranges of continuous data and
-    `NA` where the operator is not relevant, like for the select function
-    (mode).
--   Rules can be combined to form more powerful conditions by building across
-    rows of the `sharing` csv. For example, include all rows with `email` equal
-    to "[john.doe\@email.com](mailto:john.doe@email.com){.email}", `firstName`
-    equal to "John", and `lastName` equal to "Doe". This is accomplished by
-    grouping rules together using the mode `group` with the operators `AND` or
-    `OR`, creating customized combinations of conditions.
--   Rules can be made within the context of an entire table, to a column that
-    may be present in more than one table, or to a column specific to a table.
-    Rules can also be made at the level of all measures or datasets with a
-    given license type.
--   The rules may only be inclusive. For example, rules can be defined to
-    include rows but not to exclude them.
--   The data custodian will be returned a report at the end which will provide
-    details about how many rows were filtered for inclusion in the shareable
-    data, as well as the tables and headers selected for inclusion.
--   Version 2 of the PHES-ODM allows data generators and custodian to define
-    data licenses. In some jurisdictions, this may be defined in detailed
-    data-sharing agreements (DSA). The DSAs can be short simply referencing a
-    license type, or they can be many pages identifying specifically who can
-    use the data and for what purpose and what will be the data destruction
-    protocols, etc. The notes column in the `sharing.csv` is a free text field,
-    providing an opportunity to reference a longer document or provide more
-    details. Most licenses currently supported by the ODM license field are
-    open.
--   The implementation should take into account the relationship between the
-    different tables as defined in the ODM. For example, removing a row with
-    `siteID = ottawa-1` from the sites table, should also remove all rows in
-    the samples table with `siteID = ottawa-1`. All nested relationships should
-    also be taken care of. The relationships between the tables can be seen
-    [here](https://lucid.app/lucidchart/847978df-d627-4b8a-a379-faca7a517ef4/edit?invitationId=inv_0de7777b-888b-4d8a-827d-2306bdc48cce&page=4OvE58YH3w..#).
--   A python function that implements these rules should be built.
+- The data custodian should be able to define all the sharing rules in a CSV
+  file (`sharing.csv`). A standard schema for defining the rules will be
+  developed.
+- The schema should allow a data custodian to define the partner (organization
+  or person - matching to an `organizationID` and/or `contactID` within the
+  model) that each rule pertains to. For example, a certain rule or set of
+  rules may be applicable only to the Public Health Agency of Canada (PHAC)
+  while another rule may be applicable to not only the PHAC but also to Ottawa
+  Public Health.
+- The schema should allow data custodians to define rules that apply to rows or
+  to columns. For example, a rule can be made to share all the rows from the
+  `samples` table, and/or to only include the `collType` column from the
+  `samples` table.
+- The schema is built using the logic and arguments of the `filter()` and
+  `select()` functions of the Dplyr package in R. When specifying details of
+  the filter function (mode), use of the `=`, `>`, `<`, `>=`, and `<=`
+  operators are supported, along with `in` for ranges of continuous data and
+  `NA` where the operator is not relevant, like for the select function (mode).
+- Rules can be combined to form more powerful conditions by building across
+  rows of the `sharing` csv. For example, include all rows with `email` equal
+  to "[john.doe\@email.com](mailto:john.doe@email.com){.email}", `firstName`
+  equal to "John", and `lastName` equal to "Doe". This is accomplished by
+  grouping rules together using the mode `group` with the operators `AND` or
+  `OR`, creating customized combinations of conditions.
+- Rules can be made within the context of an entire table, to a column that may
+  be present in more than one table, or to a column specific to a table. Rules
+  can also be made at the level of all measures or datasets with a given
+  license type.
+- The rules may only be inclusive. For example, rules can be defined to include
+  rows but not to exclude them.
+- The data custodian will be returned a report at the end which will provide
+  details about how many rows were filtered for inclusion in the shareable
+  data, as well as the tables and headers selected for inclusion.
+- Version 2 of the PHES-ODM allows data generators and custodian to define data
+  licenses. In some jurisdictions, this may be defined in detailed data-sharing
+  agreements (DSA). The DSAs can be short simply referencing a license type, or
+  they can be many pages identifying specifically who can use the data and for
+  what purpose and what will be the data destruction protocols, etc. The notes
+  column in the `sharing.csv` is a free text field, providing an opportunity to
+  reference a longer document or provide more details. Most licenses currently
+  supported by the ODM license field are open.
+- The implementation should take into account the relationship between the
+  different tables as defined in the ODM. For example, removing a row with
+  `siteID = ottawa-1` from the sites table, should also remove all rows in the
+  samples table with `siteID = ottawa-1`. All nested relationships should also
+  be taken care of. The relationships between the tables can be seen
+  [here](https://lucid.app/lucidchart/847978df-d627-4b8a-a379-faca7a517ef4/edit?invitationId=inv_0de7777b-888b-4d8a-827d-2306bdc48cce&page=4OvE58YH3w..#).
+- A python function that implements these rules should be built.
 
 # Sharing CSV
 
@@ -145,12 +143,12 @@ that can be selected are:
 
 This step uses four columns, `table`, `mode`, `key`, and/or `value`. The
 `table` column specifies the name(s) of the table(s) to which this rule
-applies. To list multiple tables in the `table` column, list each table 
-separated by a ";". The `mode` column specifies the action of a rule. For 
-`mode = filter` rules, the `key` column lists the name(s) of the column(s) to be 
-included in the shared data output as specified by filtering  rule. For 
-`mode = select` rules, the names of the selected columns are specified in the 
-`value` column. For rules that select entities, the `filter` and `select` modes 
+applies. To list multiple tables in the `table` column, list each table
+separated by a ";". The `mode` column specifies the action of a rule. For
+`mode = filter` rules, the `key` column lists the name(s) of the column(s) to be
+included in the shared data output as specified by filtering  rule. For
+`mode = select` rules, the names of the selected columns are specified in the
+`value` column. For rules that select entities, the `filter` and `select` modes
 will be used.
 
 #### 3.1. Selecting Columns
@@ -163,8 +161,8 @@ shared in the `value` column. When specifying the columns, you can separate
 distinct column names with a ";", or if choosing several sequential columns you
 can list the first and last of the sequential series separated by a ":" (ex:
 column2:column5). This will match to how the columns are sequenced in the data.
-The `key` and `operator` columns should be left blank (or `NA`) as they are not 
-used in these rules, and any values in these columns for `select`-mode rows will 
+The `key` and `operator` columns should be left blank (or `NA`) as they are not
+used in these rules, and any values in these columns for `select`-mode rows will
 be ignored.
 
 To select all tables or all columns, an `all` value can be used in the `table`
@@ -313,14 +311,14 @@ is a date in February from the `measures` table.
 
 ### 4. Grouping Rules
 
-By default, all `filter` and `select` rules that are applied together are 
+By default, all `filter` and `select` rules that are applied together are
 combined with an implicit `AND`. That is to say, data to be shared must meet all
-the criteria together. To stack particular rules to be applied together, or to 
-combine rules with an `OR`, users can rely on the `group` mode. To create a 
+the criteria together. To stack particular rules to be applied together, or to
+combine rules with an `OR`, users can rely on the `group` mode. To create a
 `group` rule, the mode column needs to be specified to `group`, and the rule IDs
 of the rules to be groups should be listed in the `value` column, separated by a
-";". To specify how the rules are being grouped, the operator needs to be 
-specified as `AND` or `OR`. Group-type rules can also be grouped together, 
+";". To specify how the rules are being grouped, the operator needs to be
+specified as `AND` or `OR`. Group-type rules can also be grouped together,
 creating nested group rules.
 
 Some examples are given below:
