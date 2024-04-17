@@ -237,8 +237,8 @@ on in the `key` column, specify the nature of the filter using the `operator`
 column, and the filter values in the `value` column. The general structure for
 the filter argument is:
 
-``` **column name** **operator** **value**
-
+```
+**column name** **operator** **value**
 ```
 
 Where the "column name" the name of a column (specified in the `key` column)
