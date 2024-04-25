@@ -174,25 +174,25 @@ Node kinds:
 - **select**: lists column name values
 - **group**: groups filters together
 - **filter**: defines a filter with operator, key and value
-- **key**: field name
-- **value**: generic
+- **field**: a field name
+- **literal**: a string literal
 
 Node structure:
 
 - (ruleId: int)
 - kind: NodeKind
-- value: str
+- str_val: str
 - children: List[Node]
 
 For each rule, a node is added based on its mode:
 
 - select:
     - (**select**, ("" or "all")):
-        - (**value**, column) for column in rule.key
+        - (**literal**, column) for column in rule.key
 - filter:
     - (**filter**, rule.operator):
-        - (**key**, rule.key)
-        - (**value**, x) for x in rule.value
+        - (**field**, rule.key)
+        - (**literal**, x) for x in rule.value
 - group:
     - (**group**, rule.operator):
         - nodes where node.ruleId in rule.value
@@ -224,26 +224,26 @@ ruleId,table,mode,key,operator,value,notes
     (share, "OHRI")
         (table, "measures")
             (select, "")
-                (value, "measure")
-                (value, "value")
-                (value, "unit")
-                (value, "aggregation")
+                (literal, "measure")
+                (literal, "value")
+                (literal, "unit")
+                (literal, "aggregation")
             (group, "OR")
                 (group, "AND")
                     (filter, "=")
-                        (key, "measure")
-                        (value, "mPox")
+                        (field, "measure")
+                        (literal, "mPox")
                     (filter, "in")
-                        (key, "reportDate")
-                        (value, "2021-01-01")
-                        (value, "2021-12-31")
+                        (field, "reportDate")
+                        (literal, "2021-01-01")
+                        (literal, "2021-12-31")
                 (group, "AND")
                     (filter, "=")
-                        (key, "measure")
-                        (value, "cov")
+                        (field, "measure")
+                        (literal, "cov")
                     (filter, ">=")
-                        (key, "reportDate")
-                        (value, "2020-01-01")
+                        (field, "reportDate")
+                        (literal, "2020-01-01")
     (share, "other")
         (table, "measures")
             (select, "all")
@@ -258,29 +258,30 @@ or column names.
 
 - **table**:
     - "select " + recurse(select-child)
-    - "from " + value/table
+    - "from " + str_val
     - "where " + recurse(filter-child)
 - **select**:
     - if "all" in values: " * "
     - else: join quoted child values with commas
 - **group**:
-    - op = value
-    - fold children with value/operator
+    - operator = str_val
+    - fold children with operator
 - **filter**:
-    - recurse(key-child) + value/operator + recurse(value-child)
-- **key**:
-    - quote value/column
-- **value**:
-    - append to separate values
+    - operator = str_val
+    - recurse(first-child) + operator + recurse(second-child)
+- **field**:
+    - quote str_val
+- **literal**:
+    - append to separate parameter values
 
 Example implementation of SQL-generation for a filter node:
 
 ```python
-key_node = Node(kind: key, value: 'siteID')
-value_node = Node(kind: value, value: 'ottawa-1')
+field_node = Node(kind: field, str_val: 'siteID')
+lit_node = Node(kind: literal, str_val: 'ottawa-1')
 
 params = []
-sql = gen_sql(key_node, params) + ' = ' + gen_sql(value_node, params)
+sql = gen_sql(field_node, params) + ' = ' + gen_sql(lit_node, params)
 assert sql == 'siteID = ?'
 assert params == ['ottawa-1']
 ```
