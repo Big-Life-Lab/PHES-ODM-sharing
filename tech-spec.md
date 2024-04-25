@@ -49,14 +49,12 @@ Examples:
 #### sharing
 
 - high level:
-    ```python
-    extract(data_source: str, schema_file: str, org: str=''
+    - extract(data_source: str, schema_file: str, org: str=''
             ) -> Dict[TableName, Dataframe]
-    ```
-    - data_source: a file path or database url (in SQLAlchemy format)
-    - schema_file: rule schema file path
-    - org: org to share with, or all orgs if empty
-    - returns a Pandas Dataframe per table, for further processing
+        - data_source: a file path or database url (in SQLAlchemy format)
+        - schema_file: rule schema file path
+        - org: org to share with, or all orgs if empty
+        - returns a Pandas Dataframe per table, for further processing
 - low level:
     - connect(data_source: str) -> Connection
     - parse(schema_file: str) -> Dict[OrgName, Dict[TableName, Query]]
@@ -152,6 +150,7 @@ for table, query in table_queries.items():
 ## AST generation
 
 Node kinds:
+
 - **root**: AST root
 - **share**: what to share with each org
 - **table**: table name
@@ -169,6 +168,7 @@ Node structure:
 - children: List[Node]
 
 For each rule, a node is added based on its mode:
+
 - select:
     - (**select**, ("" or "all")):
         - (**value**, column) for column in rule.key
