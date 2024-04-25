@@ -26,10 +26,11 @@ the queries themselves.
 **Usage**
 
 ```bash
-./share.py [--org=<name>] [--outdir=<path>] <schema> <input>
+./share.py [--orgs=<name[,...]>] [--outdir=<path>] <schema> <input>
 ```
 
-- org: the organization to output data for, or all if not specified
+- orgs: comma separated list of the organizations to output data for, or all if
+  not specified
 - outdir: output file directory
 - schema: sharing schema file path
 - input: spreadsheet file path or [SQLAlchemy database url](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)
@@ -41,7 +42,7 @@ Create a collection of sharable csv files in the "~/ohri" directory, for the
 data.xlsx:
 
 ```bash
-./share.py --org=OHRI --outdir=~/ohri/ schema.csv data.xlsx
+./share.py --orgs=OHRI --outdir=~/ohri/ schema.csv data.xlsx
 ```
 
 Output to the default (current) directory, for all organizations specified in
@@ -65,11 +66,11 @@ package):
 #### sharing
 
 - high level:
-    - extract(data_source: str, schema_file: str, org: str=''
-            ) -> Dict[TableName, Dataframe]
+    - extract(data_source: str, schema_file: str, orgs: List[str]=[]
+              ) -> Dict[TableName, Dataframe]
         - data_source: a file path or database url (in SQLAlchemy format)
         - schema_file: rule schema file path
-        - org: org to share with, or all orgs if empty
+        - orgs: orgs to share with, or all if empty
         - returns a Pandas Dataframe per table, for further processing
 - low level:
     - connect(data_source: str) -> Connection
