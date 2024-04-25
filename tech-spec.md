@@ -260,34 +260,64 @@ are separated to take advantage of [parameterized queries](https://cheatsheetser
 to prevent SQL injections. Multiple kinds of queries can be generated for
 different purposes, including retrieving only the row-counts or column names.
 
+Starting at the table node, the recursive function will generate an SQL query
+by first recursing down to the leaf nodes, then making it all come together in
+the table node:
+
 - **table**:
-    - "select " + recurse(select-child)
-    - "from " + str_val
-    - "where " + recurse(filter-child)
+
+    ```
+    table_name = str_val
+    result =
+        "select " + recurse(select-child)
+        "from " + table_name
+        "where " + recurse(filter-child)
+    ```
+
 - **select**:
-    - if "all" in values: " * "
-    - else: join quoted child values with commas
+
+    ```
+    result =
+        if "all" in values: " * "
+        else: join quoted child values with commas
+    ```
+
 - **group**:
-    - operator = str_val
-    - fold children with operator
+
+    ```
+    operator = str_val
+    result = fold children with operator
+    ```
+
 - **filter**:
-    - operator = str_val
-    - recurse(first-child) + operator + recurse(second-child)
+
+    ```
+    operator = str_val
+    result = recurse(first-child) + operator + recurse(second-child)
+    ```
+
 - **field**:
-    - quote str_val
+
+    ```
+    result = quote str_val
+    ```
+
 - **literal**:
-    - append to separate parameter values
+
+    ```
+    append to separate parameter value list
+    ```
 
 Example implementation of SQL-generation for a filter node:
 
 ```python
-field_node = Node(kind: field, str_val: 'siteID')
-lit_node = Node(kind: literal, str_val: 'ottawa-1')
+field = Node(kind: field, str_val: 'siteID')
+value = Node(kind: literal, str_val: 'ottawa-1')
 
-params = []
-sql = gen_sql(field_node, params) + ' = ' + gen_sql(lit_node, params)
+param_values = []
+sql = gen_sql(field, param_values) + ' = ' + gen_sql(value, param_values)
 assert sql == 'siteID = ?'
-assert params == ['ottawa-1']
+assert param_values == ['ottawa-1']
 ```
 
 ## Data source connections
