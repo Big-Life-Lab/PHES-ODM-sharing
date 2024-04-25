@@ -309,9 +309,9 @@ Using the ODBC Excel driver on Windows:
 
 https://github.com/mkleehammer/pyodbc/wiki/Connecting-to-Microsoft-Excel
 
-As an alternative to the above, we can load the spreadsheet file into a
+As an alternative to the above, we will load the spreadsheet file into a
 temporary in-memory SQLite database and perform queries on that instead. It
-would work like the following:
+will work like the following:
 
 1. read into memory (using pandas)
 2. create in-memory sqlite db (using sqlalchemy)
