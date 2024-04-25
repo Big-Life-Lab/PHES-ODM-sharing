@@ -158,12 +158,9 @@ inclusion. These are the first rules to define in your schema. To specify which
 columns should be shared, specify the table or tables in the `table` column,
 list `select` in the `mode` column, and then list the column or columns to be
 shared in the `value` column. When specifying the columns, you can separate
-distinct column names with a ";", or if choosing several sequential columns you
-can list the first and last of the sequential series separated by a ":" (ex:
-column2:column5). This will match to how the columns are sequenced in the data.
-The `key` and `operator` columns should be left blank (or `NA`) as they are not
-used in these rules, and any values in these columns for `select`-mode rows will
-be ignored.
+distinct column names with a ";". The `key` and `operator` columns should be
+left blank (or `NA`) as they are not used in these rules, and any values in
+these columns for `select`-mode rows will be ignored.
 
 To select all tables or all columns, an `all` value can be used in the `table`
 and/or `value` columns of the sharing csv.
@@ -201,12 +198,6 @@ table
     |--------------|----------|--------|-----|----------|------------|-----------|
     | 5            | all      | select | NA  | NA       | siteID     | NA        |
 
-6.  Selecting all of the columns in the `polygons` table except for `reflink`, `lastEditted`, and `notes`.
-
-    | ruleId | table    | mode   | key | operator | value                                           | notes |
-    |--------|----------|--------|-----|----------|-------------------------------------------------|-------|
-    | 6      | polygons | select | NA  | NA       | polygonID:fileLocation;organizationID;conatctID | NA    |
-
 Notes:
 
 -   In examples 2 and 4 where multiple columns and tables were selected
@@ -217,10 +208,6 @@ Notes:
 -   In examples 3 and 5 where all the columns in a table and all the tables
     were selected respectively, the keyword `all` was used. Similar to the `;`
     symbol, the keyword `all` may be used in a cell to mean everything.
-
--   In example 6, all columns between 'polygonID' and 'fileLocation' were
-    selected (inclusively), by separating them with a ":". The ";" symbol was
-    also used to specify two more additional columns for inclusion.
 
 -   The **ruleId** column is mandatory for all rules and each value is unique
     across the entire sheet (`sharing.csv`). It must be a number.
