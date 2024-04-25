@@ -36,9 +36,25 @@ the queries themselves.
 
 **Examples**
 
+Create a collection of sharable csv files in the "~/ohri" directory, for the
+"OHRI" organization, applying the rules from schema.csv on the input from
+data.xlsx:
+
 ```bash
 ./share.py --org=OHRI --outdir=~/ohri/ schema.csv data.xlsx
+```
+
+Output to the default (current) directory, for all organizations specified in
+the schema, using a MySQL database (with the pymysql package) as input:
+
+```bash
 ./share.py schema.csv mysql+pymysql://scott:tiger@localhost/foo
+```
+
+Same as above, using a MS SQL Server database through ODBC (with the pyodbc
+package):
+
+```bash
 ./share.py schema.csv mssql+pyodbc://user:pass@mydsn
 ```
 
