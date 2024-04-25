@@ -184,7 +184,10 @@ Node structure:
 - str_val: str
 - children: List[Node]
 
-For each rule, a node is added based on its mode:
+Tree structure:
+
+For each rule, a node is added based on its mode. The node order is fixed as
+specified, so the filter.field node comes before any filter.literal nodes, etc.
 
 - select:
     - (**select**, ("" or "all")):
