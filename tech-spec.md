@@ -254,10 +254,10 @@ ruleId,table,mode,key,operator,value,notes
 
 ## SQL query generation
 
-SQL queries are (recursively) generated from each table node of the AST. Values
-are separated from the query to prevent injections. Multiple kinds of queries
-can be generated for different purposes, including only getting the row-counts
-or column names.
+SQL queries are (recursively) generated from each table-node of the AST. Values
+are separated to take advantage of [parameterized queries](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html)
+to prevent SQL injections. Multiple kinds of queries can be generated for
+different purposes, including retrieving only the row-counts or column names.
 
 - **table**:
     - "select " + recurse(select-child)
