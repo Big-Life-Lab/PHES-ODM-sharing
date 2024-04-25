@@ -33,6 +33,7 @@ Usage:
 - outdir: output file directory
 - schema: sharing schema file path
 - input: spreadsheet file path or [SQLAlchemy database url](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)
+
 Examples:
 
 ```bash
@@ -60,8 +61,8 @@ Examples:
     - connect(data_source: str) -> Connection
     - parse(schema_file: str) -> Dict[OrgName, Dict[TableName, Query]]
     - extract(Connection, Query) -> Dataframe
-    - getCounts(Connection, Query) -> Dict[RuleId, int]
-    - getColumns(Connection, Query) -> Tuple[RuleId, List[ColumnName]]
+    - get_counts(Connection, Query) -> Dict[RuleId, int]
+    - get_columns(Connection, Query) -> Tuple[RuleId, List[ColumnName]]
 
 ### Private modules
 
@@ -114,31 +115,31 @@ for table, data in results.items():
 low-level sample code:
 
 ```python
-def describeTableQuery(con, rules, table, query):
+def describe_table_query(con, rules, table, query):
     print(f'query table: {table}')
 
-    (selectRuleId, columns) = s.getColumns(con, query)
-    print(f'query columns (from rule {selectRuleId}):')
+    (select_rule_id, columns) = s.get_columns(con, query)
+    print(f'query columns (from rule {select_rule_id}):')
     print(','.join(columns))
 
     print('query counts per rule:')
-    ruleCounts = s.getCounts(con, query)
-    for ruleId, count in ruleCounts.items():
+    rule_counts = s.get_counts(con, query)
+    for ruleId, count in rule_counts.items():
         r = rules[ruleId]
-        ruleFilter = f'{r.key} {r.operator} {r.value}'
-        print(f'{ruleId} | {count} | {ruleFilter}')
+        rule_filter = f'{r.key} {r.operator} {r.value}'
+        print(f'{ruleId} | {count} | {rule_filter}')
 
-def extractFilteredData(con, table, query):
+def extract_filtered_data(con, table, query):
     data: pd.Dataframe = s.extract(con, query)
     data.to_csv(f'{org}-{table}.csv')
 
 con = s.connect(data_file)
 rules = s.load(rule_file)
-ruleTree = s.parse(rules)
-tableQueries = s.generate(ruleTree)[org]
-for table, query in tableQueries.items():
-    describeTableQuery(con, rules, table, query)
-    extractFilteredData(con, table, query)
+rule_tree = s.parse(rules)
+table_queries = s.generate(rule_tree)[org]
+for table, query in table_queries.items():
+    describe_table_query(con, rules, table, query)
+    extract_filtered_data(con, table, query)
 ```
 
 ## Rule schema parsing
@@ -258,11 +259,11 @@ or column names.
 Example implementation of SQL-generation for a filter node:
 
 ```python
-keyNode = Node(kind: key, value: 'siteID')
-valueNode = Node(kind: value, value: 'ottawa-1')
+key_node = Node(kind: key, value: 'siteID')
+value_node = Node(kind: value, value: 'ottawa-1')
 
 params = []
-sql = genSql(keyNode, params) + ' = ' + genSql(valueNode, params)
+sql = gen_sql(key_node, params) + ' = ' + gen_sql(value_node, params)
 assert sql == 'siteID = ?'
 assert params == ['ottawa-1']
 ```
