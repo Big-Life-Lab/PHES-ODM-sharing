@@ -23,7 +23,7 @@ the queries themselves.
 
 ## CLI
 
-Usage:
+**Usage**
 
 ```bash
 ./share.py [--org=<name>] [--outdir=<path>] <schema> <input>
@@ -34,7 +34,7 @@ Usage:
 - schema: sharing schema file path
 - input: spreadsheet file path or [SQLAlchemy database url](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)
 
-Examples:
+**Examples**
 
 ```bash
 ./share.py --org=OHRI --outdir=~/ohri/ schema.csv data.xlsx
