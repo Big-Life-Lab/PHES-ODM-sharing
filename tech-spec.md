@@ -207,19 +207,20 @@ specified, so the filter.field node comes before any filter.literal nodes, etc.
 
 Example rules with its generated tree:
 
-```csv
-ruleId,table,mode,key,operator,value,notes
-10,measures,select,NA,NA,all,
-11,measures,select,NA,NA,measure;value;unit;aggregation,
-12,measures,filter,measure,=,mPox,
-13,measures,filter,reportDate,in,2021-01-01;2021-12-31,
-14,NA,group,NA,AND,12;13,
-15,measures,filter,measure,=,cov,
-16,measures,filter,reportDate,>=,2020-01-01,
-17,NA,group,NA,AND,15;16,
-18,NA,group,NA,OR,14;17,
-19,NA,share,ohri,NA,11;18,
-20,NA,share,other,NA,10,
+```markdown
+|ruleId|table   |mode  |key       |operator|value                         |notes|
+|------|--------|------|----------|--------|------------------------------|-----|
+|10    |measures|select|NA        |NA      |all                           |     |
+|11    |measures|select|NA        |NA      |measure;value;unit;aggregation|     |
+|12    |measures|filter|measure   |=       |mPox                          |     |
+|13    |measures|filter|reportDate|in      |2021-01-01;2021-12-31         |     |
+|14    |NA      |group |NA        |AND     |12;13                         |     |
+|15    |measures|filter|measure   |=       |cov                           |     |
+|16    |measures|filter|reportDate|>=      |2020-01-01                    |     |
+|17    |NA      |group |NA        |AND     |15;16                         |     |
+|18    |NA      |group |NA        |OR      |14;17                         |     |
+|19    |NA      |share |ohri      |NA      |11;18                         |     |
+|20    |NA      |share |other     |NA      |10                            |     |
 ```
 
 ```
