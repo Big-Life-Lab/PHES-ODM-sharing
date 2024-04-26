@@ -207,7 +207,6 @@ specified, so the filter.field node comes before any filter.literal nodes, etc.
 
 Example rules with its generated tree:
 
-```markdown
 |ruleId|table   |mode  |key       |operator|value                         |notes|
 |------|--------|------|----------|--------|------------------------------|-----|
 |10    |measures|select|NA        |NA      |all                           |     |
@@ -221,7 +220,6 @@ Example rules with its generated tree:
 |18    |NA      |group |NA        |OR      |14;17                         |     |
 |19    |NA      |share |ohri      |NA      |11;18                         |     |
 |20    |NA      |share |other     |NA      |10                            |     |
-```
 
 ```
 (root, "")
