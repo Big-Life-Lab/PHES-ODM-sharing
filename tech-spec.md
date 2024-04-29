@@ -26,12 +26,13 @@ the queries themselves.
 **Usage**
 
 ```bash
-./share.py [--orgs=<name[,...]>] [--outdir=<path>] <schema> <input>
+./share.py [--orgs=<name[,...]>] [--outfmt=<fmt>] [--outdir=<path>] <schema> <input>
 ```
 
 - orgs: comma separated list of the organizations to output data for, defaults
   to all
 - outdir: output file directory, defaults to the current directory
+- outfmt: output format (excel or csv), defaults to excel
 - schema: sharing schema file path
 - input: spreadsheet file path or [SQLAlchemy database url](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)
 
