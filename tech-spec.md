@@ -103,10 +103,29 @@ package):
         - orgs: orgs to share with, or all if empty
 - low level:
     - `connect(data_source: str) -> Connection`
+
+        returns a connection object that can be used together with a query
+        object to retrieve data from `data_source`
+
     - `parse(schema_file: str) -> Dict[OrgName, Dict[TableName, Query]]`
-    - `extract(Connection, Query) -> Dataframe`
-    - `get_counts(Connection, Query) -> Dict[RuleId, int]`
-    - `get_columns(Connection, Query) -> Tuple[RuleId, List[ColumnName]]`
+
+        returns queries for each org and table, generated from the rules
+        specified in `schema_file`
+
+    - `extract(c: Connection, q: Query) -> Dataframe`
+
+        returns the data extracted from running query `q` on data-source
+        connection `c`, as a pandas dataframe
+
+    - `get_counts(c: Connection, q: Query) -> Dict[RuleId, int]`
+
+        returns the row counts for each rule, corresponding to how each part of
+        query `q` would filter the data extracted from connection `c`
+
+    - `get_columns(c: Connection, q: Query) -> Tuple[RuleId, List[ColumnName]]`
+
+        returns the select-rule id together with the column names that would be
+        extracted from using query `q` on connection `c`
 
 ### Private modules
 
