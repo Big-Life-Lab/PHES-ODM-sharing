@@ -12,8 +12,8 @@ which come together to form a data query.
 The query rules are parsed into an abstract syntax tree (AST), which represents
 the structure of the query. It effectively separates rule-parsing from
 query-generation, making it more modular. The AST can then be used to generate
-concrete queries in SQL or other query languages, or it can be interpreted to
-perform data transformations directly using a library like Pandas.
+concrete queries in SQL or other query languages, or it can be used directly to
+call functions on data while iterating over it.
 
 The library will focus on using SQL as the query language, since it has wide
 support and is easy to generate. Using SQL will also provide a free performance
