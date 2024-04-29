@@ -37,9 +37,8 @@ the queries themselves.
 
 **Examples**
 
-Create a collection of sharable csv files in the "~/ohri" directory, for the
-"OHRI" organization, applying the rules from schema.csv on the input from
-data.xlsx:
+Create a sharable excel file in the "~/ohri" directory, for the "OHRI"
+organization, applying the rules from schema.csv on the input from data.xlsx:
 
 ```bash
 ./share.py --orgs=OHRI --outdir=~/ohri/ schema.csv data.xlsx
