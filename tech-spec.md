@@ -151,9 +151,10 @@ org = 'OHRI'
 high-level one-shot function:
 
 ```python
-results = s.extract(data_file, rules, org)
-for table, data in results.items():
-    data.to_csv(f'{org}-{table}.csv')
+results = s.extract(data_file, rules, orgs=[org])
+for org, tabledata in results.items():
+    for table, data in tabledata.items():
+        data.to_csv(f'{org}-{table}.csv')
 ```
 
 low-level sample code:
