@@ -29,9 +29,9 @@ the queries themselves.
 ./share.py [--orgs=<name[,...]>] [--outdir=<path>] <schema> <input>
 ```
 
-- orgs: comma separated list of the organizations to output data for, or all if
-  not specified
-- outdir: output file directory
+- orgs: comma separated list of the organizations to output data for, defaults
+  to all
+- outdir: output file directory, defaults to the current directory
 - schema: sharing schema file path
 - input: spreadsheet file path or [SQLAlchemy database url](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)
 
