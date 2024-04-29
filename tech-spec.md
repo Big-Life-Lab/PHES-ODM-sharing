@@ -53,6 +53,10 @@ Options:
 
     output file directory, defaults to the current directory
 
+One or multiple sharable output files will be created in the chosen output
+directory according to the chosen output format and organization(s). Each
+output file will have the input filename followed by a postfix with the org
+name (and table name if CSV).
 
 **Examples**
 
