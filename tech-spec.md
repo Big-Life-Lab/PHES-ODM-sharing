@@ -53,10 +53,18 @@ Options:
 
     output file directory, defaults to the current directory
 
+- `-d`, `--dry-run`, `--debug`:
+
+    only output the intermediary debug information describing what would
+    happen, and don't create any output files.
+
 One or multiple sharable output files will be created in the chosen output
 directory according to the chosen output format and organization(s). Each
 output file will have the input filename followed by a postfix with the org
 name (and table name if CSV).
+
+(Debug) information about the operation will be printed to STDOUT, as well as
+written to a `debug.txt` file in the same directory.
 
 **Examples**
 
