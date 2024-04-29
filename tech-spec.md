@@ -97,7 +97,11 @@ package):
 
 - high level:
     - `extract(data_source: str, schema_file: str, orgs: List[str]=[]) -> ...`
-        - returns a Pandas Dataframe per table per org
+
+        returns a Pandas Dataframe per table per org
+
+        Parameters:
+
         - data_source: a file path or database url (in SQLAlchemy format)
         - schema_file: rule schema file path
         - orgs: orgs to share with, or all if empty
