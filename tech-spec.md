@@ -190,11 +190,24 @@ for table, query in table_queries.items():
 ## Rule schema parsing
 
 1. open schema file
-2. read lines
-3. parse each line into a rule obj
-4. add each rule obj to a dictionary with rule id as key
+2. parse each line into a rule obj:
+    - validate and throw exception on error
+3. add each rule obj to a dictionary with rule id as key
+
+Error messages should contain all the necessary info to find and fix the issue,
+including the line number, row number, rule id and column name (if applicable).
+Parsing can be wrapped in a try-block to accumulate errors instead of aborting
+on the first error. This is a viable option since each line is parsed
+individually, and their relationships aren't taken into account before the next
+(AST generation) step.
 
 ## AST generation
+
+An abstract syntax tree is incrementally generated from the list of rules.
+
+When an error is encountered an exception will be thrown with a message
+describing what's wrong and which rule is responsible. Errors can't be
+accumulated at this point since it would cause error propagation.
 
 Node kinds:
 
