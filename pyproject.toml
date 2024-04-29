@@ -1,0 +1,31 @@
+[project]
+name = "odm_sharing"
+version = "0.1.0"
+authors = [
+    { name="OHRI", email="PHES-ODM@ohri.ca" }
+]
+description = "Population Health and Envirmental Open Data Model (PHES-ODM) Sharing Toolkit"
+readme = "README.md"
+license = { file="LICENSE" }
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dynamic = ["dependencies"]
+
+[project.urls]
+"Homepage" = "https://github.com/Big-Life-Lab/PHES-ODM-sharing"
+"Bug Tracker" = "https://github.com/Big-Life-Lab/PHES-ODM-sharing/issues"
+
+[build-system]
+requires = ["hatchling", "hatch-requirements-txt"]
+build-backend = "hatchling.build"
+
+# specify package dir
+[tool.hatch.build.targets.wheel]
+packages = ["src/odm_sharing"]
+
+# install dependencies automatically
+[tool.hatch.metadata.hooks.requirements_txt]
+files = ["requirements.txt"]
