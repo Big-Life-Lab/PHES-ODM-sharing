@@ -96,18 +96,17 @@ package):
 #### sharing
 
 - high level:
-    - extract(data_source: str, schema_file: str, orgs: List[str]=[]
-              ) -> Dict[TableName, Dataframe]
+    - `extract(data_source: str, schema_file: str, orgs: List[str]=[]) -> ...`
+        - returns a Pandas Dataframe per table per org
         - data_source: a file path or database url (in SQLAlchemy format)
         - schema_file: rule schema file path
         - orgs: orgs to share with, or all if empty
-        - returns a Pandas Dataframe per table, for further processing
 - low level:
-    - connect(data_source: str) -> Connection
-    - parse(schema_file: str) -> Dict[OrgName, Dict[TableName, Query]]
-    - extract(Connection, Query) -> Dataframe
-    - get_counts(Connection, Query) -> Dict[RuleId, int]
-    - get_columns(Connection, Query) -> Tuple[RuleId, List[ColumnName]]
+    - `connect(data_source: str) -> Connection`
+    - `parse(schema_file: str) -> Dict[OrgName, Dict[TableName, Query]]`
+    - `extract(Connection, Query) -> Dataframe`
+    - `get_counts(Connection, Query) -> Dict[RuleId, int]`
+    - `get_columns(Connection, Query) -> Tuple[RuleId, List[ColumnName]]`
 
 ### Private modules
 
