@@ -98,7 +98,7 @@ package):
 - high level:
     - `extract(data_source: str, schema_file: str, orgs: List[str]=[]) -> ...`
 
-        returns a Pandas Dataframe per table per org
+        returns a Pandas DataFrame per table per org
 
         Parameters:
 
@@ -123,7 +123,7 @@ package):
 
         Exceptions: OSError, ParseError
 
-    - `get_data(c: Connection, q: Query) -> Dataframe`
+    - `get_data(c: Connection, q: Query) -> DataFrame`
 
         returns the data extracted from running query `q` on data-source
         connection `c`, as a pandas dataframe
@@ -212,7 +212,7 @@ def describe_table_query(con, rules, table, query):
         print(f'{ruleId} | {count} | {rule_filter}')
 
 def extract_filtered_data(con, table, query):
-    data: pd.Dataframe = s.get_data(con, query)
+    data: pd.DataFrame = s.get_data(con, query)
     data.to_csv(f'{org}-{table}.csv')
 
 con = s.connect(data_file)
