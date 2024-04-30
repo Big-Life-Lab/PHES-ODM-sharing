@@ -182,12 +182,13 @@ import sharing as s
 data_file = 'data.xlsx'
 rule_file = 'rules.csv'
 org = 'OHRI'
+orgs = [org]
 ```
 
 high-level one-shot function:
 
 ```python
-results = s.extract(data_file, rules, orgs=[org])
+results = s.extract(data_file, rules, orgs)
 for org, tabledata in results.items():
     for table, data in tabledata.items():
         data.to_csv(f'{org}-{table}.csv')
