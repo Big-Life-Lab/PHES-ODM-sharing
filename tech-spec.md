@@ -123,7 +123,7 @@ package):
 
         Exceptions: FileError, ParseError
 
-    - `extract(c: Connection, q: Query) -> Dataframe`
+    - `get_data(c: Connection, q: Query) -> Dataframe`
 
         returns the data extracted from running query `q` on data-source
         connection `c`, as a pandas dataframe
@@ -211,7 +211,7 @@ def describe_table_query(con, rules, table, query):
         print(f'{ruleId} | {count} | {rule_filter}')
 
 def extract_filtered_data(con, table, query):
-    data: pd.Dataframe = s.extract(con, query)
+    data: pd.Dataframe = s.get_data(con, query)
     data.to_csv(f'{org}-{table}.csv')
 
 con = s.connect(data_file)
