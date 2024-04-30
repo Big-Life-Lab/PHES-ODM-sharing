@@ -116,7 +116,7 @@ package):
 
         Exceptions: SQLAlchemyError
 
-    - `parse(schema_file: str) -> Dict[OrgName, Dict[TableName, Query]]`
+    - `parse(schema_file: str, orgs=[]) -> Dict[OrgName, Dict[TableName, Query]]`
 
         returns queries for each org and table, generated from the rules
         specified in `schema_file`
@@ -163,7 +163,7 @@ Loading of rule files.
 
 Parsing of rules into abstract syntax trees.
 
-- parse(rules: Dict[RuleId, Rule] | List[Rule]) -> RuleTree
+- parse(rules: Dict[RuleId, Rule] | List[Rule], orgs=[]) -> RuleTree
 
 #### queries
 
@@ -217,7 +217,7 @@ def extract_filtered_data(con, table, query):
 
 con = s.connect(data_file)
 rules = s.load(rule_file)
-rule_tree = s.parse(rules)
+rule_tree = s.parse(rules, orgs)
 table_queries = s.generate(rule_tree)[org]
 for table, query in table_queries.items():
     describe_table_query(con, rules, table, query)
