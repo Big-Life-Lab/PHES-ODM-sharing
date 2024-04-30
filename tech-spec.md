@@ -106,7 +106,7 @@ package):
         - schema_file: rule schema file path
         - orgs: orgs to share with, or all if empty
 
-        Exceptions: ConnectionError, FileError, ParseError
+        Exceptions: SQLAlchemyError, OSError, ParseError
 
 - low level:
     - `connect(data_source: str) -> Connection`
@@ -114,35 +114,35 @@ package):
         returns a connection object that can be used together with a query
         object to retrieve data from `data_source`
 
-        Exceptions: ConnectionError
+        Exceptions: SQLAlchemyError
 
     - `parse(schema_file: str) -> Dict[OrgName, Dict[TableName, Query]]`
 
         returns queries for each org and table, generated from the rules
         specified in `schema_file`
 
-        Exceptions: FileError, ParseError
+        Exceptions: OSError, ParseError
 
     - `get_data(c: Connection, q: Query) -> Dataframe`
 
         returns the data extracted from running query `q` on data-source
         connection `c`, as a pandas dataframe
 
-        Exceptions: ConnectionError
+        Exceptions: SQLAlchemyError
 
     - `get_counts(c: Connection, q: Query) -> Dict[RuleId, int]`
 
         returns the row counts for each rule, corresponding to how each part of
         query `q` would filter the data extracted from connection `c`
 
-        Exceptions: ConnectionError
+        Exceptions: SQLAlchemyError
 
     - `get_columns(c: Connection, q: Query) -> Tuple[RuleId, List[ColumnName]]`
 
         returns the select-rule id together with the column names that would be
         extracted from using query `q` on connection `c`
 
-        Exceptions: ConnectionError
+        Exceptions: SQLAlchemyError
 
 ### Private modules
 
