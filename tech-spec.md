@@ -95,7 +95,16 @@ package):
 
 #### sharing
 
-- high level:
+- types:
+    - `ColumnName = str`
+    - `Connection = object # opaque data-source connection handle`
+    - `DataFrame = pandas.DataFrame`
+    - `OrgName = str`
+    - `Query = object # opaque for now`
+    - `RuleId = int`
+    - `TableName = str`
+
+- high level functions:
     - `extract(data_source: str, schema_file: str, orgs: List[str]=[]) -> ...`
 
         returns a Pandas DataFrame per table per org
@@ -108,7 +117,7 @@ package):
 
         Exceptions: ConnectionError, OSError, ParseError
 
-- low level:
+- low level functions:
     - `connect(data_source: str) -> Connection`
 
         returns a connection object that can be used together with a query
