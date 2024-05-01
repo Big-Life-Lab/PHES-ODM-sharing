@@ -252,7 +252,9 @@ for table, query in table_queries.items():
     extract_filtered_data(con, table, query)
 ```
 
-## Rule schema parsing
+## Schema parsing and query generation
+
+### CSV rule parsing
 
 1. open schema file
 2. parse each line into a rule obj:
@@ -266,7 +268,7 @@ on the first error. This is a viable option since each line is parsed
 individually, and their relationships aren't taken into account before the next
 (AST generation) step.
 
-## AST generation
+### AST generation
 
 An abstract syntax tree is incrementally generated from the list of rules.
 
@@ -359,7 +361,7 @@ Example rules with its generated tree:
             (select, "all")
 ```
 
-## SQL query generation
+### SQL query generation
 
 SQL queries are (recursively) generated from each table-node of the AST. Values
 are separated to take advantage of [parameterized queries](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html)
