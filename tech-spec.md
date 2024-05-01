@@ -185,9 +185,10 @@ The exception types that may be thrown, as well as examples of what they cover:
     - failed to read from data source
     - data source columns don't match query
 - ParseError:
-    - schema filter rule has invalid operator
-    - schema rule value is missing
-    - schema select-rule is referring to a missing rule
+    - header is missing/invalid
+    - row/rule field value is missing/invalid
+    - rule is referencing a rule that doesn't exist or doesn't have the
+      expected field values
 
 ### Examples
 
