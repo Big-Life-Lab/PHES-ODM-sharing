@@ -469,3 +469,8 @@ alternative.)
 In this first version, we'll only accept [sqlalchemy database urls](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls).
 In future versions we may want to provide a more abstract and user friendly
 way.
+
+Users will need to install the python package for their database, in addition
+to installing this library. There may be multiple options for each
+vendor/dialect. Please see the [list of SQLAlchemy dialects](https://docs.sqlalchemy.org/en/20/dialects/index.html#dialects)
+for more information.
