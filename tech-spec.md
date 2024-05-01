@@ -106,7 +106,7 @@ package):
         - schema_file: rule schema file path
         - orgs: orgs to share with, or all if empty
 
-        Exceptions: SQLAlchemyError, OSError, ParseError
+        Exceptions: ConnectionError, OSError, ParseError
 
 - low level:
     - `connect(data_source: str) -> Connection`
@@ -114,7 +114,7 @@ package):
         returns a connection object that can be used together with a query
         object to retrieve data from `data_source`
 
-        Exceptions: SQLAlchemyError
+        Exceptions: ConnectionError
 
     - `parse(schema_file: str, orgs=[]) -> Dict[OrgName, Dict[TableName, Query]]`
 
@@ -128,21 +128,21 @@ package):
         returns the data extracted from running query `q` on data-source
         connection `c`, as a pandas dataframe
 
-        Exceptions: SQLAlchemyError
+        Exceptions: ConnectionError
 
     - `get_counts(c: Connection, q: Query) -> Dict[RuleId, int]`
 
         returns the row counts for each rule, corresponding to how each part of
         query `q` would filter the data extracted from connection `c`
 
-        Exceptions: SQLAlchemyError
+        Exceptions: ConnectionError
 
     - `get_columns(c: Connection, q: Query) -> Tuple[RuleId, List[ColumnName]]`
 
         returns the select-rule id together with the column names that would be
         extracted from using query `q` on connection `c`
 
-        Exceptions: SQLAlchemyError
+        Exceptions: ConnectionError
 
 ### Private modules
 
@@ -170,6 +170,24 @@ Parsing of rules into abstract syntax trees.
 (SQL) query generation from ASTs.
 
 - generate(rt: RuleTree) -> Dict[OrgName, Query]
+
+### Errors
+
+The exception types that may be thrown, as well as examples of what they cover:
+
+- OSError:
+    - input file doesn't exist
+    - failed to read input file
+    - failed to write output file
+- ConnectionError:
+    - failed to establish connection to db
+    - failed to import data to temporary db
+    - failed to read from data source
+    - data source columns don't match query
+- ParseError:
+    - schema filter rule has invalid operator
+    - schema rule value is missing
+    - schema select-rule is referring to a missing rule
 
 ### Examples
 
