@@ -1,20 +1,13 @@
-# R project files to ignore
-
-.Rproj.user/
-.Rhistory
-.RData
-
-# Temporary or generated files to ignore
-
-.Rapp.history
-_.rdb
-_.rdx
-
 # Operating system generated files
 
 .DS_Store
 Thumbs.db
 
-# R package cache (optional, see notes)
+# python cache
+__pycache__
 
-.renv/
+# python pyenv
+.python-version
+
+# python venv
+.env
