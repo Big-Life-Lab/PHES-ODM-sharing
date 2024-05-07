@@ -1,11 +1,12 @@
 from typing import Dict, List, Tuple
+from pprint import pprint
 
 import pandas as pd
 
 import odm_sharing.private
 from odm_sharing.private.cons import Connection
 from odm_sharing.private.queries import Query
-from odm_sharing.private.rules import RuleId
+from odm_sharing.private.rules import ParseError, RuleId
 
 # type aliases
 ColumnName = str
@@ -23,7 +24,14 @@ def parse(schema_file: str, orgs: List[str] = []
           ) -> Dict[OrgName, Dict[TableName, Query]]:
     '''returns queries for each org and table, generated from the rules
     specified in `schema_file`'''
-    pass
+    try:
+        rules = odm_sharing.private.rules.load(schema_file)
+        pprint(rules)
+    except ParseError:
+        pass
+
+    # TODO: implement the rest
+    return None  # type: ignore
 
 
 def get_data(c: Connection, q: Query) -> pd.DataFrame:

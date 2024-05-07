@@ -30,17 +30,21 @@ app = typer.Typer()
 @app.command()
 def main(
     schema: str = typer.Argument(default=..., help=SCHEMA_DESC),
-    input: str = typer.Argument(default=..., help=INPUT_DESC),
+    input: str = typer.Argument(default='', help=INPUT_DESC),
     orgs: List[str] = typer.Option(default=[], help=ORGS_DESC),
     outfmt: OutFmt = typer.Option(default=OutFmt.EXCEL, help=OUTFMT_DESC),
     outdir: str = typer.Option(default='./', help=OUTDIR_DESC),
     debug: Annotated[bool, typer.Option("-d", "--dry-run", "--debug",
                                         help=DEBUG_DESC)] = False,
 ) -> None:
-    for org, tabledata in sh.extract(input, schema, orgs).items():
-        print(org)
-        for table, data in tabledata.items():
-            print(table)
+    if False:
+        for org, tabledata in sh.extract(input, schema, orgs).items():
+            print(org)
+            for table, data in tabledata.items():
+                print(table)
+    else:
+        # temporary functionality
+        sh.parse(schema)
 
 
 if __name__ == '__main__':
