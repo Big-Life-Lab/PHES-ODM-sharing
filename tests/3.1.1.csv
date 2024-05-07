@@ -1,0 +1,3 @@
+ruleID,table,mode,key,operator,value,notes
+1,samples,select,NA,NA,saMaterial,
+2,NA,share,ohri,NA,1,
