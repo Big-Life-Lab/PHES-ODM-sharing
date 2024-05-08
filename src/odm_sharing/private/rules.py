@@ -86,17 +86,6 @@ def fail(ctx: SchemaCtx, desc: str) -> None:
     raise gen_error(ctx, desc)
 
 
-def prevalidate_row(ctx: SchemaCtx, row: dict) -> None:
-    # called before coercing, can't coerce empty values
-    # only for non-str columns tho, maybe normalize this into something else
-
-    # ruleID
-    col = 'ruleID'
-    if row[col] == '':
-        ctx.column = col
-        fail(ctx, 'missing value')
-
-
 def quote(x: str) -> str:
     return f"'{x}'"
 
@@ -136,7 +125,6 @@ def init_rule(ctx: SchemaCtx, row: dict) -> Rule:
         return ('id' if column == 'ruleID' else column)
 
     result = Rule()
-    prevalidate_row(ctx, row)
     errors: List[ParseError] = []
     for column, val in row.items():
         if column == 'notes':
