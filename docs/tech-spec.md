@@ -194,10 +194,10 @@ The exception types that may be thrown, as well as examples of what they cover:
     - failed to read from data source
     - data source columns don't match query
 - ParseError:
-    - header is missing/invalid
-    - row/rule field value is missing/invalid
-    - rule is referencing a rule that doesn't exist or doesn't have the
-      expected field values
+    - headers are missing
+    - value can't be coerced to the correct type
+    - required table/key/operator/mode is missing
+    - invalid filter/group operator
 
 ### Examples
 
