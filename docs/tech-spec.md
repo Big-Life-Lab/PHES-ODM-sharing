@@ -256,17 +256,19 @@ for table, query in table_queries.items():
 
 ### CSV rule parsing
 
-1. open schema file
-2. parse each line into a rule obj:
-    - validate and throw exception on error
-3. add each rule obj to a dictionary with rule id as key
+1. read csv, or fail with OSError
+2. normalize NA values
+3. validate headers, or fail with ParseError(s)
+4. parse each row into a rule obj:
+    - validate rule, or accumulate ParseError(s):
+        - coerce values into the right types
+        - check existence of required values
+        - check operator values
+5. return a dict with rule-ids and rules, or raise accumulated errors
 
 Error messages should contain all the necessary info to find and fix the issue,
-including the line number, row number, rule id and column name (if applicable).
-Parsing can be wrapped in a try-block to accumulate errors instead of aborting
-on the first error. This is a viable option since each line is parsed
-individually, and their relationships aren't taken into account before the next
-(AST generation) step.
+including the line number and column name (if applicable). Errors can be
+accumulated, but the result is only valid if no errors occured.
 
 ### AST generation
 
