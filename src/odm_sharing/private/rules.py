@@ -7,6 +7,8 @@ from typing import Any, Dict, Iterable, List, Union
 
 import pandas as pd
 
+from odm_sharing.private.utils import qt
+
 RuleId = int
 
 
@@ -95,13 +97,9 @@ def fail(ctx: SchemaCtx, desc: str) -> None:
     raise gen_error(ctx, desc)
 
 
-def quote(x: str) -> str:
-    return f"'{x}'"
-
-
 def fmt_set(values: Iterable) -> str:
     '''returns a comma-separated string of the items in `values`'''
-    items = ','.join(map(quote, values))
+    items = ','.join(map(qt, values))
     return f'{{{items}}}'
 
 
@@ -128,7 +126,7 @@ def coerce_value(  # type: ignore
                 return type_class.__name__
 
         expected = get_expected(type_class)
-        fail(ctx, f'got {quote(value)}, expected {expected}')
+        fail(ctx, f'got {qt(value)}, expected {expected}')
 
 
 def init_rule(ctx: SchemaCtx, schema_row: dict) -> Rule:
@@ -179,7 +177,7 @@ def validate_rule(ctx: SchemaCtx, rule: Rule) -> None:
     def check_set(ctx: SchemaCtx, actual: str, expected: Union[set, list]
                   ) -> None:
         if actual not in expected:
-            msg = f'got {quote(actual)}, expected {fmt_set(expected)}'
+            msg = f'got {qt(actual)}, expected {fmt_set(expected)}'
             errors.append(gen_error(ctx, msg))
 
     ctx.column = 'table'
