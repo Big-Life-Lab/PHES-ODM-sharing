@@ -155,30 +155,12 @@ def init_rule(ctx: SchemaCtx, row: dict) -> Rule:
 
 
 def validate_headers(ctx: SchemaCtx, schema_headers: List[str]) -> None:
-    errors: List[ParseError] = []
-
-    # header count
-    expected_len = len(HEADERS)
-    actual_len = len(schema_headers)
-    if actual_len != expected_len:
-        msg = (
-            f'got {actual_len} headers, ' +
-            f'expected {expected_len} ({HEADER_LIST_STR})')
-        errors.append(gen_error(ctx, msg))
-
-    # header names
-    for i, header in enumerate(schema_headers):
-        expected = HEADERS[i]
-        actual = schema_headers[i]
-        if actual != expected:
-            msg = (
-                f'got header name {quote(actual)} ' +
-                f'for column #{i+1}, ' +
-                f'expected {quote(expected)}')
-            errors.append(gen_error(ctx, msg))
-
-    if errors:
-        raise ParseError(errors)
+    expected = set(HEADERS)
+    actual = set(schema_headers)
+    missing = expected - actual
+    if missing:
+        msg = f'missing headers: {", ".join(missing)}'
+        fail(ctx, msg)
 
 
 def validate_rule(ctx: SchemaCtx, rule: Rule) -> None:
