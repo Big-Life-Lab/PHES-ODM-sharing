@@ -162,8 +162,8 @@ distinct column names with a ";". The `key` and `operator` columns should be
 left blank (or `NA`) as they are not used in these rules, and any values in
 these columns for `select`-mode rows will be ignored.
 
-To select all tables or all columns, an `all` value can be used in the `table`
-and/or `value` columns of the sharing csv.
+To select all columns, an `all` value can be used in the `value` column of the
+sharing csv.
 
 Some examples are given below:
 
@@ -192,12 +192,6 @@ table
     |--------------|----------|--------|-----|----------|------------|-----------|
     | 4            | measures;samples | select | NA  | NA | purposeID | NA       |
 
-5.  Selecting the `siteID` column in all tables
-
-    | ruleId       | table    | mode   | key | operator | value      | notes     |
-    |--------------|----------|--------|-----|----------|------------|-----------|
-    | 5            | all      | select | NA  | NA       | siteID     | NA        |
-
 Notes:
 
 -   In examples 2 and 4 where multiple columns and tables were selected
@@ -205,9 +199,9 @@ Notes:
     document when multiple values need to listed in a single cell, the `;`
     symbol should be used to separate discrete values.
 
--   In examples 3 and 5 where all the columns in a table and all the tables
-    were selected respectively, the keyword `all` was used. Similar to the `;`
-    symbol, the keyword `all` may be used in a cell to mean everything.
+-   In examples 3 where all the columns in a table were selected, the keyword
+    `all` was used. Similar to the `;` symbol, the keyword `all` may be used in
+    a cell to mean everything.
 
 -   The **ruleId** column is mandatory for all rules and each value is unique
     across the entire sheet (`sharing.csv`). It must be a number.
