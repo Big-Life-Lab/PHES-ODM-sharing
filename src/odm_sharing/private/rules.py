@@ -1,25 +1,23 @@
 import sys
 
 from dataclasses import dataclass, field
-from enum import Enum, EnumMeta
+from enum import EnumMeta
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Set, Union
 
 import pandas as pd
 
+from odm_sharing.private.stdext import StrValueEnum
 from odm_sharing.private.utils import qt
 
 RuleId = int
 
 
-class RuleMode(str, Enum):
+class RuleMode(StrValueEnum):
     SELECT = 'select'
     FILTER = 'filter'
     GROUP = 'group'
     SHARE = 'share'
-
-    def __repr__(self) -> str:
-        return self.value
 
 
 class SchemaCtx:
