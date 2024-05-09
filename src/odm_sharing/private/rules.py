@@ -1,9 +1,9 @@
 import sys
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum, EnumMeta
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Union
+from typing import Any, Dict, Iterable, List, Set, Union
 
 import pandas as pd
 
@@ -41,17 +41,15 @@ class SchemaCtx:
         return self.row + 1
 
 
-@dataclass(init=False)
+@dataclass(frozen=True)
 class Rule:
     '''A rule mapped from a sharing schema row'''
-    # XXX: should be immutable, but then we can't initialize it in a clean and
-    # dynamic way
     id: int  # aka ruleID
     table: str
     mode: RuleMode
-    key: str
-    operator: str
-    value: str
+    key: str = field(default='')
+    operator: str = field(default='')
+    value: str = field(default='')
 
 
 class ParseError(Exception):
@@ -80,6 +78,7 @@ FILTER_OPERATORS = set([
 ALL_MODES = set(RuleMode)
 GROUP_OPERATORS = set(['AND', 'OR'])
 RULE_FIELD_TYPES = Rule.__annotations__
+RULE_FIELDS = set(RULE_FIELD_TYPES.keys())
 HEADER_LIST_STR = ','.join(HEADERS)
 
 
@@ -134,8 +133,13 @@ def init_rule(ctx: SchemaCtx, schema_row: dict) -> Rule:
     def get_field_name(column: str) -> str:
         return ('id' if column == 'ruleID' else column)
 
-    result = Rule()
+    def init_default_rule() -> Rule:
+        # XXX: `mode` doesn't have a default value, but it'll be overwritten
+        return Rule(id=0, table='', mode=RuleMode.SELECT)
+
+    rule = init_default_rule()
     errors: List[ParseError] = []
+    assigned_fields: Set[str] = set()
     for column, val in schema_row.items():
         if column == 'notes':
             continue
@@ -144,12 +148,14 @@ def init_rule(ctx: SchemaCtx, schema_row: dict) -> Rule:
         type_class = RULE_FIELD_TYPES[field]
         try:
             typed_val = coerce_value(ctx, type_class, val)
-            result.__setattr__(field, typed_val)
+            object.__setattr__(rule, field, typed_val)
+            assigned_fields.add(field)
         except ParseError as e:
             errors.append(e)
+    assert assigned_fields == RULE_FIELDS, 'some rule fields were not set'
     if errors:
         raise ParseError(errors)
-    return result
+    return rule
 
 
 def validate_headers(ctx: SchemaCtx, schema_headers: List[str]) -> None:
