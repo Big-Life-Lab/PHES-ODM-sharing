@@ -25,18 +25,18 @@ class SchemaCtx:
     should be created at the beginning of the parsing process and its fields
     updated throughout.'''
     filename: str
-    row: int  # current row being parsed
-    column: str  # current field being parsed
+    row_ix: int
+    column: str
 
     def __init__(self, filename: str) -> None:
         self.filename = filename
-        self.row = 0
+        self.row_ix = 0
         self.column = ''
 
     @property
-    def line(self) -> int:
+    def line_num(self) -> int:
         '''line number of current row being parsed'''
-        return self.row + 1
+        return self.row_ix + 1
 
 
 @dataclass(frozen=True)
@@ -83,7 +83,7 @@ HEADER_LIST_STR = ','.join(HEADERS)
 def gen_error(ctx: SchemaCtx, desc: str) -> ParseError:
     '''returns a ParseError'''
     col = f',{ctx.column}' if ctx.column else ''
-    msg = f'{ctx.filename}({ctx.line}{col}): {desc}'
+    msg = f'{ctx.filename}({ctx.line_num}{col}): {desc}'
     print('Error: ' + msg, file=sys.stderr)
     return ParseError(msg)
 
@@ -225,7 +225,7 @@ def load(schema_path: str) -> Dict[RuleId, Rule]:
     result: Dict[RuleId, Rule] = {}
     errors: List[ParseError] = []
     for i, row in enumerate(data.itertuples(index=False)):
-        ctx.row = i + 1
+        ctx.row_ix = i + 1
         try:
             rule = init_rule(ctx, row._asdict())
             validate_rule(ctx, rule)
