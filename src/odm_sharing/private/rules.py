@@ -22,11 +22,6 @@ class RuleMode(str, Enum):
         return self.value
 
 
-class ParseError(Exception):
-    '''schema parsing error'''
-    pass
-
-
 class SchemaCtx:
     '''Keeps track of the current state of the parsing process. This object
     should be created at the beginning of the parsing process and its fields
@@ -57,6 +52,10 @@ class Rule:
     key: str
     operator: str
     value: str
+
+
+class ParseError(Exception):
+    pass
 
 
 HEADERS = [
