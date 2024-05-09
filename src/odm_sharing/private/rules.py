@@ -197,7 +197,7 @@ def load(schema_path: str) -> Dict[RuleId, Rule]:
     data = pd.read_csv(schema_path)
     data.fillna('', inplace=True)  # replace NA values with empty string
 
-    # XXX: header errors are not catched, to avoid error propagation
+    # XXX: header errors are not cached, to avoid error propagation
     validate_headers(ctx, data.columns.to_list())
 
     result: Dict[RuleId, Rule] = {}
