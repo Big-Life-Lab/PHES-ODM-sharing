@@ -2,6 +2,7 @@ import sys
 
 from dataclasses import dataclass
 from enum import Enum, EnumMeta
+from pathlib import Path
 from typing import Any, Dict, Iterable, List, Union
 
 import pandas as pd
@@ -207,7 +208,8 @@ def load(schema_path: str) -> Dict[RuleId, Rule]:
     :returns: rules parsed from schema, by rule id
     :raises ParseError:
     '''
-    ctx = SchemaCtx(schema_path)
+    filename = Path(schema_path).name
+    ctx = SchemaCtx(filename)
     data = pd.read_csv(schema_path)
     data.fillna('', inplace=True)  # replace NA values with empty string
 
