@@ -107,12 +107,11 @@ def fmt_set(values: Iterable) -> str:
 def coerce_value(  # type: ignore
     ctx: SchemaCtx,
     type_class,
-    column: str,
-    val: str
+    value: str
 ) -> Any:
     '''converts a value to the specified type, or fails'''
     try:
-        typed_val = (type_class)(val)
+        typed_val = (type_class)(value)
         return typed_val
     except ValueError:
 
@@ -124,7 +123,7 @@ def coerce_value(  # type: ignore
                 return name
 
         expected = get_expected(type_class)
-        fail(ctx, f'got {quote(val)}, expected {expected}')
+        fail(ctx, f'got {quote(value)}, expected {expected}')
 
 
 def init_rule(ctx: SchemaCtx, schema_row: dict) -> Rule:
@@ -142,7 +141,7 @@ def init_rule(ctx: SchemaCtx, schema_row: dict) -> Rule:
         field = get_field_name(column)
         type_class = RULE_FIELD_TYPES[field]
         try:
-            typed_val = coerce_value(ctx, type_class, column, val)
+            typed_val = coerce_value(ctx, type_class, val)
             result.__setattr__(field, typed_val)
         except ParseError as e:
             errors.append(e)
