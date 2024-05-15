@@ -132,7 +132,7 @@ def coerce_value(  # type: ignore
 
 
 def init_rule(ctx: SchemaCtx, schema_row: dict) -> Rule:
-    '''constructs a rule from a schema row, or fails with list of errors'''
+    '''constructs a rule from a schema row, or raises list of ParseError(s)'''
 
     def get_field_name(column: str) -> str:
         return ('id' if column == 'ruleID' else column)
@@ -156,7 +156,7 @@ def init_rule(ctx: SchemaCtx, schema_row: dict) -> Rule:
 
 
 def validate_headers(ctx: SchemaCtx, schema_headers: List[str]) -> None:
-    '''validates schema headers, or fails'''
+    '''validates schema headers, or raises ParseError'''
     expected = set(HEADERS)
     actual = set(schema_headers)
     missing = expected - actual
@@ -166,8 +166,8 @@ def validate_headers(ctx: SchemaCtx, schema_headers: List[str]) -> None:
 
 
 def validate_rule(ctx: SchemaCtx, rule: Rule) -> None:
-    '''checks that the rule's values are valid according to its mode, or fails
-    with a list of errors'''
+    '''checks that the rule's values are valid according to its mode, or raises
+    list of ParseError(s)'''
     errors: List[ParseError] = []
 
     def check_required(ctx: SchemaCtx, val: str, mode: RuleMode,
@@ -210,7 +210,7 @@ def load(schema_path: str) -> Dict[RuleId, Rule]:
     '''loads a sharing schema
 
     :returns: rules parsed from schema, by rule id
-    :raises ParseError:
+    :raises OSError, ParseError:
     '''
     filename = Path(schema_path).name
     ctx = SchemaCtx(filename)
