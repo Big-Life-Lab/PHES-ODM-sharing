@@ -110,7 +110,12 @@ def coerce_value(  # type: ignore
     type_class,
     value: str
 ) -> Any:
-    '''converts a value to the specified type, or fails'''
+    '''converts a value from string to the specified type, using the type class
+    (aka. class-constructor) for that type.
+
+    :param type_class: str, int, MyEnum, etc.
+    :raises ParseError:
+    '''
     try:
         typed_val = type_class(value)
         return typed_val
