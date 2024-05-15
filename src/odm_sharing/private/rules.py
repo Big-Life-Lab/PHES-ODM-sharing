@@ -112,16 +112,15 @@ def coerce_value(  # type: ignore
 ) -> Any:
     '''converts a value to the specified type, or fails'''
     try:
-        typed_val = (type_class)(value)
+        typed_val = type_class(value)
         return typed_val
     except ValueError:
 
         def get_expected(type_class) -> str:  # type: ignore
-            name = type_class.__name__
             if type(type_class) is EnumMeta:
                 return fmt_set(list(type_class))
             else:
-                return name
+                return type_class.__name__
 
         expected = get_expected(type_class)
         fail(ctx, f'got {quote(value)}, expected {expected}')
