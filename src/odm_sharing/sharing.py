@@ -1,9 +1,11 @@
 from typing import Dict, List, Tuple
+from pathlib import Path
 from pprint import pprint
 
 import pandas as pd
 
 import odm_sharing.private as private
+import odm_sharing.private.trees
 from odm_sharing.private.cons import Connection
 from odm_sharing.private.queries import Query
 from odm_sharing.private.rules import ParseError, RuleId
@@ -26,7 +28,13 @@ def parse(schema_path: str, orgs: List[str] = []
     specified in `schema_file`'''
     try:
         rules = private.rules.load(schema_path)
+        print('\nrules:')
         pprint(rules)
+
+        filename = Path(schema_path).name
+        tree = private.trees.parse(rules, orgs, filename)
+        print('\nabstract syntax tree:')
+        pprint(tree)
     except ParseError:
         pass
 
