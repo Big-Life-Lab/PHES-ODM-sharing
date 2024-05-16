@@ -25,8 +25,8 @@ class SchemaCtx:
     should be created at the beginning of the parsing process and its fields
     updated throughout.'''
     filename: str
-    row_ix: int
-    column: str
+    row_ix: int  # current row being parsed
+    column: str  # current field being parsed
 
     def __init__(self, filename: str) -> None:
         self.filename = filename
