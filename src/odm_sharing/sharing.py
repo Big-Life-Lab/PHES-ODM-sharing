@@ -60,17 +60,17 @@ def get_columns(c: Connection, q: Query) -> Tuple[RuleId, List[ColumnName]]:
 
 def extract(
     data_source: str,
-    schema_file: str,
+    schema_path: str,
     orgs: List[str] = [],
 ) -> Dict[OrgName, Dict[TableName, pd.DataFrame]]:
     '''returns a Pandas DataFrame per table per org
 
     :param data_source: a file path or database url (in SQLAlchemy format)
-    :param schema_file: rule schema file path
+    :param schema_path: rule schema file path
     :param orgs: orgs to share with, or all if empty
     '''
     con = connect(data_source)
-    queries = parse(schema_file, orgs)
+    queries = parse(schema_path, orgs)
     result: Dict[OrgName, Dict[TableName, pd.DataFrame]] = {}
     for org, tablequeries in queries.items():
         result[org] = {}
