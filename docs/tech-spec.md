@@ -178,7 +178,7 @@ Parsing of rules into abstract syntax trees.
 
 (SQL) query generation from ASTs.
 
-- generate(rt: RuleTree) -> Dict[OrgName, Query]
+- generate(rt: RuleTree) -> Dict[OrgName, Dict[TableName, TableQuery]]
 
 ### Errors
 
