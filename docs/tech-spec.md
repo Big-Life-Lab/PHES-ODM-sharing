@@ -125,10 +125,10 @@ package):
 
         Exceptions: ConnectionError
 
-    - `parse(schema_file: str, orgs=[]) -> Dict[OrgName, Dict[TableName, Query]]`
+    - `parse(schema_path: str, orgs=[]) -> Dict[OrgName, Dict[TableName, Query]]`
 
         returns queries for each org and table, generated from the rules
-        specified in `schema_file`
+        specified in `schema_path`
 
         Exceptions: OSError, ParseError
 
