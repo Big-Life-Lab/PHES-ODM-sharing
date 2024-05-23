@@ -171,17 +171,18 @@ def validate_rule(ctx: SchemaCtx, rule: Rule) -> None:
     list of ParseError(s)'''
     errors: List[ParseError] = []
 
+    def err(msg: str) -> None:
+        errors.append(gen_error(ctx, msg))
+
     def check_required(ctx: SchemaCtx, val: str, mode: RuleMode,
                        modes: Union[set, list]) -> None:
         if not val and mode in modes:
-            msg = f'{ctx.column} required for modes {fmt_set(modes)}'
-            errors.append(gen_error(ctx, msg))
+            err(f'{ctx.column} required for modes {fmt_set(modes)}')
 
     def check_set(ctx: SchemaCtx, actual: str, expected: Union[set, list]
                   ) -> None:
         if actual not in expected:
-            msg = f'got {qt(actual)}, expected {fmt_set(expected)}'
-            errors.append(gen_error(ctx, msg))
+            err(f'got {qt(actual)}, expected {fmt_set(expected)}')
 
     ctx.column = 'table'
     check_required(ctx, rule.table, rule.mode,
