@@ -291,10 +291,10 @@ Node kinds:
 
 Node structure:
 
-- (ruleId: int)
+- rule_id: int
 - kind: NodeKind
 - str_val: str
-- children: List[Node]
+- sons: List[Node]
 
 Tree structure:
 
