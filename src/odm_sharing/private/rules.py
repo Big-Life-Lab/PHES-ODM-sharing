@@ -138,9 +138,10 @@ def init_rule(ctx: SchemaCtx, schema_row: dict) -> Rule:
 
     rule = init_default_rule()
     errors: List[ParseError] = []
-    for column, val in schema_row.items():
+    for column in HEADERS:
         if column == 'notes':
             continue
+        val = schema_row[column]
         ctx.column = column
         field = get_field_name(column)
         type_class = RULE_FIELD_TYPES[field]
