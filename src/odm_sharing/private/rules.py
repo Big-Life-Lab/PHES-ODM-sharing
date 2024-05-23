@@ -189,6 +189,10 @@ def validate_rule(ctx: SchemaCtx, rule: Rule) -> None:
         if actual not in expected:
             err(f'got {qt(actual)}, expected {fmt_set(expected)}')
 
+    ctx.column = 'ruleID'
+    if rule.id <= 0:
+        err(f'{ctx.column} must be greater than zero')
+
     ctx.column = 'table'
     check_required(ctx, rule.table, rule.mode,
                    [RuleMode.SELECT, RuleMode.FILTER])
