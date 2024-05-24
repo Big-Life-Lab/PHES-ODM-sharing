@@ -3,6 +3,7 @@
 ## system dependencies
 
 - Python >= 3.8
+- [SQLite](docs/sqlite.md#installation)
 - pyenv (for development with Python 3.8)
 
 ## development setup
