@@ -2,8 +2,8 @@
 
 ## system dependencies
 
-- python >= 3.8
-- pyenv (or python 3.8)
+- Python >= 3.8
+- pyenv (for development with Python 3.8)
 
 ## development setup
 
