@@ -137,7 +137,6 @@ def init_rule(ctx: SchemaCtx, schema_row: dict) -> Rule:
 
     rule = init_default_rule()
     errors: List[ParseError] = []
-    assigned_fields: Set[str] = set()
     for column, val in schema_row.items():
         if column == 'notes':
             continue
@@ -147,10 +146,8 @@ def init_rule(ctx: SchemaCtx, schema_row: dict) -> Rule:
         try:
             typed_val = coerce_value(ctx, type_class, val)
             object.__setattr__(rule, field, typed_val)
-            assigned_fields.add(field)
         except ParseError as e:
             errors.append(e)
-    assert assigned_fields == RULE_FIELDS, 'some rule fields were not set'
     if errors:
         raise ParseError(errors)
     return rule
