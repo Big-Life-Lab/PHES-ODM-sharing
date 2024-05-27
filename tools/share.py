@@ -21,8 +21,10 @@ all.'''
 OUTFMT_DESC = 'Output format.'
 OUTDIR_DESC = 'Output directory.'
 
-DEBUG_DESC = '''Only output the intermediary debug information describing what
-would happen, and don't create any output files.'''
+DEBUG_DESC = '''Output debug info to STDOUT (and ./debug.txt) instead of
+creating sharable output files. This shows which tables and columns are
+selected, and how many rows each filter returns.'''
+
 
 app = typer.Typer()
 
@@ -34,7 +36,7 @@ def main(
     orgs: List[str] = typer.Option(default=[], help=ORGS_DESC),
     outfmt: OutFmt = typer.Option(default=OutFmt.EXCEL, help=OUTFMT_DESC),
     outdir: str = typer.Option(default='./', help=OUTDIR_DESC),
-    debug: Annotated[bool, typer.Option("-d", "--dry-run", "--debug",
+    debug: Annotated[bool, typer.Option("-d", "--debug",
                                         help=DEBUG_DESC)] = False,
 ) -> None:
     if False:
