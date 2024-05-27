@@ -94,8 +94,8 @@ class NodeKind(StrEnum):
     SELECT = 'select'
     GROUP = 'group'
     FILTER = 'filter'
-    KEY = 'key'
-    VALUE = 'value'
+    FIELD = 'field'
+    LITERAL = 'literal'
 
 
 @dataclass(frozen=True)
@@ -266,15 +266,15 @@ def get_table_select_ids(ctx: Ctx, select_nodes: List[Node]
     return result
 
 
-def to_value_node(rule_id: int, val: str) -> Node:
-    '''init value-node with value'''
-    return Node(rule_id=rule_id, kind=NodeKind.VALUE, str_val=val.strip())
+def to_literal_node(rule_id: int, val: str) -> Node:
+    '''init literal-node with value'''
+    return Node(rule_id=rule_id, kind=NodeKind.LITERAL, str_val=val.strip())
 
 
-def to_value_nodes(rule_id: RuleId, values: list) -> List[Node]:
-    '''init value-nodes from list of values'''
+def to_literal_nodes(rule_id: RuleId, values: list) -> List[Node]:
+    '''init literal-nodes from list of values'''
     return seq(values)\
-        .map(lambda x: Node(rule_id=rule_id, kind=NodeKind.VALUE, str_val=x))\
+        .map(lambda x: Node(rule_id=rule_id, kind=NodeKind.LITERAL, str_val=x))\
         .list()
 
 
@@ -316,25 +316,25 @@ def init_node(ctx: Ctx, rule_id: RuleId, table: str, mode: RuleMode,
     if mode == RuleMode.SELECT:
         values = parse_list(ctx, val_str, 1)
         use_all = ALL_LIT in values
-        to_value_node2 = partial(to_value_node, rule_id)
+        to_literal_node2 = partial(to_literal_node, rule_id)
         return Node(
             rule_id=rule_id,
             kind=NodeKind.SELECT,
             str_val=(ALL_LIT if use_all else ''),
-            sons=([] if use_all else seq(values).map(to_value_node2).list()),
+            sons=([] if use_all else seq(values).map(to_literal_node2).list()),
         )
     elif mode == RuleMode.FILTER:
         op = parse_ctx_op(ctx, op_str)
         is_range = (op == Op.RANGE)
         values = \
             parse_list(ctx, val_str, min=2, max=2) if is_range else [val_str]
-        key_node = Node(rule_id=rule_id, kind=NodeKind.KEY, str_val=key)
-        value_nodes = to_value_nodes(rule_id, values)
+        field_node = Node(rule_id=rule_id, kind=NodeKind.FIELD, str_val=key)
+        literal_nodes = to_literal_nodes(rule_id, values)
         return Node(
             rule_id=rule_id,
             kind=NodeKind.FILTER,
             str_val=op_str,
-            sons=([key_node] + value_nodes),
+            sons=([field_node] + literal_nodes),
         )
     elif mode == RuleMode.GROUP:
 
