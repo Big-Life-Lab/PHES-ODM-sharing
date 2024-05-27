@@ -306,8 +306,8 @@ def init_node(ctx: Ctx, rule_id: RuleId, table: str, mode: RuleMode,
         if op not in [Op.AND, Op.OR]:
             fail(ctx, 'incompatible group operator')
         ids = parse_int_list(ctx, val_str, min=2)
-        sons = seq(ids).map(get_ctx_node)
-        if sons.map(not_filter_group).any():
+        sons = seq(ids).map(get_ctx_node).list()
+        if seq(sons).map(not_filter_group).any():
             fail(ctx, 'group-rules can only refer to other filter/group-rules')
         return Node(
             rule_id=rule_id,
