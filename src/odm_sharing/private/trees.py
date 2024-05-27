@@ -227,11 +227,10 @@ def to_literal_node(rule_id: int, val: str) -> Node:
     return Node(rule_id=rule_id, kind=NodeKind.LITERAL, str_val=val.strip())
 
 
-def to_literal_nodes(rule_id: RuleId, values: list) -> List[Node]:
+def to_literal_nodes(rule_id: RuleId, values: List[str]) -> List[Node]:
     '''init literal-nodes from list of values'''
-    return seq(values)\
-        .map(lambda x: Node(rule_id=rule_id, kind=NodeKind.LITERAL, str_val=x))\
-        .list()
+    to_literal_node2 = partial(to_literal_node, rule_id)
+    return seq(values).map(to_literal_node2).list()
 
 
 def get_filter_root(ctx: Ctx, table: str, nodes: List[Node]) -> Optional[Node]:
