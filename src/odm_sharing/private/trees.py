@@ -112,11 +112,16 @@ def fail(ctx: Ctx, desc: str) -> None:
 # {{{1 input text parsing
 
 
-def parse_list(ctx: Ctx, val_str: str,
-               min: int = 0, max: int = 0) -> List[str]:
+def parse_list(
+    ctx: Ctx,
+    val_str: str,
+    min: int = 0,
+    max: int = 0,
+) -> List[str]:
     '''splits a multiple-value string into a list, and validates the number of
     elements
 
+    :param val_str: the string to parse values from
     :param min: min required number of elements, or zero
     :param max: max required number of elements, or zero
 
