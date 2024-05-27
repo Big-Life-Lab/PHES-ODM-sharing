@@ -3,12 +3,12 @@ import sys
 from dataclasses import dataclass, field
 from enum import EnumMeta
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Set, Union
+from typing import Any, Dict, List, Set, Union
 
 import pandas as pd
 
 from odm_sharing.private.stdext import StrValueEnum
-from odm_sharing.private.utils import qt
+from odm_sharing.private.utils import fmt_set, qt
 
 RuleId = int
 
@@ -92,12 +92,6 @@ def gen_error(ctx: SchemaCtx, desc: str) -> ParseError:
 def fail(ctx: SchemaCtx, desc: str) -> None:
     '''raises a ParseError'''
     raise gen_error(ctx, desc)
-
-
-def fmt_set(values: Iterable) -> str:
-    '''returns a comma-separated string of the items in `values`'''
-    items = ','.join(map(qt, values))
-    return f'{{{items}}}'
 
 
 def coerce_value(  # type: ignore
