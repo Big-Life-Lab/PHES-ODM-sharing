@@ -117,6 +117,7 @@ def parse_list(
     val_str: str,
     min: int = 0,
     max: int = 0,
+    sep: str = VAL_SEP,
 ) -> List[str]:
     '''splits a multiple-value string into a list, and validates the number of
     elements
@@ -124,10 +125,11 @@ def parse_list(
     :param val_str: the string to parse values from
     :param min: min required number of elements, or zero
     :param max: max required number of elements, or zero
+    :param sep: the value separator
 
     :raises ParseError
     '''
-    result = seq(val_str.split(VAL_SEP))\
+    result = seq(val_str.split(sep))\
         .map(str.strip)\
         .filter(not_empty)\
         .list()
