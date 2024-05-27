@@ -1,28 +1,23 @@
 import sys
 
-from dataclasses import dataclass
-from enum import Enum, EnumMeta
+from dataclasses import dataclass, field
+from enum import EnumMeta
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Union
+from typing import Any, Dict, Iterable, List, Set, Union
 
 import pandas as pd
+
+from odm_sharing.private.stdext import StrValueEnum
+from odm_sharing.private.utils import qt
 
 RuleId = int
 
 
-class RuleMode(str, Enum):
+class RuleMode(StrValueEnum):
     SELECT = 'select'
     FILTER = 'filter'
     GROUP = 'group'
     SHARE = 'share'
-
-    def __repr__(self) -> str:
-        return self.value
-
-
-class ParseError(Exception):
-    '''schema parsing error'''
-    pass
 
 
 class SchemaCtx:
@@ -30,31 +25,33 @@ class SchemaCtx:
     should be created at the beginning of the parsing process and its fields
     updated throughout.'''
     filename: str
-    row: int  # current row being parsed
+    row_ix: int  # current row being parsed
     column: str  # current field being parsed
 
     def __init__(self, filename: str) -> None:
         self.filename = filename
-        self.row = 0
+        self.row_ix = 0
         self.column = ''
 
     @property
-    def line(self) -> int:
+    def line_num(self) -> int:
         '''line number of current row being parsed'''
-        return self.row + 1
+        return self.row_ix + 1
 
 
-@dataclass(init=False)
+@dataclass(frozen=True)
 class Rule:
     '''A rule mapped from a sharing schema row'''
-    # XXX: should be immutable, but then we can't initialize it in a clean and
-    # dynamic way
     id: int  # aka ruleID
     table: str
     mode: RuleMode
-    key: str
-    operator: str
-    value: str
+    key: str = field(default='')
+    operator: str = field(default='')
+    value: str = field(default='')
+
+
+class ParseError(Exception):
+    pass
 
 
 HEADERS = [
@@ -79,13 +76,15 @@ FILTER_OPERATORS = set([
 ALL_MODES = set(RuleMode)
 GROUP_OPERATORS = set(['AND', 'OR'])
 RULE_FIELD_TYPES = Rule.__annotations__
+RULE_FIELDS = set(RULE_FIELD_TYPES.keys())
 HEADER_LIST_STR = ','.join(HEADERS)
+TABLE_MODES = [RuleMode.SELECT, RuleMode.FILTER]
 
 
 def gen_error(ctx: SchemaCtx, desc: str) -> ParseError:
     '''returns a ParseError'''
     col = f',{ctx.column}' if ctx.column else ''
-    msg = f'{ctx.filename}({ctx.line}{col}): {desc}'
+    msg = f'{ctx.filename}({ctx.line_num}{col}): {desc}'
     print('Error: ' + msg, file=sys.stderr)
     return ParseError(msg)
 
@@ -95,13 +94,9 @@ def fail(ctx: SchemaCtx, desc: str) -> None:
     raise gen_error(ctx, desc)
 
 
-def quote(x: str) -> str:
-    return f"'{x}'"
-
-
 def fmt_set(values: Iterable) -> str:
     '''returns a comma-separated string of the items in `values`'''
-    items = ','.join(map(quote, values))
+    items = ','.join(map(qt, values))
     return f'{{{items}}}'
 
 
@@ -128,7 +123,7 @@ def coerce_value(  # type: ignore
                 return type_class.__name__
 
         expected = get_expected(type_class)
-        fail(ctx, f'got {quote(value)}, expected {expected}')
+        fail(ctx, f'got {qt(value)}, expected {expected}')
 
 
 def init_rule(ctx: SchemaCtx, schema_row: dict) -> Rule:
@@ -137,7 +132,11 @@ def init_rule(ctx: SchemaCtx, schema_row: dict) -> Rule:
     def get_field_name(column: str) -> str:
         return ('id' if column == 'ruleID' else column)
 
-    result = Rule()
+    def init_default_rule() -> Rule:
+        # XXX: `mode` doesn't have a default value, but it'll be overwritten
+        return Rule(id=0, table='', mode=RuleMode.SELECT)
+
+    rule = init_default_rule()
     errors: List[ParseError] = []
     for column, val in schema_row.items():
         if column == 'notes':
@@ -147,12 +146,12 @@ def init_rule(ctx: SchemaCtx, schema_row: dict) -> Rule:
         type_class = RULE_FIELD_TYPES[field]
         try:
             typed_val = coerce_value(ctx, type_class, val)
-            result.__setattr__(field, typed_val)
+            object.__setattr__(rule, field, typed_val)
         except ParseError as e:
             errors.append(e)
     if errors:
         raise ParseError(errors)
-    return result
+    return rule
 
 
 def validate_headers(ctx: SchemaCtx, schema_headers: List[str]) -> None:
@@ -170,21 +169,30 @@ def validate_rule(ctx: SchemaCtx, rule: Rule) -> None:
     list of ParseError(s)'''
     errors: List[ParseError] = []
 
+    def err(msg: str) -> None:
+        errors.append(gen_error(ctx, msg))
+
     def check_required(ctx: SchemaCtx, val: str, mode: RuleMode,
                        modes: Union[set, list]) -> None:
-        if not val and mode in modes:
-            msg = f'{ctx.column} required for modes {fmt_set(modes)}'
-            errors.append(gen_error(ctx, msg))
+        has = bool(val)
+        should_have = mode in modes
+        for_modes = f'for modes {fmt_set(modes)}'
+        if has and not should_have:
+            err(f'{ctx.column} must be empty/NA {for_modes}')
+        elif not has and should_have:
+            err(f'{ctx.column} required {for_modes}')
 
     def check_set(ctx: SchemaCtx, actual: str, expected: Union[set, list]
                   ) -> None:
         if actual not in expected:
-            msg = f'got {quote(actual)}, expected {fmt_set(expected)}'
-            errors.append(gen_error(ctx, msg))
+            err(f'got {qt(actual)}, expected {fmt_set(expected)}')
+
+    ctx.column = 'ruleID'
+    if rule.id <= 0:
+        err(f'{ctx.column} must be greater than zero')
 
     ctx.column = 'table'
-    check_required(ctx, rule.table, rule.mode,
-                   [RuleMode.SELECT, RuleMode.FILTER])
+    check_required(ctx, rule.table, rule.mode, TABLE_MODES)
 
     ctx.column = 'key'
     check_required(ctx, rule.key, rule.mode,
@@ -224,7 +232,7 @@ def load(schema_path: str) -> Dict[RuleId, Rule]:
     result: Dict[RuleId, Rule] = {}
     errors: List[ParseError] = []
     for i, row in enumerate(data.itertuples(index=False)):
-        ctx.row = i + 1
+        ctx.row_ix = i + 1
         try:
             rule = init_rule(ctx, row._asdict())
             validate_rule(ctx, rule)

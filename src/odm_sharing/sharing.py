@@ -1,32 +1,40 @@
 from typing import Dict, List, Tuple
+from pathlib import Path
 from pprint import pprint
 
 import pandas as pd
 
-import odm_sharing.private
+import odm_sharing.private as private
+import odm_sharing.private.trees
 from odm_sharing.private.cons import Connection
 from odm_sharing.private.queries import Query
 from odm_sharing.private.rules import ParseError, RuleId
+from odm_sharing.private.common import TableName
 
 # type aliases
 ColumnName = str
 OrgName = str
-TableName = str
 
 
 def connect(data_source: str) -> Connection:
     '''returns a connection object that can be used together with a query
     object to retrieve data from `data_source`'''
-    return odm_sharing.private.cons.connect(data_source)
+    return private.cons.connect(data_source)
 
 
-def parse(schema_file: str, orgs: List[str] = []
+def parse(schema_path: str, orgs: List[str] = []
           ) -> Dict[OrgName, Dict[TableName, Query]]:
     '''returns queries for each org and table, generated from the rules
     specified in `schema_file`'''
     try:
-        rules = odm_sharing.private.rules.load(schema_file)
+        rules = private.rules.load(schema_path)
+        print('\nrules:')
         pprint(rules)
+
+        filename = Path(schema_path).name
+        tree = private.trees.parse(rules, orgs, filename)
+        print('\nabstract syntax tree:')
+        pprint(tree)
     except ParseError:
         pass
 
@@ -37,7 +45,7 @@ def parse(schema_file: str, orgs: List[str] = []
 def get_data(c: Connection, q: Query) -> pd.DataFrame:
     '''returns the data extracted from running query `q` on data-source
     connection `c`, as a pandas dataframe'''
-    return odm_sharing.private.cons.exec(c, q.data_sql)
+    return private.cons.exec(c, q.data_sql)
 
 
 def get_counts(c: Connection, q: Query) -> Dict[RuleId, int]:
