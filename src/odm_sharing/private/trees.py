@@ -33,7 +33,7 @@ class Op(StrEnum):
     LT = '<'
     LTE = '<='
     OR = 'or'
-    RANGE = 'in'
+    IN = 'in'
 
 
 class NodeKind(StrEnum):
@@ -263,6 +263,13 @@ def get_node(ctx: Ctx, rule_id: RuleId) -> Node:
         raise gen_error(ctx, msg)
 
 
+def parse_filter_values(ctx: Ctx, op: Op, val_str: str) -> List[str]:
+    if op == Op.IN:
+        return parse_list(ctx, val_str, min=2, max=2)
+    else:
+        return [val_str]
+
+
 def init_node(ctx: Ctx, rule_id: RuleId, table: str, mode: RuleMode,
               key: str, op_str: str, val_str: str) -> Node:
     '''initializes and returns a new node from rule attributes, or raises
@@ -281,9 +288,7 @@ def init_node(ctx: Ctx, rule_id: RuleId, table: str, mode: RuleMode,
         )
     elif mode == RuleMode.FILTER:
         op = parse_ctx_op(ctx, op_str)
-        is_range = (op == Op.RANGE)
-        values = \
-            parse_list(ctx, val_str, min=2, max=2) if is_range else [val_str]
+        values = parse_filter_values(ctx, op, val_str)
         field_node = Node(rule_id=rule_id, kind=NodeKind.FIELD, str_val=key)
         literal_nodes = to_literal_nodes(rule_id, values)
         return Node(
