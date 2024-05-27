@@ -78,6 +78,7 @@ GROUP_OPERATORS = set(['AND', 'OR'])
 RULE_FIELD_TYPES = Rule.__annotations__
 RULE_FIELDS = set(RULE_FIELD_TYPES.keys())
 HEADER_LIST_STR = ','.join(HEADERS)
+TABLE_MODES = [RuleMode.SELECT, RuleMode.FILTER]
 
 
 def gen_error(ctx: SchemaCtx, desc: str) -> ParseError:
@@ -191,8 +192,7 @@ def validate_rule(ctx: SchemaCtx, rule: Rule) -> None:
         err(f'{ctx.column} must be greater than zero')
 
     ctx.column = 'table'
-    check_required(ctx, rule.table, rule.mode,
-                   [RuleMode.SELECT, RuleMode.FILTER])
+    check_required(ctx, rule.table, rule.mode, TABLE_MODES)
 
     ctx.column = 'key'
     check_required(ctx, rule.key, rule.mode,
