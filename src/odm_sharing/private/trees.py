@@ -269,8 +269,8 @@ def parse_filter_values(ctx: Ctx, op: Op, val_str: str) -> List[str]:
         return [val_str]
 
 
-def init_node(ctx: Ctx, rule_id: RuleId, table: str, mode: RuleMode,
-              key: str, op_str: str, val_str: str) -> Node:
+def init_node(ctx: Ctx, rule_id: RuleId, mode: RuleMode, key: str, op_str: str,
+              val_str: str) -> Node:
     '''initializes and returns a new node from rule attributes, or raises
     ParseError'''
     get_ctx_node = partial(get_node, ctx)
