@@ -76,9 +76,6 @@ from odm_sharing.private.rules import (
 # {{{1 types
 
 
-RuleTree = object  # opaque
-
-
 class Op(StrEnum):
     AND = 'and'
     EQ = '='
@@ -120,6 +117,9 @@ class Node:
 
     def __str__(self) -> str:
         return f'({self.rule_id}, {self.kind}, {qt(self.str_val)})'
+
+
+RuleTree = Node  # alias for a complete node tree
 
 
 class Ctx:
