@@ -1,18 +1,18 @@
 '''see docs/trees-algo.md'''
 
 import sys
-# from pprint import pprint
-
+# from overloading import overload
 from collections import defaultdict
 from dataclasses import dataclass, field
 from functools import partial
 from typing import Dict, List, Optional, Set, Union, cast
+# from pprint import pprint
 
 from functional import seq
 
 from odm_sharing.private.common import TableName
 from odm_sharing.private.stdext import StrEnum
-from odm_sharing.private.utils import not_empty, qt
+from odm_sharing.private.utils import fmt_set, not_empty, qt
 from odm_sharing.private.rules import (
     ParseError,
     Rule,
@@ -33,7 +33,7 @@ class Op(StrEnum):
     LT = '<'
     LTE = '<='
     OR = 'or'
-    IN = 'in'
+    RANGE = 'in'
 
 
 class NodeKind(StrEnum):
@@ -45,6 +45,12 @@ class NodeKind(StrEnum):
     FILTER = 'filter'
     FIELD = 'field'
     LITERAL = 'literal'
+    RANGE_KIND = 'range-kind'
+
+
+class RangeKind(StrEnum):
+    INTERVAL = 'interval'
+    SET = 'set'
 
 
 @dataclass(frozen=True)
@@ -94,6 +100,8 @@ class Ctx:
 
 ALL_LIT = "all"
 VAL_SEP = ";"
+INTERVAL_SEP = ":"
+ALL_SEPARATORS = set([VAL_SEP, INTERVAL_SEP])
 
 
 # {{{1 error gen
@@ -262,11 +270,27 @@ def get_node(ctx: Ctx, rule_id: RuleId) -> Node:
         raise gen_error(ctx, msg)
 
 
-def parse_filter_values(ctx: Ctx, op: Op, val_str: str) -> List[str]:
-    if op == Op.IN:
-        return parse_list(ctx, val_str, min=2, max=2)
+def parse_filter_values(ctx: Ctx, op: Op, is_interval: bool, val_str: str
+                        ) -> List[str]:
+    '''
+    :raises ParseError:
+    '''
+    if op == Op.RANGE:
+        if is_interval:
+            return parse_list(ctx, val_str, 2, 2, INTERVAL_SEP)
+        else: # is set
+            return parse_list(ctx, val_str, min=1)
     else:
+        if seq(ALL_SEPARATORS).map(lambda x: x in val_str).any():
+            msg = ('multiple values ' +
+                   f'(using separators {fmt_set(ALL_SEPARATORS)}) ' +
+                   f'are only allowed with operator {qt(Op.RANGE)}')
+            fail(ctx, msg)
         return [val_str]
+
+
+def filter_is_interval(op: Op, val_str: str) -> bool:
+    return op == Op.RANGE and INTERVAL_SEP in val_str
 
 
 def init_node(ctx: Ctx, rule_id: RuleId, mode: RuleMode, key: str, op_str: str,
@@ -286,15 +310,32 @@ def init_node(ctx: Ctx, rule_id: RuleId, mode: RuleMode, key: str, op_str: str,
             sons=([] if use_all else seq(values).map(to_literal_node2).list()),
         )
     elif mode == RuleMode.FILTER:
+
+        def init_range_kind_node(is_interval: bool) -> Node:
+            kind = RangeKind.INTERVAL if is_interval else RangeKind.SET
+            return Node(
+                rule_id=rule_id,
+                kind=NodeKind.RANGE_KIND,
+                str_val=kind.value
+            )
+
+        # XXX: range-kind node is added before literals for range operator
+        # XXX: a set with a single element isn't required to have a separator
         op = parse_ctx_op(ctx, op_str)
-        values = parse_filter_values(ctx, op, val_str)
+        is_interval = filter_is_interval(op, val_str)
+        values = parse_filter_values(ctx, op, is_interval, val_str)
         field_node = Node(rule_id=rule_id, kind=NodeKind.FIELD, str_val=key)
         literal_nodes = to_literal_nodes(rule_id, values)
+        sons = (
+            [field_node] +
+            ([init_range_kind_node(is_interval)] if op == Op.RANGE else []) +
+            literal_nodes
+        )
         return Node(
             rule_id=rule_id,
             kind=NodeKind.FILTER,
             str_val=op_str,
-            sons=([field_node] + literal_nodes),
+            sons=sons,
         )
     elif mode == RuleMode.GROUP:
 

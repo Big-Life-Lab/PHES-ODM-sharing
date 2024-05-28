@@ -18,3 +18,8 @@ class StrValueEnum(StrEnum):
     '''extension of `StrEnum` that makes it look cleaner with pprint'''
     def __repr__(self) -> str:
         return self.value
+
+
+def sorted_dict(d: dict) -> dict:
+    '''sorts a dict so that the keys are in sorted order'''
+    return {k: d[k] for k in sorted(d.keys())}

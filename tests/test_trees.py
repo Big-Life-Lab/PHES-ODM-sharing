@@ -1,9 +1,10 @@
 import unittest
+from typing import List
 # from pprint import pprint
 
 import odm_sharing.private.trees as trees
 from odm_sharing.private.rules import ParseError, Rule, RuleMode, load
-from odm_sharing.private.trees import parse
+from odm_sharing.private.trees import INTERVAL_SEP, Op, parse
 
 
 class TestParseList(unittest.TestCase):
@@ -34,6 +35,34 @@ class TestParseList(unittest.TestCase):
             trees.parse_list(self.ctx, '', 1, 2)
         with self.assertRaises(ParseError):
             trees.parse_list(self.ctx, 'a;b', 3, 10)
+
+    def test_set_with_one_element(self) -> None:
+        actual = trees.parse_list(self.ctx, 'a;', 1)
+        expected = ['a']
+        self.assertEqual(actual, expected)
+
+
+class TestParseFilterValues(unittest.TestCase):
+    def setUp(self) -> None:
+        self.ctx = trees.Ctx('test')
+
+    def parse(self, op: Op, val_str: str) -> List[str]:
+        is_interval = trees.filter_is_interval(op, val_str)
+        return trees.parse_filter_values(self.ctx, op, is_interval, val_str)
+
+    def test_eq(self) -> None:
+        actual = self.parse(Op.EQ, 'a')
+        expected = ['a']
+        self.assertEqual(actual, expected)
+        with self.assertRaises(ParseError):
+            self.parse(Op.EQ, 'a;b')
+
+    def test_in(self) -> None:
+        actual = self.parse(Op.RANGE, 'a:b')
+        expected = ['a', 'b']
+        self.assertEqual(actual, expected)
+        with self.assertRaises(ParseError):
+            self.parse(Op.EQ, 'a;b')
 
 
 def get_actual(schema_path: str) -> str:
@@ -133,6 +162,7 @@ class TestParse(unittest.TestCase):
                     (5, literal, '2022-02-01')
                 (6, filter, 'in')
                     (6, field, 'aDateEnd')
+                    (6, range-kind, 'interval')
                     (6, literal, '2022-02-01')
                     (6, literal, '2022-02-28')
 '''
@@ -187,6 +217,7 @@ class TestParse(unittest.TestCase):
                         (12, literal, 'mPox')
                     (13, filter, 'in')
                         (13, field, 'reportDate')
+                        (13, range-kind, 'interval')
                         (13, literal, '2021-01-01')
                         (13, literal, '2021-12-31')
                 (17, group, 'and')
@@ -248,6 +279,19 @@ class TestParse(unittest.TestCase):
 '''
         self.assertEqual(actual, expected)
 
+    def test_filter_multi_value(self) -> None:
+        actual = get_actual('tests/filter-set.csv')
+        expected = '''(0, root, '')
+    (6, share, 'PHAC')
+        (4, table, 'samples')
+            (4, select, 'all')
+            (5, filter, 'in')
+                (5, field, 'saMaterial')
+                (5, range-kind, 'set')
+                (5, literal, 'rawWW')
+                (5, literal, 'sweSed')
+'''
+        self.assertEqual(actual, expected)
 
 if __name__ == '__main__':
     unittest.main()

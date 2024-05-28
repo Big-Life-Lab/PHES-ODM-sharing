@@ -6,6 +6,11 @@ def qt(x: str) -> str:
     return f"'{x}'"
 
 
+def dqt(x: str) -> str:
+    '''double-quote `x`'''
+    return f"\"{x}\""
+
+
 def not_empty(x: Union[list, set, str]) -> bool:
     return len(x) > 0
 
