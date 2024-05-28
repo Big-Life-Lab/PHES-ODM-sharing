@@ -219,10 +219,15 @@ def parse_mode(ctx: Ctx, mode_str: str) -> RuleMode:
         raise gen_error(ctx, f'invalid mode {qt(mode_str)}')
 
 
-def parse_op(ctx: Ctx, op_str: str) -> Op:
+def parse_op(op_str: str) -> Op:
+    '''converts str to operator enum'''
+    return Op(op_str.lower())
+
+
+def parse_ctx_op(ctx: Ctx, op_str: str) -> Op:
     '''converts str to operator enum, or raises ParseError'''
     try:
-        return Op(op_str.lower())
+        return parse_op(op_str)
     except ValueError:
         raise gen_error(ctx, f'invalid operator {qt(op_str)}')
 
@@ -319,7 +324,7 @@ def init_node(ctx: Ctx, rule_id: RuleId, table: str, mode: RuleMode,
             sons=([] if use_all else seq(values).map(to_value_node2).list()),
         )
     elif mode == RuleMode.FILTER:
-        op = parse_op(ctx, op_str)
+        op = parse_ctx_op(ctx, op_str)
         is_range = (op == Op.RANGE)
         values = \
             parse_list(ctx, val_str, min=2, max=2) if is_range else [val_str]
@@ -336,7 +341,7 @@ def init_node(ctx: Ctx, rule_id: RuleId, table: str, mode: RuleMode,
         def not_filter_group(node: Node) -> bool:
             return node.kind not in [NodeKind.FILTER, NodeKind.GROUP]
 
-        op = parse_op(ctx, op_str)
+        op = parse_ctx_op(ctx, op_str)
         if op not in [Op.AND, Op.OR]:
             fail(ctx, 'incompatible group operator')
         ids = parse_int_list(ctx, val_str, min=2)
