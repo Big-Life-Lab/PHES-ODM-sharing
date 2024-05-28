@@ -381,13 +381,23 @@ def add_node(ctx: Ctx, rule_id: RuleId, table: str, mode: RuleMode,
 
     :raises ParseError:
     '''
-    # - rule tables are recorded for later lookup
-    # - new nodes are added to ctx
-    # - new root nodes are also merged with ctx.root
+    # record rule table for later lookup
     if table:
         ctx.rule_tables[rule_id].append(table)
-    node = init_node(ctx, rule_id, table, mode, key, op_str, val_str)
-    ctx.nodes[rule_id] = node
+
+    def get_or_add_node(rule_id: RuleId) -> Node:
+        # node may already have been added in the context of another table, in
+        # that case we can reuse it
+        if rule_id in ctx.nodes:
+            return ctx.nodes[rule_id]
+        else:
+            node = init_node(ctx, rule_id, mode, key, op_str, val_str)
+            ctx.nodes[rule_id] = node
+            return node
+
+    node = get_or_add_node(rule_id)
+
+    # assign initial root or merge with existing root
     if node.kind == NodeKind.ROOT:
         if not ctx.root:
             ctx.root = node
