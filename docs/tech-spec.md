@@ -288,6 +288,7 @@ Node kinds:
 - **filter**: defines a filter with operator, key and value
 - **field**: a field name
 - **literal**: a string literal
+- **range-kind**: specifies if a range is an interval or a set
 
 Node structure:
 
@@ -307,6 +308,7 @@ specified, so the filter.field node comes before any filter.literal nodes, etc.
 - filter:
     - (**filter**, rule.operator):
         - (**field**, rule.key)
+        - (**range-kind**, 'interval'/'set') # only present for 'in' operator
         - (**literal**, x) for x in rule.value
 - group:
     - (**group**, rule.operator):
@@ -349,6 +351,7 @@ Example rules with its generated tree:
                         (literal, "mPox")
                     (filter, "in")
                         (field, "reportDate")
+                        (range-kind, "interval")
                         (literal, "2021-01-01")
                         (literal, "2021-12-31")
                 (group, "AND")
@@ -403,7 +406,7 @@ the table node:
 
     ```
     operator = str_val
-    result = recurse(first-child) + operator + recurse(second-child)
+    result = recurse(first-child) + (logic depending on range-kind)
     ```
 
 - **field**:
