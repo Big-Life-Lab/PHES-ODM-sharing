@@ -1,69 +1,18 @@
-'''
-This module contains the parsing of a set of rules into an abstract syntax tree.
-
-- Each rule in a sharing CSV sheet can only reference rules defined in a
-  previous row.
-- a node has a type/kind, a value, and a list of children
-- the children of a node is called 'sons' since it's shorter
-- nodes are first added to ctx and then later added to parent nodes with O(1)
-  lookup, this way the tree is constructed incrementally while parsing each
-  rule
-- share nodes are made to be children of a single root-node, since each org
-  gets its own node, there may be multiple share-rules, and the tree
-  can only have a single root node
-- the root-node is updated every time a new share-node is added
-- tables of each rule are cached for O(1) lookup
-
-Algorithm:
-
-for each rule:
-    for each table in rule, or just once if no table:
-        init node, depending on rule mode:
-            select:
-                kind = select
-                value = empty if sons are specified, otherwise 'all'
-                sons = a value node for each column name
-            filter:
-                kind = filter
-                value = operator
-                sons =
-                    1. a key node for the field name
-                    2. a value node for each filter value
-            group:
-                kind = group
-                value = operator
-                sons = nodes matching the rule's list of ids
-            share:
-                kind = root
-                sons =
-                    for each organization:
-                        kind = share
-                        value = org
-                        sons =
-                            for each select-node referenced in share-rule:
-                                for each table in select-node's rule:
-                                    kind = "table"
-                                    value = table
-                                    sons =
-                                        1. select node
-                                        2. filter/group node referenced in
-                                           share-node. Multiple nodes are
-                                           implicitly grouped with an AND-node.
-'''
+'''see docs/trees-algo.md'''
 
 import sys
-# from pprint import pprint
-
+# from overloading import overload
 from collections import defaultdict
 from dataclasses import dataclass, field
 from functools import partial
 from typing import Dict, List, Optional, Set, Union, cast
+# from pprint import pprint
 
 from functional import seq
 
 from odm_sharing.private.common import TableName
 from odm_sharing.private.stdext import StrEnum
-from odm_sharing.private.utils import not_empty, qt
+from odm_sharing.private.utils import fmt_set, not_empty, qt
 from odm_sharing.private.rules import (
     ParseError,
     Rule,
@@ -74,9 +23,6 @@ from odm_sharing.private.rules import (
 
 
 # {{{1 types
-
-
-RuleTree = object  # opaque
 
 
 class Op(StrEnum):
@@ -97,8 +43,14 @@ class NodeKind(StrEnum):
     SELECT = 'select'
     GROUP = 'group'
     FILTER = 'filter'
-    KEY = 'key'
-    VALUE = 'value'
+    FIELD = 'field'
+    LITERAL = 'literal'
+    RANGE_KIND = 'range-kind'
+
+
+class RangeKind(StrEnum):
+    INTERVAL = 'interval'
+    SET = 'set'
 
 
 @dataclass(frozen=True)
@@ -120,6 +72,9 @@ class Node:
 
     def __str__(self) -> str:
         return f'({self.rule_id}, {self.kind}, {qt(self.str_val)})'
+
+
+RuleTree = Node  # alias for a complete node tree
 
 
 class Ctx:
@@ -145,6 +100,8 @@ class Ctx:
 
 ALL_LIT = "all"
 VAL_SEP = ";"
+INTERVAL_SEP = ":"
+ALL_SEPARATORS = set([VAL_SEP, INTERVAL_SEP])
 
 
 # {{{1 error gen
@@ -163,17 +120,24 @@ def fail(ctx: Ctx, desc: str) -> None:
 # {{{1 input text parsing
 
 
-def parse_list(ctx: Ctx, val_str: str,
-               min: int = 0, max: int = 0) -> List[str]:
+def parse_list(
+    ctx: Ctx,
+    val_str: str,
+    min: int = 0,
+    max: int = 0,
+    sep: str = VAL_SEP,
+) -> List[str]:
     '''splits a multiple-value string into a list, and validates the number of
     elements
 
+    :param val_str: the string to parse values from
     :param min: min required number of elements, or zero
     :param max: max required number of elements, or zero
+    :param sep: the value separator
 
     :raises ParseError
     '''
-    result = seq(val_str.split(VAL_SEP))\
+    result = seq(val_str.split(sep))\
         .map(str.strip)\
         .filter(not_empty)\
         .list()
@@ -219,10 +183,15 @@ def parse_mode(ctx: Ctx, mode_str: str) -> RuleMode:
         raise gen_error(ctx, f'invalid mode {qt(mode_str)}')
 
 
-def parse_op(ctx: Ctx, op_str: str) -> Op:
+def parse_op(op_str: str) -> Op:
+    '''converts str to operator enum'''
+    return Op(op_str.lower())
+
+
+def parse_ctx_op(ctx: Ctx, op_str: str) -> Op:
     '''converts str to operator enum, or raises ParseError'''
     try:
-        return Op(op_str.lower())
+        return parse_op(op_str)
     except ValueError:
         raise gen_error(ctx, f'invalid operator {qt(op_str)}')
 
@@ -261,16 +230,15 @@ def get_table_select_ids(ctx: Ctx, select_nodes: List[Node]
     return result
 
 
-def to_value_node(rule_id: int, val: str) -> Node:
-    '''init value-node with value'''
-    return Node(rule_id=rule_id, kind=NodeKind.VALUE, str_val=val.strip())
+def to_literal_node(rule_id: int, val: str) -> Node:
+    '''init literal-node with value'''
+    return Node(rule_id=rule_id, kind=NodeKind.LITERAL, str_val=val.strip())
 
 
-def to_value_nodes(rule_id: RuleId, values: list) -> List[Node]:
-    '''init value-nodes from list of values'''
-    return seq(values)\
-        .map(lambda x: Node(rule_id=rule_id, kind=NodeKind.VALUE, str_val=x))\
-        .list()
+def to_literal_nodes(rule_id: RuleId, values: List[str]) -> List[Node]:
+    '''init literal-nodes from list of values'''
+    to_literal_node2 = partial(to_literal_node, rule_id)
+    return seq(values).map(to_literal_node2).list()
 
 
 def get_filter_root(ctx: Ctx, table: str, nodes: List[Node]) -> Optional[Node]:
@@ -302,8 +270,31 @@ def get_node(ctx: Ctx, rule_id: RuleId) -> Node:
         raise gen_error(ctx, msg)
 
 
-def init_node(ctx: Ctx, rule_id: RuleId, table: str, mode: RuleMode,
-              key: str, op_str: str, val_str: str) -> Node:
+def parse_filter_values(ctx: Ctx, op: Op, is_interval: bool, val_str: str
+                        ) -> List[str]:
+    '''
+    :raises ParseError:
+    '''
+    if op == Op.RANGE:
+        if is_interval:
+            return parse_list(ctx, val_str, 2, 2, INTERVAL_SEP)
+        else: # is set
+            return parse_list(ctx, val_str, min=1)
+    else:
+        if seq(ALL_SEPARATORS).map(lambda x: x in val_str).any():
+            msg = ('multiple values ' +
+                   f'(using separators {fmt_set(ALL_SEPARATORS)}) ' +
+                   f'are only allowed with operator {qt(Op.RANGE)}')
+            fail(ctx, msg)
+        return [val_str]
+
+
+def filter_is_interval(op: Op, val_str: str) -> bool:
+    return op == Op.RANGE and INTERVAL_SEP in val_str
+
+
+def init_node(ctx: Ctx, rule_id: RuleId, mode: RuleMode, key: str, op_str: str,
+              val_str: str) -> Node:
     '''initializes and returns a new node from rule attributes, or raises
     ParseError'''
     get_ctx_node = partial(get_node, ctx)
@@ -311,37 +302,52 @@ def init_node(ctx: Ctx, rule_id: RuleId, table: str, mode: RuleMode,
     if mode == RuleMode.SELECT:
         values = parse_list(ctx, val_str, 1)
         use_all = ALL_LIT in values
-        to_value_node2 = partial(to_value_node, rule_id)
+        to_literal_node2 = partial(to_literal_node, rule_id)
         return Node(
             rule_id=rule_id,
             kind=NodeKind.SELECT,
             str_val=(ALL_LIT if use_all else ''),
-            sons=([] if use_all else seq(values).map(to_value_node2).list()),
+            sons=([] if use_all else seq(values).map(to_literal_node2).list()),
         )
     elif mode == RuleMode.FILTER:
-        op = parse_op(ctx, op_str)
-        is_range = (op == Op.RANGE)
-        values = \
-            parse_list(ctx, val_str, min=2, max=2) if is_range else [val_str]
-        key_node = Node(rule_id=rule_id, kind=NodeKind.KEY, str_val=key)
-        value_nodes = to_value_nodes(rule_id, values)
+
+        def init_range_kind_node(is_interval: bool) -> Node:
+            kind = RangeKind.INTERVAL if is_interval else RangeKind.SET
+            return Node(
+                rule_id=rule_id,
+                kind=NodeKind.RANGE_KIND,
+                str_val=kind.value
+            )
+
+        # XXX: range-kind node is added before literals for range operator
+        # XXX: a set with a single element isn't required to have a separator
+        op = parse_ctx_op(ctx, op_str)
+        is_interval = filter_is_interval(op, val_str)
+        values = parse_filter_values(ctx, op, is_interval, val_str)
+        field_node = Node(rule_id=rule_id, kind=NodeKind.FIELD, str_val=key)
+        literal_nodes = to_literal_nodes(rule_id, values)
+        sons = (
+            [field_node] +
+            ([init_range_kind_node(is_interval)] if op == Op.RANGE else []) +
+            literal_nodes
+        )
         return Node(
             rule_id=rule_id,
             kind=NodeKind.FILTER,
             str_val=op_str,
-            sons=([key_node] + value_nodes),
+            sons=sons,
         )
     elif mode == RuleMode.GROUP:
 
         def not_filter_group(node: Node) -> bool:
             return node.kind not in [NodeKind.FILTER, NodeKind.GROUP]
 
-        op = parse_op(ctx, op_str)
+        op = parse_ctx_op(ctx, op_str)
         if op not in [Op.AND, Op.OR]:
             fail(ctx, 'incompatible group operator')
         ids = parse_int_list(ctx, val_str, min=2)
-        sons = seq(ids).map(get_ctx_node)
-        if sons.map(not_filter_group).any():
+        sons = seq(ids).map(get_ctx_node).list()
+        if seq(sons).map(not_filter_group).any():
             fail(ctx, 'group-rules can only refer to other filter/group-rules')
         return Node(
             rule_id=rule_id,
@@ -416,13 +422,23 @@ def add_node(ctx: Ctx, rule_id: RuleId, table: str, mode: RuleMode,
 
     :raises ParseError:
     '''
-    # - rule tables are recorded for later lookup
-    # - new nodes are added to ctx
-    # - new root nodes are also merged with ctx.root
+    # record rule table for later lookup
     if table:
         ctx.rule_tables[rule_id].append(table)
-    node = init_node(ctx, rule_id, table, mode, key, op_str, val_str)
-    ctx.nodes[rule_id] = node
+
+    def get_or_add_node(rule_id: RuleId) -> Node:
+        # node may already have been added in the context of another table, in
+        # that case we can reuse it
+        if rule_id in ctx.nodes:
+            return ctx.nodes[rule_id]
+        else:
+            node = init_node(ctx, rule_id, mode, key, op_str, val_str)
+            ctx.nodes[rule_id] = node
+            return node
+
+    node = get_or_add_node(rule_id)
+
+    # assign initial root or merge with existing root
     if node.kind == NodeKind.ROOT:
         if not ctx.root:
             ctx.root = node

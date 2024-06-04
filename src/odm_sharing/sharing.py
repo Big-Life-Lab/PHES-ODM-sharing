@@ -5,15 +5,13 @@ from pprint import pprint
 import pandas as pd
 
 import odm_sharing.private as private
-import odm_sharing.private.trees
 from odm_sharing.private.cons import Connection
 from odm_sharing.private.queries import Query
 from odm_sharing.private.rules import ParseError, RuleId
-from odm_sharing.private.common import TableName
+from odm_sharing.private.common import OrgName, TableName
 
 # type aliases
 ColumnName = str
-OrgName = str
 
 
 def connect(data_source: str) -> Connection:
@@ -45,19 +43,19 @@ def parse(schema_path: str, orgs: List[str] = []
 def get_data(c: Connection, q: Query) -> pd.DataFrame:
     '''returns the data extracted from running query `q` on data-source
     connection `c`, as a pandas dataframe'''
-    return private.cons.exec(c, q.data_sql)
+    return private.cons.exec(c, q.sql)
 
 
 def get_counts(c: Connection, q: Query) -> Dict[RuleId, int]:
     '''returns the row counts for each rule, corresponding to how each part of
     query `q` would filter the data extracted from connection `c`'''
-    pass
+    return {}
 
 
 def get_columns(c: Connection, q: Query) -> Tuple[RuleId, List[ColumnName]]:
     '''returns the select-rule id together with the column names that would be
     extracted from using query `q` on connection `c`'''
-    pass
+    return (0, [])
 
 
 def extract(

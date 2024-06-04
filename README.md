@@ -244,9 +244,11 @@ between the `key` and the `value`. The currently accepted values for the
 -   **\<=**: Denotes "lesser-than". This can be used for numeric, integer, or
     date-type variables. Note that it is inclusive of the value used in the
     expression.
--   **in**: Denotes that a value is contained in a range of continuous data.
-    This can be used for numeric, integer, or date-type variables. Note that it
-    is inclusive of the values used in the expression.
+-   **in**: Denotes that a value is contained in either a range of continuous
+    data or a set of values. Range values are separated by `:` and can be used
+    for numeric, integer, or date-type variables, while sets are separated by
+    `;` and can be of any type. Note that both ranges and sets are inclusive of
+    the values used in the expression.
 
 Technically the `operator` column also accepts `AND` and `OR` as values, but
 only for rules of the `group` mode.
@@ -289,6 +291,12 @@ is a date in February from the `measures` table.
     | ------ | -------- | ------ | -------- | -------- | --------------------- | ----- |
     | 10     | measures | filter | aDateEnd | in       | 2022-02-01:2022-02-28 |       |
 
+6.  Selecting only the rows where the value of `siteID` is either "ottawa-1" or
+    "laval-1" in the samples table.
+
+    | ruleId | table    | mode   | key      | operator | value            | notes |
+    | ------ | -------- | ------ | -------- | -------- | ---------------- | ----- |
+    | 10     | samples  | filter | siteID   | in       | ottawa-1;laval-1 |       |
 
 ### 4. Grouping Rules
 
@@ -478,11 +486,11 @@ ID is "ottawa-1" for Ottawa Public Health (OPH)
 material (`saMaterial`) is `rawWW` or `sweSed` for the Public Health Agency of
 Canada (PHAC)
 
-    | ruleId | table    | mode   | key        | operator | value        | notes     |
-    |--------|----------|--------|------------|----------|--------------|-----------|
-    | 4      | samples  | select |            |          | all          |           |
-    | 5      | samples  | filter | saMaterial | =        | rawWW;sweSed |           |
-    | 6      | NA       | share  | PHAC       |          | 4;5          |           |
+    | ruleId | table   | mode   | key        | operator | value        | notes |
+    |--------|---------|--------|------------|----------|--------------|-------|
+    | 4      | samples | select |            |          | all          |       |
+    | 5      | samples | filter | saMaterial | in       | rawWW;sweSed |       |
+    | 6      | NA      | share  | PHAC       |          | 4;5          |       |
 
 3.  Share all rows, but select the `notes` column from all tables for Laval
 Public Health (LPH)
@@ -735,7 +743,7 @@ example is shown below,
 |--------|------------------|--------|----------|----------|-----------------------|-------|
 | 1      | all              | select | NA       | NA       | all                   |       |
 | 2      | samples          | filter | collDT   | in       | 2021-01-25:2021-02-25 |       |
-| 3      | samples;measures | filter | sampleID | =        | pgsOttS101;pgsOttS102 |       |
+| 3      | samples;measures | filter | sampleID | in       | pgsOttS101;pgsOttS102 |       |
 | 4      | NA               | share  | PHAC     | NA       | 1;3                   |       |
 | 5      | NA               | share  | public   | NA       | 1;2;3                 |       |
 
@@ -824,7 +832,7 @@ files), with one for the public and one for PHAC.
 |--------|------------------|--------|----------|----------|-----------------------|-------|---------------|
 | 1      | all              | select | NA       | NA       | all                   |       | 30            |
 | 2      | samples          | filter | collDT   | in       | 2021-01-25:2021-02-25 |       | 8             |
-| 3      | samples;measures | filter | sampleID | =        | pgsOttS101;pgsOttS102 |       | 14            |
+| 3      | samples;measures | filter | sampleID | in       | pgsOttS101;pgsOttS102 |       | 14            |
 | 4      | NA               | share  | PHAC     | NA       | 1;3                   |       | 20            |
 | 5      | NA               | share  | public   | NA       | 1;2;3                 |       | 16            |
 
