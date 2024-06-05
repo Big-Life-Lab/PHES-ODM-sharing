@@ -184,15 +184,12 @@ Parsing of rules into abstract syntax trees.
 
 The exception types that may be thrown, as well as examples of what they cover:
 
+- DataSourceError:
+    - table not found in data source
+    - unable to open/read data source
 - OSError:
-    - input file doesn't exist
-    - failed to read input file
+    - failed to read schema file
     - failed to write output file
-- ConnectionError:
-    - failed to establish connection to db
-    - failed to import data to temporary db
-    - failed to read from data source
-    - data source columns don't match query
 - ParseError:
     - headers are missing
     - value can't be coerced to the correct type
