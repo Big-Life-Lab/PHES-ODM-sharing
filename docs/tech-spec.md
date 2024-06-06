@@ -53,18 +53,16 @@ Options:
 
     output file directory, defaults to the current directory
 
-- `-d`, `--dry-run`, `--debug`:
+- `-d`, `--debug`:
 
-    only output the intermediary debug information describing what would
-    happen, and don't create any output files.
+    output debug info to STDOUT (and ./debug.txt) instead of creating sharable
+    output files. This shows which tables and columns are selected, and how
+    many rows each filter returns.
 
 One or multiple sharable output files will be created in the chosen output
 directory according to the chosen output format and organization(s). Each
 output file will have the input filename followed by a postfix with the org
 name (and table name if CSV).
-
-(Debug) information about the operation will be printed to STDOUT, as well as
-written to a `debug.txt` file in the same directory.
 
 **Examples**
 
@@ -184,15 +182,12 @@ Parsing of rules into abstract syntax trees.
 
 The exception types that may be thrown, as well as examples of what they cover:
 
+- DataSourceError:
+    - table not found in data source
+    - unable to open/read data source
 - OSError:
-    - input file doesn't exist
-    - failed to read input file
+    - failed to read schema file
     - failed to write output file
-- ConnectionError:
-    - failed to establish connection to db
-    - failed to import data to temporary db
-    - failed to read from data source
-    - data source columns don't match query
 - ParseError:
     - headers are missing
     - value can't be coerced to the correct type
