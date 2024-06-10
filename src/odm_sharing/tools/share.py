@@ -113,8 +113,9 @@ def gen_filename(org: str, table: str, ext: str) -> str:
     return org + (f'-{table}' if table else '') + f'.{ext}'
 
 
-def get_debug_writer(debug: bool) -> TextIO:
+def get_debug_writer(debug: bool):  # type: ignore
     # XXX: this function is only used for brewity with the below `with` clause
+    # XXX: return type is ignored for simplicity
     if debug:
         return open('debug.txt', 'w')
     else:
@@ -128,6 +129,8 @@ def get_excel_writer(debug: bool, org: str, outdir: str, outfmt: OutFmt
         print('writing ' + filename)
         excel_path = os.path.join(outdir, filename)
         return pd.ExcelWriter(excel_path)
+    else:
+        return None
 
 
 @app.command()
