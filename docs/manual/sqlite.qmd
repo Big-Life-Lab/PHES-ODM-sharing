@@ -1,0 +1,87 @@
+# SQLite {#sec-sqlite}
+
+## Install
+
+To install the SQLite library, follow the steps below for your system, then
+[verify that it's working in Python](#verify-sqlite-support-in-python).
+
+### Windows
+
+1. **Download SQLite:** Go to the
+   [SQLite download page](https://www.sqlite.org/download.html) and download
+   `sqlite-dll-win-x64-3XXXXXX.zip`.
+
+2. **Extract the Files:** Extract the contents of the ZIP file to a directory
+   of your choice, for example, `C:\sqlite`.
+
+3. **Add SQLite to PATH:** Add the directory chosen above, now containing
+   `sqlite3.dll`, to your system's PATH environment variable:
+   1. Open the Start Menu, search for "Environment Variables", and select "Edit
+      the system environment variables".
+   1. In the System Properties window, click on the "Environment Variables"
+      button.
+   1. In the Environment Variables window, find the "Path" variable in the
+      "System variables" section and click "Edit".
+   1. Click "New" and add the path chosen above.
+   1. Click "OK" to close all windows.
+
+4. **Verify the Installation:** Open a new Command Prompt window and run
+   `sqlite3 --version`. This should print the version of SQLite installed.
+
+### macOS
+
+Run the following commands in a terminal.
+
+1. **Install Homebrew.** Homebrew is a popular package manager for macOS. If
+   you don't have Homebrew installed, you can install it by running the
+   following command:
+   ```bash
+   /bin/bash -c "$(curl -fsSL \
+       https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   ```
+
+2. **Install SQLite using Homebrew**:
+   ```bash
+   brew install sqlite3
+   ```
+
+3. **Verify the Installation**:
+   ```bash
+   sqlite3 --version
+   ```
+   This should print the version of SQLite installed.
+
+### Linux
+
+To install SQLite on (Ubuntu) Linux, you can run the following commands:
+
+1. **Update package list**:
+   ```bash
+   sudo apt update
+   ```
+
+2. **Install SQLite**:
+   ```bash
+   sudo apt install sqlite3
+   ```
+
+3. **Verify installation**:
+   ```bash
+   sqlite3 --version
+   ```
+   This should print the version of SQLite installed.
+
+## Verify SQLite Support in Python
+
+   After installing SQLite, you should verify that SQLite works in Python.
+
+   Open a Python shell (by typing `python` (or `python3`) in a terminal) and
+   run the following commands:
+
+   ```python
+   import sqlite3
+   sqlite3.sqlite_version
+   ```
+
+   If the version is displayed, and no errors are encountered, then SQLite is
+   ready for use with Python.

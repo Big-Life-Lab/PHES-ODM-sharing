@@ -1,0 +1,6 @@
+# generated files
+/measures-OHRI.csv
+
+# generated dirs
+/.quarto/
+/_book/

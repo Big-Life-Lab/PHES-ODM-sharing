@@ -1,0 +1,4 @@
+ruleID,table,mode,key,operator,value,notes
+1,measures,select,NA,NA,all,"select all columns from the measures table"
+2,measures,filter,measure,=,covN1,"where measure equals covN1"
+3,NA,share,OHRI,NA,1;2,"use rule 1 & 2 for the OHRI organization"

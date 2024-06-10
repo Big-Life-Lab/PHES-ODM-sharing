@@ -1,0 +1,111 @@
+# API {#sec-api}
+
+## Reference
+
+<!-- TODO generate this API reference from the source code automatically -->
+
+```python
+
+def parse(schema_path: str, orgs: List[str] = []) -> OrgTableQueries:
+    '''returns queries for each org and table, generated from the rules
+    specified in `schema_file`
+
+    :raises OSError, ParseError:
+    '''
+
+
+def connect(data_source: str, tables: Set[str] = set()) -> Connection:
+    '''returns a connection object that can be used together with a query
+    object to retrieve data from `data_source`
+
+    :raises DataSourceError:'''
+
+
+def get_data(c: Connection, tq: TableQuery) -> pd.DataFrame:
+    '''returns the data extracted from running query `q` on data-source
+    connection `c`, as a pandas DataFrame
+
+    :raises DataSourceError:'''
+
+
+def get_counts(c: Connection, tq: TableQuery) -> Dict[RuleId, int]:
+    '''returns the row counts for each rule
+
+    :raises DataSourceError:'''
+
+def get_columns(c: Connection, tq: TableQuery
+                ) -> Tuple[RuleId, List[ColumnName]]:
+    '''returns the select-rule id together with the column names that would be
+    extracted when calling `get_data`
+
+    :raises DataSourceError:'''
+
+
+def extract(
+    schema_path: str,
+    data_source: str,
+    orgs: List[str] = [],
+) -> Dict[OrgName, Dict[TableName, pd.DataFrame]]:
+    '''returns a Pandas DataFrame per table per org
+
+    :param data_source: a file path or database url (in SQLAlchemy format)
+    :param schema_path: rule schema file path
+    :param orgs: orgs to share with, or all if empty
+
+    :raises DataSourceError:
+    '''
+```
+
+## Usage
+
+### Examples
+
+**Common definitions:**
+
+```{python}
+#|echo: False
+from common import DATA, SCHEMA, load_csv_md, print_file
+
+def my_processing_func(data):
+    # what a user-made function may look like
+    pass
+```
+
+```{python}
+import pandas as pd
+import odm_sharing.sharing as sh
+
+ORG = 'OHRI'
+ORGS = [ORG]
+```
+
+**High-level one-shot function:**
+
+```{python}
+results = sh.extract(SCHEMA, DATA, ORGS)
+for org, table_data in results.items():
+    for table_name, data_frame in table_data.items():
+        my_processing_func(data_frame)
+```
+
+**Low-level sample code:**
+
+```{python}
+def describe_table_query(con, table, query):
+    print(f'query table: {table}')
+
+    (select_rule_id, columns) = sh.get_columns(con, query)
+    print(f'query columns (from rule {select_rule_id}):')
+    print(','.join(columns))
+
+    print('query counts per rule:')
+    rule_counts = sh.get_counts(con, query)
+    for ruleId, count in rule_counts.items():
+        print(f'{ruleId} | {count}')
+
+con = sh.connect(DATA)
+table_queries = sh.parse(SCHEMA, ORGS)
+for table, query in table_queries[ORG].items():
+    describe_table_query(con, table, query)
+    my_processing_func(sh.get_data(con, query))
+```
