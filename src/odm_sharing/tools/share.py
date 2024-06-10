@@ -3,7 +3,7 @@ import os
 from enum import Enum
 from os import linesep
 from pathlib import Path
-from typing import Dict, List, Optional, Set, TextIO
+from typing import Dict, List, Optional, Set, TextIO, Union
 from typing_extensions import Annotated
 
 import pandas as pd
@@ -113,7 +113,7 @@ def gen_filename(org: str, table: str, ext: str) -> str:
     return org + (f'-{table}' if table else '') + f'.{ext}'
 
 
-def get_debug_writer(debug: bool) -> TextIO:
+def get_debug_writer(debug: bool) -> Union[TextIO, contextlib.nullcontext]:
     # XXX: this function is only used for brewity with the below `with` clause
     if debug:
         return open('debug.txt', 'w')
@@ -128,6 +128,8 @@ def get_excel_writer(debug: bool, org: str, outdir: str, outfmt: OutFmt
         print('writing ' + filename)
         excel_path = os.path.join(outdir, filename)
         return pd.ExcelWriter(excel_path)
+    else:
+        return None
 
 
 @app.command()
