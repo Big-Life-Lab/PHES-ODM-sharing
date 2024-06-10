@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List, Set, cast
 
 import pandas as pd
@@ -11,17 +12,39 @@ class DataSourceError(Exception):
     pass
 
 
+def _create_memory_db() -> sa.engine.Engine:
+    return sa.create_engine('sqlite://', echo=False)
+
+
+def _write_table_to_db(db: sa.engine.Engine, table: str, df: pd.DataFrame
+                       ) -> None:
+    print(f'- table {table}')
+    df.to_sql(table, db, index=False, if_exists='replace')
+
+
+def _connect_csv(path: str) -> Connection:
+    '''copies file data to in-memory db
+
+    :raises OSError:'''
+    print('importing csv file')
+    table = Path(path).stem
+    db = _create_memory_db()
+    df = pd.read_csv(path)
+    _write_table_to_db(db, table, df)
+    return cast(Connection, db)
+
+
 def _connect_excel(path: str, table_whitelist: Set[str]) -> Connection:
-    ''':raises OSError:'''
-    # copies excel data to in-memory db, to abstract everything as a db
+    '''copies file data to in-memory db
+
+    :raises OSError:'''
     print('importing excel workbook')
-    db = sa.create_engine('sqlite://', echo=False)
+    db = _create_memory_db()
     xl = pd.ExcelFile(path)
     included_tables = set(map(str, xl.sheet_names)) & table_whitelist
     for table in included_tables:
-        print(f'- table {table}')
         df = xl.parse(sheet_name=table)
-        df.to_sql(table, db, index=False, if_exists='replace')
+        _write_table_to_db(db, table, df)
     return cast(Connection, db)
 
 
@@ -40,7 +63,9 @@ def connect(data_source: str, tables: Set[str] = set()) -> Connection:
     :raises DataSourceError:
     '''
     try:
-        if data_source.endswith('.xlsx'):
+        if data_source.endswith('.csv'):
+            return _connect_csv(data_source)
+        elif data_source.endswith('.xlsx'):
             return _connect_excel(data_source, tables)
         else:
             return _connect_db(data_source)
