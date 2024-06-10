@@ -8,7 +8,6 @@ from typing_extensions import Annotated
 
 import pandas as pd
 import typer
-import sqlalchemy as sa
 from tabulate import tabulate
 from functional import seq
 
