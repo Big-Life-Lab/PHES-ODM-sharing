@@ -1,4 +1,4 @@
-from typing import List, cast
+from typing import List, Set, cast
 
 import pandas as pd
 import sqlalchemy as sa
@@ -11,11 +11,10 @@ class DataSourceError(Exception):
     pass
 
 
-def _connect_excel(path: str, tables: List[str]) -> Connection:
+def _connect_excel(path: str, table_whitelist: Set[str]) -> Connection:
     ''':raises OSError:'''
     # copies excel data to in-memory db, to abstract everything as a db
     print('importing excel workbook')
-    table_whitelist = set(tables)
     db = sa.create_engine('sqlite://', echo=False)
     xl = pd.ExcelFile(path)
     included_tables = set(map(str, xl.sheet_names)) & table_whitelist
@@ -31,7 +30,7 @@ def _connect_db(url: str) -> Connection:
     return sa.create_engine(url)
 
 
-def connect(data_source: str, tables: List[str] = []) -> Connection:
+def connect(data_source: str, tables: Set[str] = set()) -> Connection:
     '''
     connects to a data source and returns the connection
 
