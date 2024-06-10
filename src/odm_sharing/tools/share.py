@@ -179,7 +179,8 @@ def main(
                     if outfmt == OutFmt.CSV:
                         filename = gen_filename(org, table, 'csv')
                         print('writing ' + filename)
-                        data.to_csv(os.path.join(outdir, filename))
+                        path = os.path.join(outdir, filename)
+                        data.to_csv(path, index=False)
                     elif outfmt == OutFmt.EXCEL:
                         print(f'- {qt(table)}')
                         data.to_excel(excel_file, sheet_name=table)
