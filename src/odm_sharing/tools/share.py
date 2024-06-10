@@ -40,6 +40,11 @@ DEBUG_DESC = '''Output debug info to STDOUT (and ./debug.txt) instead of
 creating sharable output files. This shows which tables and columns are
 selected, and how many rows each filter returns.'''
 
+# default cli args
+DEBUG_DEFAULT = False
+ORGS_DEFAULT = []
+OUTDIR_DEFAULT = './'
+OUTFMT_DEFAULT = OutFmt.EXCEL
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
@@ -132,15 +137,13 @@ def get_excel_writer(debug: bool, org: str, outdir: str, outfmt: OutFmt
         return None
 
 
-@app.command()
-def main(
-    schema: str = typer.Argument(default=..., help=SCHEMA_DESC),
-    input: str = typer.Argument(default='', help=INPUT_DESC),
-    orgs: List[str] = typer.Option(default=[], help=ORGS_DESC),
-    outfmt: OutFmt = typer.Option(default=OutFmt.EXCEL, help=OUTFMT_DESC),
-    outdir: str = typer.Option(default='./', help=OUTDIR_DESC),
-    debug: Annotated[bool, typer.Option("-d", "--debug",
-                                        help=DEBUG_DESC)] = False,
+def share(
+    schema: str,
+    input: str,
+    orgs: List[str] = ORGS_DEFAULT,
+    outfmt: OutFmt = OUTFMT_DEFAULT,
+    outdir: str = OUTDIR_DEFAULT,
+    debug: bool = DEBUG_DEFAULT,
 ) -> None:
     schema_path = schema
     filename = Path(schema_path).name
@@ -193,6 +196,19 @@ def main(
                 if excel_file:
                     excel_file.close()
     print('done')
+
+
+@app.command()
+def main(
+    schema: str = typer.Argument(default=..., help=SCHEMA_DESC),
+    input: str = typer.Argument(default='', help=INPUT_DESC),
+    orgs: List[str] = typer.Option(default=ORGS_DEFAULT, help=ORGS_DESC),
+    outfmt: OutFmt = typer.Option(default=OUTFMT_DEFAULT, help=OUTFMT_DESC),
+    outdir: str = typer.Option(default=OUTDIR_DEFAULT, help=OUTDIR_DESC),
+    debug: Annotated[bool, typer.Option("-d", "--debug",
+                                        help=DEBUG_DESC)] = DEBUG_DEFAULT,
+) -> None:
+    share(schema, input, orgs, outfmt, outdir, debug)
 
 
 if __name__ == '__main__':
