@@ -1,0 +1,20 @@
+project:
+  type: book
+  output-dir: build
+
+book:
+  title: 'PHES-ODM Sharing Library Manual'
+  author: 'OHRI'
+  chapters:
+    - index.qmd
+    - install.qmd
+    - getting-started.qmd
+    - cli.qmd
+    - api.qmd
+  appendices:
+    - schemas.qmd
+    - python.qmd
+    - sqlite.qmd
+
+pdf-engine: pdflatex
+toc: true

@@ -1,0 +1,10 @@
+# generated files
+/measures-OHRI.csv
+search.json
+site_libs
+debug.txt
+
+# generated dirs
+/.quarto/
+/_book/
+/build/

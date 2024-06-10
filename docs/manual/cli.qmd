@@ -1,0 +1,151 @@
+```{python}
+#| echo: false
+from odm_sharing.tools.share import OutFmt, share
+
+from common import DATA, SCHEMA, load_csv_md, print_file
+```
+
+# CLI {#sec-cli}
+
+## Reference
+
+```bash
+odm-share [OPTION]... SCHEMA INPUT
+```
+
+Arguments:
+
+- SCHEMA
+
+  sharing schema file path
+
+- INPUT
+
+  spreadsheet file path or [SQLAlchemy database URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)
+
+Options:
+
+- `--orgs=NAME[,...]`
+
+    comma separated list of organizations to output data for, defaults to all
+
+- `--outfmt=FORMAT`
+
+    output format (excel or csv), defaults to input format
+
+- `--outdir=PATH`
+
+    output file directory, defaults to the current directory
+
+- `-d`, `--debug`:
+
+    output debug info to STDOUT (and ./debug.txt) instead of creating sharable
+    output files. This shows which tables and columns are selected, and how
+    many rows each filter returns.
+
+- `-q`, `--quiet`:
+
+    don't log to STDOUT
+
+One or multiple sharable output files will be created in the chosen output
+directory according to the chosen output format and organization(s). Each
+output file will have the input name followed by the recipient org name.
+
+### Errors
+
+Error messages will be printed to the terminal (STDERR) when something is
+wrong. The message starts with telling where the error originated, including
+the filename and line number or rule id. Here's a few examples:
+
+When headers are missing from the schema:
+
+```{python}
+#| echo: false
+share('assets/schema-missing-headers.csv', 'assets/measures.csv')
+```
+
+When no share-rules are contained in the schema:
+
+```{python}
+#| echo: false
+share('assets/schema-missing-rules.csv', 'assets/measures.csv')
+```
+
+## Usage
+
+### Examples
+
+#### Using a CSV file
+
+To share a single table `measures.csv`, using the sharing schema `schema.csv`,
+the following command can be used:
+
+```bash
+odm-share schema.csv measures.csv
+```
+
+It will make an output file called `measures-<org>.csv` for each organization
+specified in the schema, with filtered data that is ready to share.
+
+#### Using an Excel file
+
+Excel files can be used as input to share multiple tables at once:
+
+```bash
+odm-share schema.csv data.xlsx
+```
+
+It will make an output file called `<org>.xlsx` for each organization in the
+schema.
+
+#### Using a database
+
+To use a MySQL database as input (with the pymysql package):
+
+```bash
+odm-share schema.csv mysql+pymysql://user:pass@host/db
+```
+
+Same as above, using a MS SQL Server database through ODBC (with the pyodbc
+package):
+
+```bash
+odm-share schema.csv mssql+pyodbc://user:pass@mydsn
+```
+
+#### Using additional options
+
+- Share CSV files from an Excel file:
+
+    ```bash
+    odm-share --outfmt=CSV schema.csv data.xlsx
+    ```
+
+- Create a sharable excel file in the "~/files" directory, for the "OHRI" and
+  "TOH" organizations, applying the rules from schema.csv on the input from
+  data.xlsx:
+
+    ```bash
+    odm-share --orgs=OHRI,TOH --outdir=~/files schema.csv data.xlsx
+    ```
+
+### Debugging
+
+Debug mode provides information about what would happen when using a specific
+schema, without pulling the actual data to be shared. Debugging is enabled by
+passing the `--debug` flag, or simply `-d`.
+
+Here's an example using the sample files from [getting started](getting-started.qmd):
+
+```bash
+odm-share --debug schema.csv data.xlsx
+```
+```{python}
+#| echo: false
+share(SCHEMA, DATA, debug=True)
+```
+
+Here we can see the columns that would be selected, as well as the number of
+rows each rule would produce. Specifically, we can see that 4 rows would be
+selected by rule #1, but the filter in rule #2 reduces that number to 2, which
+is the final count as confirmed in the count for rule #3.
