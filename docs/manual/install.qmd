@@ -1,0 +1,89 @@
+# Installation
+
+The commands below can be entered using any terminal application. Search for
+"terminal" or "command line" in your OS application menu.
+
+**Attention**: the python and pip executables may have different names
+depending on the distribution. `python` and `pip` is used below, but they may
+also be called `python3` and `pip3`.
+
+## System dependencies
+
+- Python >= 3.8 (see @sec-python)
+- SQLite 3 (see @sec-sqlite)
+
+## Package
+
+Install the package:
+
+`pip install git+https://github.com/Big-Life-Lab/PHES-ODM-sharing.git@impl`
+
+(The `impl` branch must be used for now, until it's merged into the main
+branch.)
+
+You're done! You can now explore how to get started in @sec-getting-started.
+
+## Development
+
+If you want to setup a development environment, then run the commands below as
+you see fit. If you just want to use the library, then you can ignore this
+section.
+
+```bash
+# clone the repo
+git clone https://github.com/Big-Life-Lab/PHES-ODM-sharing odm-sharing
+cd odm-sharing
+
+# if python != 3.8, then install pyenv and setup repo to run python 3.8
+sudo apt-get install pyenv
+pyenv install 3.8
+pyenv local 3.8
+
+# create a virtual env for the repo, using the selected python version
+pyenv exec python -m venv .env # with pyenv
+#python -m venv .env # without pyenv
+
+# activate the virtual env (must be done every time a new terminal is opened,
+# to set the correct python-binary path/env)
+source .env/bin/activate
+
+# verify that python now has the correct version (3.8)
+python --version
+
+# make sure pip is up to date, and install dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+
+# if you previously installed the package, then uninstall it again
+pip uninstall odm_sharing
+
+# build and install the library in development mode
+pip install -e .
+```
+
+You can now edit the source files, and directly see the changes when importing
+the package.
+
+## Documentation
+
+To generate the documentation, you'll first have to:
+
+- Install [Quarto](https://quarto.org/docs/get-started/)
+- Install Python dependencies:
+
+    ```bash
+    pip install -r requirements-doc.txt
+    ```
+
+To preview the manual in a web browser while editing:
+
+```bash
+quarto preview docs/manual
+```
+
+To render the manual to a PDF:
+
+```bash
+quarto render docs/manual --to pdf
+```
