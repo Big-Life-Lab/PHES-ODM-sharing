@@ -24,6 +24,7 @@ from odm_sharing.private.utils import qt
 
 class OutFmt(str, Enum):
     '''output format'''
+    AUTO = 'auto'
     CSV = 'csv'
     EXCEL = 'excel'
 
@@ -50,7 +51,7 @@ selected, and how many rows each filter returns.'''
 DEBUG_DEFAULT = False
 ORGS_DEFAULT = []
 OUTDIR_DEFAULT = './'
-OUTFMT_DEFAULT = OutFmt.EXCEL
+OUTFMT_DEFAULT = OutFmt.AUTO
 
 # }}}
 
@@ -151,6 +152,16 @@ def get_excel_writer(debug: bool, org: str, outdir: str, outfmt: OutFmt
         return None
 
 
+def infer_outfmt(path: str) -> OutFmt:
+    (_, ext) = os.path.splitext(path)
+    if ext == '.csv':
+        return OutFmt.CSV
+    elif ext == '.xlsx':
+        return OutFmt.EXCEL
+    else:
+        quit(f'unable to infer output format from input file ext "{ext}"')
+
+
 def share(
     schema: str,
     input: str,
@@ -161,6 +172,8 @@ def share(
 ) -> None:
     schema_path = schema
     filename = Path(schema_path).name
+    if outfmt == OutFmt.AUTO:
+        outfmt = infer_outfmt(input)
 
     print(f'loading schema {qt(filename)}')
     try:
