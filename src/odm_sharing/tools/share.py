@@ -161,7 +161,7 @@ def share(
     debug: bool = DEBUG_DEFAULT,
 ) -> None:
     schema_path = schema
-    filename = Path(schema_path).name
+    schema_filename = Path(schema_path).name
     if outfmt == OutFmt.AUTO:
         fmt = infer_outfmt(input)
         if not fmt:
@@ -169,10 +169,10 @@ def share(
             return
         outfmt = fmt
 
-    print(f'loading schema {qt(filename)}')
+    print(f'loading schema {qt(schema_filename)}')
     try:
         ruleset = rules.load(schema_path)
-        ruletree = trees.parse(ruleset, orgs, filename)
+        ruletree = trees.parse(ruleset, orgs, schema_filename)
         org_queries = queries.generate(ruletree)
         table_filter = get_tables(org_queries)
     except rules.ParseError:
