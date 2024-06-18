@@ -18,6 +18,9 @@ dynamic = ["dependencies"]
 "Homepage" = "https://github.com/Big-Life-Lab/PHES-ODM-sharing"
 "Bug Tracker" = "https://github.com/Big-Life-Lab/PHES-ODM-sharing/issues"
 
+[project.scripts]
+odm-share = "odm_sharing.tools.share:main"
+
 [build-system]
 requires = ["hatchling", "hatch-requirements-txt"]
 build-backend = "hatchling.build"
