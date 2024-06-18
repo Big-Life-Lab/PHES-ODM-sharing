@@ -1,5 +1,6 @@
 import contextlib
 import os
+import sys
 from enum import Enum
 from os import linesep
 from pathlib import Path
@@ -47,6 +48,11 @@ OUTDIR_DEFAULT = './'
 OUTFMT_DEFAULT = OutFmt.EXCEL
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
+
+
+def quit(msg: str = '') -> None:
+    # XXX: shadows site.quit which may not be available
+    sys.exit(msg)
 
 
 def write_line(file: TextIO, text: str = '') -> None:
@@ -156,7 +162,7 @@ def share(
         table_filter = get_tables(org_queries)
     except rules.ParseError:
         # XXX: error messages are already printed at this point
-        exit(1)
+        quit()
 
     # XXX: only tables found in the schema are considered in the data source
     print(f'connecting to {qt(input)}')
@@ -191,7 +197,7 @@ def share(
                         assert False, f'format {outfmt} not impl'
             except IndexError:
                 # XXX: this is thrown from excel writer when nothing is written
-                exit('failed to write output, most likely due to empty input')
+                quit('failed to write output, most likely due to empty input')
             finally:
                 if excel_file:
                     excel_file.close()
