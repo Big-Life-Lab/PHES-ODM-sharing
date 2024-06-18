@@ -199,7 +199,7 @@ def share(
 
 
 @app.command()
-def main(
+def main_cli(
     schema: str = typer.Argument(default=..., help=SCHEMA_DESC),
     input: str = typer.Argument(default='', help=INPUT_DESC),
     orgs: List[str] = typer.Option(default=ORGS_DEFAULT, help=ORGS_DESC),
@@ -211,5 +211,10 @@ def main(
     share(schema, input, orgs, outfmt, outdir, debug)
 
 
-if __name__ == '__main__':
+def main():
+    # runs main_cli
     app()
+
+
+if __name__ == '__main__':
+    main()
