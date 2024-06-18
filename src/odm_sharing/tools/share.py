@@ -119,9 +119,13 @@ def get_tables(org_queries: sh.queries.OrgTableQueries) -> Set[str]:
     return result
 
 
-def gen_filename(org: str, table: str, ext: str) -> str:
-    # <org>[-<table>].<ext>
-    return org + (f'-{table}' if table else '') + f'.{ext}'
+def gen_filename(in_name: str, org: str, table: str, ext: str) -> str:
+    if in_name == table or not table:
+        # this avoids duplicating the table name when both input and output is
+        # CSV
+        return f'{in_name}-{org}.{ext}'
+    else:
+        return f'{in_name}-{org}-{table}.{ext}'
 
 
 def get_debug_writer(debug: bool) -> Union[TextIO, contextlib.nullcontext]:
@@ -132,10 +136,10 @@ def get_debug_writer(debug: bool) -> Union[TextIO, contextlib.nullcontext]:
         return contextlib.nullcontext()
 
 
-def get_excel_writer(debug: bool, org: str, outdir: str, outfmt: OutFmt
-                     ) -> Optional[pd.ExcelWriter]:
+def get_excel_writer(in_name, debug: bool, org: str, outdir: str,
+                     outfmt: OutFmt) -> Optional[pd.ExcelWriter]:
     if not debug and outfmt == OutFmt.EXCEL:
-        filename = gen_filename(org, '', 'xlsx')
+        filename = gen_filename(in_name, org, '', 'xlsx')
         print('writing ' + filename)
         excel_path = os.path.join(outdir, filename)
         return pd.ExcelWriter(excel_path)
@@ -162,6 +166,8 @@ def share(
 ) -> None:
     schema_path = schema
     schema_filename = Path(schema_path).name
+    in_name = Path(input).stem
+
     if outfmt == OutFmt.AUTO:
         fmt = infer_outfmt(input)
         if not fmt:
@@ -197,11 +203,11 @@ def share(
                     org_data[table] = sh.get_data(con, tq)
 
             # one excel file per org
-            excel_file = get_excel_writer(debug, org, outdir, outfmt)
+            excel_file = get_excel_writer(in_name, debug, org, outdir, outfmt)
             try:
                 for table, data in org_data.items():
                     if outfmt == OutFmt.CSV:
-                        filename = gen_filename(org, table, 'csv')
+                        filename = gen_filename(in_name, org, table, 'csv')
                         print('writing ' + filename)
                         path = os.path.join(outdir, filename)
                         data.to_csv(path, index=False)
