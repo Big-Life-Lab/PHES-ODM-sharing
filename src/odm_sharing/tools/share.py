@@ -50,9 +50,8 @@ OUTFMT_DEFAULT = OutFmt.EXCEL
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
 
-def quit(msg: str = '') -> None:
-    # XXX: shadows site.quit which may not be available
-    sys.exit(msg)
+def error(msg: str) -> None:
+    print(msg, file=sys.stderr)
 
 
 def write_line(file: TextIO, text: str = '') -> None:
@@ -162,7 +161,7 @@ def share(
         table_filter = get_tables(org_queries)
     except rules.ParseError:
         # XXX: error messages are already printed at this point
-        quit()
+        return
 
     # XXX: only tables found in the schema are considered in the data source
     print(f'connecting to {qt(input)}')
@@ -197,7 +196,8 @@ def share(
                         assert False, f'format {outfmt} not impl'
             except IndexError:
                 # XXX: this is thrown from excel writer when nothing is written
-                quit('failed to write output, most likely due to empty input')
+                error('failed to write output, most likely due to empty input')
+                return
             finally:
                 if excel_file:
                     excel_file.close()
