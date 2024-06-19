@@ -1,4 +1,5 @@
 import contextlib
+import logging
 import os
 import sys
 from enum import Enum
@@ -53,6 +54,7 @@ app = typer.Typer(pretty_exceptions_show_locals=False)
 
 def error(msg: str) -> None:
     print(msg, file=sys.stderr)
+    logging.error(msg)
 
 
 def write_line(file: TextIO, text: str = '') -> None:
@@ -140,7 +142,7 @@ def get_excel_writer(in_name, debug: bool, org: str, outdir: str,
                      outfmt: OutFmt) -> Optional[pd.ExcelWriter]:
     if not debug and outfmt == OutFmt.EXCEL:
         filename = gen_filename(in_name, org, '', 'xlsx')
-        print('writing ' + filename)
+        logging.info('writing ' + filename)
         excel_path = os.path.join(outdir, filename)
         return pd.ExcelWriter(excel_path)
     else:
@@ -175,7 +177,7 @@ def share(
             return
         outfmt = fmt
 
-    print(f'loading schema {qt(schema_filename)}')
+    logging.info(f'loading schema {qt(schema_filename)}')
     try:
         ruleset = rules.load(schema_path)
         ruletree = trees.parse(ruleset, orgs, schema_filename)
@@ -186,11 +188,9 @@ def share(
         return
 
     # XXX: only tables found in the schema are considered in the data source
-    print(f'connecting to {qt(input)}')
+    logging.info(f'connecting to {qt(input)}')
     con = sh.connect(input, table_filter)
 
-    if debug:
-        print()
     # one debug file per run
     with get_debug_writer(debug) as debug_file:
         for org, table_queries in org_queries.items():
@@ -208,11 +208,11 @@ def share(
                 for table, data in org_data.items():
                     if outfmt == OutFmt.CSV:
                         filename = gen_filename(in_name, org, table, 'csv')
-                        print('writing ' + filename)
+                        logging.info('writing ' + filename)
                         path = os.path.join(outdir, filename)
                         data.to_csv(path, index=False)
                     elif outfmt == OutFmt.EXCEL:
-                        print(f'- {qt(table)}')
+                        logging.info(f'- {qt(table)}')
                         data.to_excel(excel_file, sheet_name=table)
                     else:
                         assert False, f'format {outfmt} not impl'
@@ -223,7 +223,7 @@ def share(
             finally:
                 if excel_file:
                     excel_file.close()
-    print('done')
+    logging.info('done')
 
 
 @app.command()
@@ -236,6 +236,7 @@ def main_cli(
     debug: Annotated[bool, typer.Option("-d", "--debug",
                                         help=DEBUG_DESC)] = DEBUG_DEFAULT,
 ) -> None:
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     share(schema, input, orgs, outfmt, outdir, debug)
 
 

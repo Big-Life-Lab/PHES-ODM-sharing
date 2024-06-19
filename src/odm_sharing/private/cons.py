@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import List, Set
 
@@ -18,7 +19,7 @@ def _create_memory_db() -> sa.engine.Engine:
 
 def _write_table_to_db(db: sa.engine.Engine, table: str, df: pd.DataFrame
                        ) -> None:
-    print(f'- table {table}')
+    logging.info(f'- table {table}')
     df.to_sql(table, db, index=False, if_exists='replace')
 
 
@@ -26,7 +27,7 @@ def _connect_csv(path: str) -> Connection:
     '''copies file data to in-memory db
 
     :raises OSError:'''
-    print('importing csv file')
+    logging.info('importing csv file')
     table = Path(path).stem
     db = _create_memory_db()
     df = pd.read_csv(path)
@@ -38,7 +39,7 @@ def _connect_excel(path: str, table_whitelist: Set[str]) -> Connection:
     '''copies file data to in-memory db
 
     :raises OSError:'''
-    print('importing excel workbook')
+    logging.info('importing excel workbook')
     db = _create_memory_db()
     xl = pd.ExcelFile(path)
     included_tables = set(map(str, xl.sheet_names)) & table_whitelist
