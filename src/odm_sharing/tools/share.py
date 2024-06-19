@@ -58,9 +58,8 @@ OUTFMT_DEFAULT = OutFmt.AUTO
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
 
-def quit(msg: str = '') -> None:
-    # XXX: shadows site.quit which may not be available
-    sys.exit(msg)
+def error(msg: str) -> None:
+    print(msg, file=sys.stderr)
 
 
 def write_line(file: TextIO, text: str = '') -> None:
@@ -157,13 +156,14 @@ def get_excel_writer(in_name, debug: bool, org: str, outdir: str,
 
 
 def infer_outfmt(path: str) -> OutFmt:
+    '''returns AUTO when not recognized'''
     (_, ext) = os.path.splitext(path)
     if ext == '.csv':
         return OutFmt.CSV
     elif ext == '.xlsx':
         return OutFmt.EXCEL
     else:
-        quit(f'unable to infer output format from input file ext "{ext}"')
+        return OutFmt.AUTO
 
 
 def share(
@@ -180,6 +180,9 @@ def share(
 
     if outfmt == OutFmt.AUTO:
         outfmt = infer_outfmt(input)
+        if outfmt == OutFmt.AUTO:
+            error('unable to infer output format from input file')
+            return
 
     print(f'loading schema {qt(schema_filename)}')
     try:
@@ -189,7 +192,7 @@ def share(
         table_filter = get_tables(org_queries)
     except rules.ParseError:
         # XXX: error messages are already printed at this point
-        quit()
+        return
 
     # XXX: only tables found in the schema are considered in the data source
     print(f'connecting to {qt(input)}')
@@ -224,7 +227,8 @@ def share(
                         assert False, f'format {outfmt} not impl'
             except IndexError:
                 # XXX: this is thrown from excel writer when nothing is written
-                quit('failed to write output, most likely due to empty input')
+                error('failed to write output, most likely due to empty input')
+                return
             finally:
                 if excel_file:
                     excel_file.close()
