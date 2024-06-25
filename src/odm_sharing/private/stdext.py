@@ -6,12 +6,13 @@ from enum import Enum
 class StrEnum(str, Enum):
     '''shim for python < 3.11
 
-    Provides a ``__str__()`` function that returns the enum string-value, which
-    is useful for printing the value or comparing it with another string.
+    Gives the enum's assigned string value when converted to string, which is
+    useful for printing the value or comparing it with another string.
 
     See https://docs.python.org/3.11/library/enum.html#enum.StrEnum
     '''
-    pass
+    def __str__(self) -> str:
+        return str(self.value)
 
 
 class StrValueEnum(StrEnum):
