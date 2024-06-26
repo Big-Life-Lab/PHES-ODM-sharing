@@ -5,7 +5,7 @@ import sys
 from enum import Enum
 from os import linesep
 from pathlib import Path
-from typing import Dict, List, Optional, Set, TextIO
+from typing import Dict, List, Optional, Set, TextIO, Union
 from typing_extensions import Annotated
 
 import pandas as pd
@@ -137,9 +137,8 @@ def gen_filename(in_name: str, org: str, table: str, ext: str) -> str:
         return f'{in_name}-{org}-{table}.{ext}'
 
 
-def get_debug_writer(debug: bool):  # type: ignore
+def get_debug_writer(debug: bool) -> Union[TextIO, contextlib.nullcontext]:
     # XXX: this function is only used for brewity with the below `with` clause
-    # XXX: return type is ignored for simplicity
     if debug:
         return open('debug.txt', 'w')
     else:
