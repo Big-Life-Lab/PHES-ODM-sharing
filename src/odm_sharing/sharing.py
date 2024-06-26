@@ -67,7 +67,7 @@ def get_columns(c: Connection, tq: TableQuery
     if tq.columns:
         return (tq.select_rule_id, tq.columns)
     else:
-        dialect = queries.SqlDialect(cons.get_dialect_name(c))
+        dialect = queries.parse_sql_dialect(cons.get_dialect_name(c))
         sql = queries.get_column_sql(tq, dialect)
         columns = cons.exec(c, sql).columns.array.tolist()
         return (tq.select_rule_id, columns)
