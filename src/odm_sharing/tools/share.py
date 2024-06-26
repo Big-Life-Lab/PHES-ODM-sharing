@@ -157,15 +157,13 @@ def get_excel_writer(in_name, debug: bool, org: str, outdir: str,
         return None
 
 
-def infer_outfmt(path: str) -> OutFmt:
-    '''returns AUTO when not recognized'''
+def infer_outfmt(path: str) -> Optional[OutFmt]:
+    '''returns None when not recognized'''
     (_, ext) = os.path.splitext(path)
     if ext == '.csv':
         return OutFmt.CSV
     elif ext == '.xlsx':
         return OutFmt.EXCEL
-    else:
-        return OutFmt.AUTO
 
 
 def share(
@@ -181,10 +179,11 @@ def share(
     in_name = Path(input).stem
 
     if outfmt == OutFmt.AUTO:
-        outfmt = infer_outfmt(input)
-        if outfmt == OutFmt.AUTO:
+        fmt = infer_outfmt(input)
+        if not fmt:
             error('unable to infer output format from input file')
             return
+        outfmt = fmt
 
     logging.info(f'loading schema {qt(schema_filename)}')
     try:
