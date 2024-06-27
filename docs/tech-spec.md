@@ -107,14 +107,14 @@ package):
     - `TableName = str`
 
 - high level functions:
-    - `extract(data_source: str, schema_file: str, orgs: List[str]=[]) -> ...`
+    - `extract(schema_file: str, data_source: str, orgs: List[str]=[]) -> ...`
 
         returns a Pandas DataFrame per table per org
 
         Parameters:
 
-        - data_source: a file path or database url (in SQLAlchemy format)
         - schema_file: rule schema file path
+        - data_source: a file path or database url (in SQLAlchemy format)
         - orgs: orgs to share with, or all if empty
 
         Exceptions: ConnectionError, OSError, ParseError
@@ -215,7 +215,7 @@ orgs = [org]
 high-level one-shot function:
 
 ```python
-results = s.extract(data_file, rules, orgs)
+results = s.extract(rules, data_file, orgs)
 for org, tabledata in results.items():
     for table, data in tabledata.items():
         data.to_csv(f'{org}-{table}.csv')

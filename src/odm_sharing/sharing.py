@@ -74,8 +74,8 @@ def get_columns(c: Connection, tq: TableQuery
 
 
 def extract(
-    data_source: str,
     schema_path: str,
+    data_source: str,
     orgs: List[str] = [],
 ) -> Dict[OrgName, Dict[TableName, pd.DataFrame]]:
     '''returns a Pandas DataFrame per table per org
