@@ -1,11 +1,11 @@
 from pathlib import Path
-from typing import List, Set, cast
+from typing import List, Set
 
 import pandas as pd
 import sqlalchemy as sa
 
 
-Connection = object  # opaque data-source connection handle
+Connection = sa.engine.Engine
 
 
 class DataSourceError(Exception):
@@ -31,7 +31,7 @@ def _connect_csv(path: str) -> Connection:
     db = _create_memory_db()
     df = pd.read_csv(path)
     _write_table_to_db(db, table, df)
-    return cast(Connection, db)
+    return db
 
 
 def _connect_excel(path: str, table_whitelist: Set[str]) -> Connection:
@@ -45,7 +45,7 @@ def _connect_excel(path: str, table_whitelist: Set[str]) -> Connection:
     for table in included_tables:
         df = xl.parse(sheet_name=table)
         _write_table_to_db(db, table, df)
-    return cast(Connection, db)
+    return db
 
 
 def _connect_db(url: str) -> Connection:
@@ -75,7 +75,7 @@ def connect(data_source: str, tables: Set[str] = set()) -> Connection:
 
 def get_dialect_name(c: Connection) -> str:
     '''returns the name of the dialect used for the connection'''
-    return cast(sa.engine.Engine, c).dialect.name
+    return c.dialect.name
 
 
 def exec(c: Connection, sql: str, sql_args: List[str] = []) -> pd.DataFrame:
@@ -83,8 +83,7 @@ def exec(c: Connection, sql: str, sql_args: List[str] = []) -> pd.DataFrame:
 
     :raises DataSourceError:
     '''
-    db = cast(sa.engine.Engine, c)
     try:
-        return pd.read_sql_query(sql, db, params=tuple(sql_args))
+        return pd.read_sql_query(sql, c, params=tuple(sql_args))
     except sa.exc.OperationalError as e:
         raise DataSourceError(str(e))
