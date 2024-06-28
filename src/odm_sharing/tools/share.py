@@ -1,14 +1,15 @@
 import contextlib
+import logging
 import os
+import sys
 from enum import Enum
 from os import linesep
 from pathlib import Path
-from typing import Dict, List, Optional, Set, TextIO
+from typing import Dict, List, Optional, Set, TextIO, Union
 from typing_extensions import Annotated
 
 import pandas as pd
 import typer
-import sqlalchemy as sa
 from tabulate import tabulate
 from functional import seq
 
@@ -24,6 +25,7 @@ from odm_sharing.private.utils import qt
 
 class OutFmt(str, Enum):
     '''output format'''
+    AUTO = 'auto'
     CSV = 'csv'
     EXCEL = 'excel'
 
@@ -41,8 +43,21 @@ DEBUG_DESC = '''Output debug info to STDOUT (and ./debug.txt) instead of
 creating sharable output files. This shows which tables and columns are
 selected, and how many rows each filter returns.'''
 
+QUIET_DESC = 'Don\'t log to STDOUT.'
+
+# default cli args
+DEBUG_DEFAULT = False
+ORGS_DEFAULT = []
+OUTDIR_DEFAULT = './'
+OUTFMT_DEFAULT = OutFmt.AUTO
+QUIET_DEFAULT = False
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
+
+
+def error(msg: str) -> None:
+    print(msg, file=sys.stderr)
+    logging.error(msg)
 
 
 def write_line(file: TextIO, text: str = '') -> None:
@@ -109,12 +124,16 @@ def get_tables(org_queries: sh.queries.OrgTableQueries) -> Set[str]:
     return result
 
 
-def gen_filename(org: str, table: str, ext: str) -> str:
-    # <org>[-<table>].<ext>
-    return org + (f'-{table}' if table else '') + f'.{ext}'
+def gen_filename(in_name: str, org: str, table: str, ext: str) -> str:
+    if in_name == table or not table:
+        # this avoids duplicating the table name when both input and output is
+        # CSV
+        return f'{in_name}-{org}.{ext}'
+    else:
+        return f'{in_name}-{org}-{table}.{ext}'
 
 
-def get_debug_writer(debug: bool) -> TextIO:
+def get_debug_writer(debug: bool) -> Union[TextIO, contextlib.nullcontext]:
     # XXX: this function is only used for brewity with the below `with` clause
     if debug:
         return open('debug.txt', 'w')
@@ -122,44 +141,59 @@ def get_debug_writer(debug: bool) -> TextIO:
         return contextlib.nullcontext()
 
 
-def get_excel_writer(debug: bool, org: str, outdir: str, outfmt: OutFmt
-                     ) -> Optional[pd.ExcelWriter]:
+def get_excel_writer(in_name, debug: bool, org: str, outdir: str,
+                     outfmt: OutFmt) -> Optional[pd.ExcelWriter]:
     if not debug and outfmt == OutFmt.EXCEL:
-        filename = gen_filename(org, '', 'xlsx')
-        print('writing ' + filename)
+        filename = gen_filename(in_name, org, '', 'xlsx')
+        logging.info('writing ' + filename)
         excel_path = os.path.join(outdir, filename)
         return pd.ExcelWriter(excel_path)
+    else:
+        return None
 
 
-@app.command()
-def main(
-    schema: str = typer.Argument(default=..., help=SCHEMA_DESC),
-    input: str = typer.Argument(default='', help=INPUT_DESC),
-    orgs: List[str] = typer.Option(default=[], help=ORGS_DESC),
-    outfmt: OutFmt = typer.Option(default=OutFmt.EXCEL, help=OUTFMT_DESC),
-    outdir: str = typer.Option(default='./', help=OUTDIR_DESC),
-    debug: Annotated[bool, typer.Option("-d", "--debug",
-                                        help=DEBUG_DESC)] = False,
+def infer_outfmt(path: str) -> Optional[OutFmt]:
+    '''returns None when not recognized'''
+    (_, ext) = os.path.splitext(path)
+    if ext == '.csv':
+        return OutFmt.CSV
+    elif ext == '.xlsx':
+        return OutFmt.EXCEL
+
+
+def share(
+    schema: str,
+    input: str,
+    orgs: List[str] = ORGS_DEFAULT,
+    outfmt: OutFmt = OUTFMT_DEFAULT,
+    outdir: str = OUTDIR_DEFAULT,
+    debug: bool = DEBUG_DEFAULT,
 ) -> None:
     schema_path = schema
-    filename = Path(schema_path).name
+    schema_filename = Path(schema_path).name
+    in_name = Path(input).stem
 
-    print(f'loading schema {qt(filename)}')
+    if outfmt == OutFmt.AUTO:
+        fmt = infer_outfmt(input)
+        if not fmt:
+            error('unable to infer output format from input file')
+            return
+        outfmt = fmt
+
+    logging.info(f'loading schema {qt(schema_filename)}')
     try:
         ruleset = rules.load(schema_path)
-        ruletree = trees.parse(ruleset, orgs, filename)
+        ruletree = trees.parse(ruleset, orgs, schema_filename)
         org_queries = queries.generate(ruletree)
         table_filter = get_tables(org_queries)
     except rules.ParseError:
         # XXX: error messages are already printed at this point
-        exit(1)
+        return
 
     # XXX: only tables found in the schema are considered in the data source
-    print(f'connecting to {qt(input)}')
+    logging.info(f'connecting to {qt(input)}')
     con = sh.connect(input, table_filter)
 
-    if debug:
-        print()
     # one debug file per run
     with get_debug_writer(debug) as debug_file:
         for org, table_queries in org_queries.items():
@@ -172,26 +206,50 @@ def main(
                     org_data[table] = sh.get_data(con, tq)
 
             # one excel file per org
-            excel_file = get_excel_writer(debug, org, outdir, outfmt)
+            excel_file = get_excel_writer(in_name, debug, org, outdir, outfmt)
             try:
                 for table, data in org_data.items():
                     if outfmt == OutFmt.CSV:
-                        filename = gen_filename(org, table, 'csv')
-                        print('writing ' + filename)
-                        data.to_csv(os.path.join(outdir, filename))
+                        filename = gen_filename(in_name, org, table, 'csv')
+                        logging.info('writing ' + filename)
+                        path = os.path.join(outdir, filename)
+                        data.to_csv(path, index=False)
                     elif outfmt == OutFmt.EXCEL:
-                        print(f'- {qt(table)}')
+                        logging.info(f'- {qt(table)}')
                         data.to_excel(excel_file, sheet_name=table)
                     else:
                         assert False, f'format {outfmt} not impl'
             except IndexError:
                 # XXX: this is thrown from excel writer when nothing is written
-                exit('failed to write output, most likely due to empty input')
+                error('failed to write output, most likely due to empty input')
+                return
             finally:
                 if excel_file:
                     excel_file.close()
-    print('done')
+    logging.info('done')
+
+
+@app.command()
+def main_cli(
+    schema: str = typer.Argument(default=..., help=SCHEMA_DESC),
+    input: str = typer.Argument(default='', help=INPUT_DESC),
+    orgs: List[str] = typer.Option(default=ORGS_DEFAULT, help=ORGS_DESC),
+    outfmt: OutFmt = typer.Option(default=OUTFMT_DEFAULT, help=OUTFMT_DESC),
+    outdir: str = typer.Option(default=OUTDIR_DEFAULT, help=OUTDIR_DESC),
+    debug: Annotated[bool, typer.Option("-d", "--debug",
+                                        help=DEBUG_DESC)] = DEBUG_DEFAULT,
+    quiet: Annotated[bool, typer.Option("-q", "--quiet",
+                                        help=QUIET_DESC)] = QUIET_DEFAULT,
+) -> None:
+    if not quiet:
+        logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+    share(schema, input, orgs, outfmt, outdir, debug)
+
+
+def main():
+    # runs main_cli
+    app()
 
 
 if __name__ == '__main__':
-    app()
+    main()

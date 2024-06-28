@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Set, Tuple
 
 import pandas as pd
 from functional import seq
@@ -29,7 +29,7 @@ def parse(schema_path: str, orgs: List[str] = []) -> OrgTableQueries:
     return queries.generate(tree)
 
 
-def connect(data_source: str, tables: List[str] = []) -> Connection:
+def connect(data_source: str, tables: Set[str] = set()) -> Connection:
     '''returns a connection object that can be used together with a query
     object to retrieve data from `data_source`
 
@@ -67,7 +67,7 @@ def get_columns(c: Connection, tq: TableQuery
     if tq.columns:
         return (tq.select_rule_id, tq.columns)
     else:
-        dialect = queries.SqlDialect(cons.get_dialect_name(c))
+        dialect = queries.parse_sql_dialect(cons.get_dialect_name(c))
         sql = queries.get_column_sql(tq, dialect)
         columns = cons.exec(c, sql).columns.array.tolist()
         return (tq.select_rule_id, columns)
