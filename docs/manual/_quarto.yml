@@ -1,6 +1,5 @@
 project:
   type: book
-  pre-render: build-api.sh
 
 book:
   title: 'PHES-ODM Sharing Library Manual'
@@ -10,7 +9,7 @@ book:
     - install.qmd
     - getting-started.qmd
     - cli.qmd
-    - reference/index.qmd.qmd
+    - reference/index.qmd
   appendices:
     - schemas.qmd
     - python.qmd
@@ -22,7 +21,6 @@ quartodoc:
   package: odm_sharing
   sections:
     - title: API
-      desc: my desc
     - contents:
         - sharing.extract
         - sharing.parse
