@@ -9,7 +9,7 @@ also be called `python3` and `pip3`.
 
 ## System dependencies
 
-- Python >= 3.8 (see @sec-python)
+- Python >= 3.9 (see @sec-python)
 - SQLite 3 (see @sec-sqlite)
 
 ## Package
@@ -34,10 +34,10 @@ section.
 git clone https://github.com/Big-Life-Lab/PHES-ODM-sharing odm-sharing
 cd odm-sharing
 
-# if python != 3.8, then install pyenv and setup repo to run python 3.8
+# if python != 3.9, then install pyenv and setup repo to run python 3.9
 sudo apt-get install pyenv
-pyenv install 3.8
-pyenv local 3.8
+pyenv install 3.9
+pyenv local 3.9
 
 # create a virtual env for the repo, using the selected python version
 pyenv exec python -m venv .env # with pyenv
@@ -47,7 +47,7 @@ pyenv exec python -m venv .env # with pyenv
 # to set the correct python-binary path/env)
 source .env/bin/activate
 
-# verify that python now has the correct version (3.8)
+# verify that python now has the correct version (3.9)
 python --version
 
 # make sure pip is up to date, and install dependencies
