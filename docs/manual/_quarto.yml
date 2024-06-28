@@ -9,11 +9,27 @@ book:
     - install.qmd
     - getting-started.qmd
     - cli.qmd
-    - api.qmd
+    - reference/index.qmd.qmd
   appendices:
     - schemas.qmd
     - python.qmd
     - sqlite.qmd
+
+quartodoc:
+  style: single-page
+  parser: sphinx
+  package: odm_sharing
+  sections:
+    - title: API
+      desc: my desc
+    - contents:
+        - sharing
+        - sharing.extract
+        - sharing.parse
+        - sharing.connect
+        - sharing.get_data
+        - sharing.get_counts
+        - sharing.get_columns
 
 pdf-engine: pdflatex
 toc: true
