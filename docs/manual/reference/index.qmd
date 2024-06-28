@@ -1,3 +1,0 @@
-This is a placeholder that will be overwritten by quartodoc. It's here so that
-Quarto won't complain that the file is missing before the first run of
-quartodoc.
