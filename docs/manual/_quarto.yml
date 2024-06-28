@@ -11,11 +11,28 @@ book:
     - getting-started.qmd
     - cli-reference.qmd
     - cli-usage.qmd
-    - api.qmd
+    - api-reference/index.qmd
+    - api-usage/api-usage.qmd
   appendices:
     - schemas.qmd
     - python.qmd
     - sqlite.qmd
+
+quartodoc:
+  renderer: _renderer.py
+  style: single-page
+  parser: sphinx
+  package: odm_sharing
+  dir: api-reference
+  sections:
+    - title: API Reference
+    - contents:
+        - sharing.extract
+        - sharing.parse
+        - sharing.connect
+        - sharing.get_data
+        - sharing.get_counts
+        - sharing.get_columns
 
 pdf-engine: pdflatex
 toc: true

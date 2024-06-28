@@ -106,11 +106,16 @@ To generate the documentation, you'll first have to:
 
 1. Install [Quarto](https://quarto.org/docs/get-started/)
 2. Activate the Python virtual environment (if any)
-3. Install Python dependencies
+3. Install Python dependencies:
 
     ```bash
     pip install -r requirements-doc.txt
     ```
+
+4. Run `docs/manual/build-api.sh`^[This is currently not very portable, and requires a
+   unix-like shell. Windows users do however have many options, including:
+   GitBash/MSYS/Cygwin/WSL.] to generate the API reference. (This must also be
+   re-run every time the API changes.)
 
 To preview the manual in a web browser while editing:
 

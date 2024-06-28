@@ -89,4 +89,4 @@ for org, table_data in results.items():
     print(data_frame)
 ```
 
-See @sec-api for the API reference and more examples.
+See @sec-api-ref for the API reference and @sec-api-usage for more examples.
