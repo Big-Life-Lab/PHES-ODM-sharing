@@ -21,76 +21,6 @@ boost when running queries on big indexed databases, as well as enable us to
 output the intermediate SQL to the user in case they want to inspect or execute
 the queries themselves.
 
-## CLI
-
-**Usage**
-
-```
-./share.py [OPTION]... SCHEMA INPUT
-```
-
-Arguments:
-
-- SCHEMA
-
-  sharing schema file path
-
-- INPUT
-
-  spreadsheet file path or [SQLAlchemy database url](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)
-
-Options:
-
-- `--orgs=NAME[,...]`
-
-    comma separated list of organizations to output data for, defaults to all
-
-- `--outfmt=FORMAT`
-
-    output format (excel or csv), defaults to excel
-
-- `--outdir=PATH`
-
-    output file directory, defaults to the current directory
-
-- `-d`, `--debug`:
-
-    output debug info to STDOUT (and ./debug.txt) instead of creating sharable
-    output files. This shows which tables and columns are selected, and how
-    many rows each filter returns.
-
-- `-q`, `--quiet`:
-
-    don't log to STDOUT
-
-One or multiple sharable output files will be created in the chosen output
-directory according to the chosen output format and organization(s). Each
-output file will have the input filename followed by a postfix with the org
-name (and table name if CSV).
-
-**Examples**
-
-Create a sharable excel file in the "~/ohri" directory, for the "OHRI"
-organization, applying the rules from schema.csv on the input from data.xlsx:
-
-```bash
-./share.py --orgs=OHRI --outdir=~/ohri/ schema.csv data.xlsx
-```
-
-Output to the default (current) directory, for all organizations specified in
-the schema, using a MySQL database (with the pymysql package) as input:
-
-```bash
-./share.py schema.csv mysql+pymysql://scott:tiger@localhost/foo
-```
-
-Same as above, using a MS SQL Server database through ODBC (with the pyodbc
-package):
-
-```bash
-./share.py schema.csv mssql+pyodbc://user:pass@mydsn
-```
-
 ## API
 
 ### Public modules
@@ -107,14 +37,14 @@ package):
     - `TableName = str`
 
 - high level functions:
-    - `extract(data_source: str, schema_file: str, orgs: List[str]=[]) -> ...`
+    - `extract(schema_file: str, data_source: str, orgs: List[str]=[]) -> ...`
 
         returns a Pandas DataFrame per table per org
 
         Parameters:
 
-        - data_source: a file path or database url (in SQLAlchemy format)
         - schema_file: rule schema file path
+        - data_source: a file path or database url (in SQLAlchemy format)
         - orgs: orgs to share with, or all if empty
 
         Exceptions: ConnectionError, OSError, ParseError
@@ -215,7 +145,7 @@ orgs = [org]
 high-level one-shot function:
 
 ```python
-results = s.extract(data_file, rules, orgs)
+results = s.extract(rules, data_file, orgs)
 for org, tabledata in results.items():
     for table, data in tabledata.items():
         data.to_csv(f'{org}-{table}.csv')
