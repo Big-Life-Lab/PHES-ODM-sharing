@@ -1,7 +1,5 @@
 # API {#sec-api}
 
-{{< include reference/index.qmd >}}
-
 ## Reference
 
 <!-- TODO generate this API reference from the source code automatically -->
