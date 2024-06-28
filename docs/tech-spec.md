@@ -59,6 +59,10 @@ Options:
     output files. This shows which tables and columns are selected, and how
     many rows each filter returns.
 
+- `-q`, `--quiet`:
+
+    don't log to STDOUT
+
 One or multiple sharable output files will be created in the chosen output
 directory according to the chosen output format and organization(s). Each
 output file will have the input filename followed by a postfix with the org

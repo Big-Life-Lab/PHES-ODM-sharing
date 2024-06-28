@@ -43,11 +43,14 @@ DEBUG_DESC = '''Output debug info to STDOUT (and ./debug.txt) instead of
 creating sharable output files. This shows which tables and columns are
 selected, and how many rows each filter returns.'''
 
+QUIET_DESC = 'Don\'t log to STDOUT.'
+
 # default cli args
 DEBUG_DEFAULT = False
 ORGS_DEFAULT = []
 OUTDIR_DEFAULT = './'
 OUTFMT_DEFAULT = OutFmt.AUTO
+QUIET_DEFAULT = False
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
@@ -235,8 +238,11 @@ def main_cli(
     outdir: str = typer.Option(default=OUTDIR_DEFAULT, help=OUTDIR_DESC),
     debug: Annotated[bool, typer.Option("-d", "--debug",
                                         help=DEBUG_DESC)] = DEBUG_DEFAULT,
+    quiet: Annotated[bool, typer.Option("-q", "--quiet",
+                                        help=QUIET_DESC)] = QUIET_DEFAULT,
 ) -> None:
-    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+    if not quiet:
+        logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     share(schema, input, orgs, outfmt, outdir, debug)
 
 
