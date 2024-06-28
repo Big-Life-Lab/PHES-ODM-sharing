@@ -1,5 +1,6 @@
 project:
   type: book
+  pre-render: build-api.sh
 
 book:
   title: 'PHES-ODM Sharing Library Manual'
@@ -23,7 +24,6 @@ quartodoc:
     - title: API
       desc: my desc
     - contents:
-        - sharing
         - sharing.extract
         - sharing.parse
         - sharing.connect
