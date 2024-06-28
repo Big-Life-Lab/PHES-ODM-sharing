@@ -53,18 +53,20 @@ Options:
 
     output file directory, defaults to the current directory
 
-- `-d`, `--dry-run`, `--debug`:
+- `-d`, `--debug`:
 
-    only output the intermediary debug information describing what would
-    happen, and don't create any output files.
+    output debug info to STDOUT (and ./debug.txt) instead of creating sharable
+    output files. This shows which tables and columns are selected, and how
+    many rows each filter returns.
+
+- `-q`, `--quiet`:
+
+    don't log to STDOUT
 
 One or multiple sharable output files will be created in the chosen output
 directory according to the chosen output format and organization(s). Each
 output file will have the input filename followed by a postfix with the org
 name (and table name if CSV).
-
-(Debug) information about the operation will be printed to STDOUT, as well as
-written to a `debug.txt` file in the same directory.
 
 **Examples**
 
@@ -125,10 +127,10 @@ package):
 
         Exceptions: ConnectionError
 
-    - `parse(schema_file: str, orgs=[]) -> Dict[OrgName, Dict[TableName, Query]]`
+    - `parse(schema_path: str, orgs=[]) -> Dict[OrgName, Dict[TableName, Query]]`
 
         returns queries for each org and table, generated from the rules
-        specified in `schema_file`
+        specified in `schema_path`
 
         Exceptions: OSError, ParseError
 
@@ -178,26 +180,23 @@ Parsing of rules into abstract syntax trees.
 
 (SQL) query generation from ASTs.
 
-- generate(rt: RuleTree) -> Dict[OrgName, Query]
+- generate(rt: RuleTree) -> Dict[OrgName, Dict[TableName, TableQuery]]
 
 ### Errors
 
 The exception types that may be thrown, as well as examples of what they cover:
 
+- DataSourceError:
+    - table not found in data source
+    - unable to open/read data source
 - OSError:
-    - input file doesn't exist
-    - failed to read input file
+    - failed to read schema file
     - failed to write output file
-- ConnectionError:
-    - failed to establish connection to db
-    - failed to import data to temporary db
-    - failed to read from data source
-    - data source columns don't match query
 - ParseError:
-    - header is missing/invalid
-    - row/rule field value is missing/invalid
-    - rule is referencing a rule that doesn't exist or doesn't have the
-      expected field values
+    - headers are missing
+    - value can't be coerced to the correct type
+    - required table/key/operator/mode is missing
+    - invalid filter/group operator
 
 ### Examples
 
@@ -256,17 +255,19 @@ for table, query in table_queries.items():
 
 ### CSV rule parsing
 
-1. open schema file
-2. parse each line into a rule obj:
-    - validate and throw exception on error
-3. add each rule obj to a dictionary with rule id as key
+1. read csv, or fail with OSError
+2. normalize NA values
+3. validate headers, or fail with ParseError(s)
+4. parse each row into a rule obj:
+    - validate rule, or accumulate ParseError(s):
+        - coerce values into the right types
+        - check existence of required values
+        - check operator values
+5. return a dict with rule-ids and rules, or raise accumulated errors
 
 Error messages should contain all the necessary info to find and fix the issue,
-including the line number, row number, rule id and column name (if applicable).
-Parsing can be wrapped in a try-block to accumulate errors instead of aborting
-on the first error. This is a viable option since each line is parsed
-individually, and their relationships aren't taken into account before the next
-(AST generation) step.
+including the line number and column name (if applicable). Errors can be
+accumulated, but the result is only valid if no errors occured.
 
 ### AST generation
 
@@ -286,13 +287,14 @@ Node kinds:
 - **filter**: defines a filter with operator, key and value
 - **field**: a field name
 - **literal**: a string literal
+- **range-kind**: specifies if a range is an interval or a set
 
 Node structure:
 
-- (ruleId: int)
+- rule_id: int
 - kind: NodeKind
 - str_val: str
-- children: List[Node]
+- sons: List[Node]
 
 Tree structure:
 
@@ -305,6 +307,7 @@ specified, so the filter.field node comes before any filter.literal nodes, etc.
 - filter:
     - (**filter**, rule.operator):
         - (**field**, rule.key)
+        - (**range-kind**, 'interval'/'set') # only present for 'in' operator
         - (**literal**, x) for x in rule.value
 - group:
     - (**group**, rule.operator):
@@ -347,6 +350,7 @@ Example rules with its generated tree:
                         (literal, "mPox")
                     (filter, "in")
                         (field, "reportDate")
+                        (range-kind, "interval")
                         (literal, "2021-01-01")
                         (literal, "2021-12-31")
                 (group, "AND")
@@ -401,7 +405,7 @@ the table node:
 
     ```
     operator = str_val
-    result = recurse(first-child) + operator + recurse(second-child)
+    result = recurse(first-child) + (logic depending on range-kind)
     ```
 
 - **field**:

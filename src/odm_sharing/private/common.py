@@ -1,0 +1,2 @@
+OrgName = str
+TableName = str

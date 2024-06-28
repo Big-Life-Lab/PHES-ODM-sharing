@@ -1,0 +1,6 @@
+ruleID,table,mode,key,operator,value,notes
+11,samples,select,NA,NA,all,
+12,samples,filter,siteID,=,ottawa-1,
+13,samples,filter,collDT,=,2023-02-01,
+14,NA,group,NA,AND,12;13,
+15,NA,share,ohri,NA,11;14,
