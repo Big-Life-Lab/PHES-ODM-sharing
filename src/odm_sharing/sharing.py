@@ -21,7 +21,8 @@ def parse(schema_path: str, orgs: List[str] = []) -> OrgTableQueries:
     '''returns queries for each org and table, generated from the rules
     specified in `schema_file`
 
-    :raises OSError, ParseError:
+    :raises OSError:
+    :raises ParseError:
     '''
     ruleset = rules.load(schema_path)
     filename = Path(schema_path).name
