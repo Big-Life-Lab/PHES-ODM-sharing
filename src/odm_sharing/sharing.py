@@ -52,7 +52,7 @@ def get_counts(c: Connection, tq: TableQuery) -> Dict[RuleId, int]:
     :raises DataSourceError:'''
 
     def get_rule_count(rule_id: RuleId, q: Query) -> Tuple[RuleId, int]:
-        count = cons.exec(c, q.sql, q.args).iat[0, 0]
+        count = int(cons.exec(c, q.sql, q.args).iat[0, 0])
         return (rule_id, count)
 
     return seq(tq.rule_count_queries.items()).smap(get_rule_count).dict()
