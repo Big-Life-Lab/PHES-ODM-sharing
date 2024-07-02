@@ -70,7 +70,7 @@ share(SCHEMA, DATA)
 display.Markdown(load_csv_md(outpath))
 ```
 <br/> <!-- needed because `display` doesn't add bottom margin -->
-See @sec-cli for the CLI reference and more examples.
+See @sec-cli-ref for the CLI reference and @sec-cli-usage for more examples.
 
 ## API
 

@@ -9,7 +9,8 @@ book:
     - index.qmd
     - install.qmd
     - getting-started.qmd
-    - cli.qmd
+    - cli-reference.qmd
+    - cli-usage.qmd
     - api.qmd
   appendices:
     - schemas.qmd

@@ -1,0 +1,68 @@
+```{python}
+#| echo: false
+from odm_sharing.tools.share import share
+```
+
+# CLI Reference {#sec-cli-ref}
+
+```bash
+odm-share [OPTION]... SCHEMA INPUT
+```
+
+Arguments:
+
+- SCHEMA
+
+  sharing schema file path
+
+- INPUT
+
+  spreadsheet file path or [SQLAlchemy database URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)
+
+Options:
+
+- `--orgs=NAME[,...]`
+
+    comma separated list of organizations to output data for, defaults to all
+
+- `--outfmt=FORMAT`
+
+    output format (excel or csv), defaults to input format
+
+- `--outdir=PATH`
+
+    output file directory, defaults to the current directory
+
+- `-d`, `--debug`:
+
+    output debug info to STDOUT (and ./debug.txt) instead of creating sharable
+    output files. This shows which tables and columns are selected, and how
+    many rows each filter returns.
+
+- `-q`, `--quiet`:
+
+    don't log to STDOUT
+
+One or multiple sharable output files will be created in the chosen output
+directory according to the chosen output format and organization(s). Each
+output file will have the input name followed by the recipient org name.
+
+## Errors
+
+Error messages will be printed to the terminal (STDERR) when something is
+wrong. The message starts with telling where the error originated, including
+the filename and line number or rule id. Here's a few examples:
+
+When headers are missing from the schema:
+
+```{python}
+#| echo: false
+share('assets/schema-missing-headers.csv', 'assets/measures.csv')
+```
+
+When no share-rules are contained in the schema:
+
+```{python}
+#| echo: false
+share('assets/schema-missing-rules.csv', 'assets/measures.csv')
+```
