@@ -47,7 +47,7 @@ QUIET_DESC = 'Don\'t log to STDOUT.'
 
 # default cli args
 DEBUG_DEFAULT = False
-ORGS_DEFAULT = []
+ORGS_DEFAULT: List[str] = []
 OUTDIR_DEFAULT = './'
 OUTFMT_DEFAULT = OutFmt.AUTO
 QUIET_DEFAULT = False
@@ -141,7 +141,7 @@ def get_debug_writer(debug: bool) -> Union[TextIO, contextlib.nullcontext]:
         return contextlib.nullcontext()
 
 
-def get_excel_writer(in_name, debug: bool, org: str, outdir: str,
+def get_excel_writer(in_name: str, debug: bool, org: str, outdir: str,
                      outfmt: OutFmt) -> Optional[pd.ExcelWriter]:
     if not debug and outfmt == OutFmt.EXCEL:
         filename = gen_filename(in_name, org, '', 'xlsx')
@@ -159,6 +159,7 @@ def infer_outfmt(path: str) -> Optional[OutFmt]:
         return OutFmt.CSV
     elif ext == '.xlsx':
         return OutFmt.EXCEL
+    return None
 
 
 def share(
@@ -248,7 +249,7 @@ def main_cli(
     share(schema, input, orgs, outfmt, outdir, debug)
 
 
-def main():
+def main() -> None:
     # runs main_cli
     app()
 
