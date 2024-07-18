@@ -218,7 +218,9 @@ def load(schema_path: str) -> Dict[RuleId, Rule]:
     filename = Path(schema_path).name
     ctx = SchemaCtx(filename)
     data = pd.read_csv(schema_path)
-    data.fillna('', inplace=True)  # replace NA values with empty string
+
+    # replace all different NA values with an empty string
+    data = data.fillna('')
 
     # XXX: loading is aborted on header errors since row-parsing depends on it
     validate_headers(ctx, data.columns.to_list())
