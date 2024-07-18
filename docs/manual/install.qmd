@@ -1,0 +1,142 @@
+# Installation
+
+The commands below can be entered using any terminal application. Search for
+"terminal" or "command line" in your OS application menu.
+
+::: {.callout-important}
+The python and pip executables may have different names depending on the
+distribution. `python` and `pip` is used below, but they may also be called
+`python3` and `pip3`.
+:::
+
+## System dependencies
+
+- Python >= 3.8 (see @sec-python)
+- SQLite 3 (see @sec-sqlite)
+
+## Package
+
+Install the package:
+
+```bash
+pip install git+https://github.com/Big-Life-Lab/PHES-ODM-sharing.git@impl
+```
+
+(The `impl` branch must be used for now, until it's merged into the main
+branch.)
+
+You're done! You can now explore how to get started in @sec-getting-started.
+
+## Development
+
+If you want to setup a development environment, then run the commands below as
+you see fit. If you just want to use the library, then you can ignore this
+section.
+
+1. clone the repo
+
+    ```bash
+    git clone https://github.com/Big-Life-Lab/PHES-ODM-sharing odm-sharing
+    cd odm-sharing
+    ```
+
+2. if python != 3.8, then install pyenv and setup repo to run python 3.8
+
+    ```bash
+    sudo apt-get install pyenv
+    pyenv install 3.8
+    pyenv local 3.8
+    ```
+
+3. create a virtual env for the repo, using the selected python version
+
+    - with pyenv:
+
+        ```bash
+        pyenv exec python -m venv .env
+        ```
+
+    - without pyenv:
+
+        ```bash
+        python -m venv .env
+        ```
+
+4. activate the virtual env
+
+    (This must be done every time a new terminal is opened, to set the correct
+    python-binary path/env.)
+
+    ```bash
+    source .env/bin/activate
+    ```
+
+6. verify that python now has the correct version (3.8)
+
+    ```bash
+    python --version
+    ```
+
+7. make sure pip is up to date, and install dependencies
+
+    ```bash
+    pip install --upgrade pip
+    pip install -r requirements.txt
+    pip install -r requirements-dev.txt
+    ```
+
+8. if you previously installed the package, then uninstall it again
+
+    ```bash
+    pip uninstall odm_sharing
+    ```
+
+9. build and install the library in development mode
+
+    ```bash
+    pip install -e .
+    ```
+
+You can now edit the source files, and directly see the changes when importing
+the package.
+
+## Documentation
+
+To generate the documentation, you'll first have to:
+
+1. Install [Quarto](https://quarto.org/docs/get-started/)
+2. Activate the Python virtual environment (if any)
+3. Install Python dependencies
+
+    ```bash
+    pip install -r requirements-doc.txt
+    ```
+
+To preview the manual in a web browser while editing:
+
+```bash
+quarto preview docs/manual
+```
+
+To render the manual to a PDF:
+
+```bash
+quarto render docs/manual --to pdf
+```
+
+The rendered PDF file can now be found in `docs/manual/build`.
+
+::: {.callout-note title='Troubleshooting'}
+
+If you're on Linux and the above command fails after mentioning 'tlmgr' or
+'fontawesome5', then do the following:
+
+
+1. Fix `tlmgr` as described in the [Arch Linux wiki](https://wiki.archlinux.org/title/TeX_Live#tlmgr).
+2. Install the fontawesome5 package:
+   ```bash
+   tlmgr install fontawesome5
+   ```
+3. Try the above PDF render command again.
+
+:::

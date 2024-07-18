@@ -176,9 +176,11 @@ def share(
     if outfmt == OutFmt.AUTO:
         fmt = infer_outfmt(input)
         if not fmt:
-            error('unable to infer output format from input file')
-            return
-        outfmt = fmt
+            logging.warning('unable to infer output format from input path, ' +
+                            'defaulting to excel')
+            outfmt = OutFmt.EXCEL
+        else:
+            outfmt = fmt
 
     logging.info(f'loading schema {qt(schema_filename)}')
     try:

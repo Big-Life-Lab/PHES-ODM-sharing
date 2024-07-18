@@ -1,0 +1,92 @@
+```{python}
+#| echo: false
+from pathlib import Path
+
+import IPython.display as display
+
+from odm_sharing.tools.share import share
+
+from common import DATA, SCHEMA, load_csv_md, print_file
+```
+
+# Getting started {#sec-getting-started}
+
+So you want to share your data, but not all of it. This library provides the
+tools for filtering your data before sharing it.
+
+## Data
+
+The input data can either be in CSV or Excel/XLSX format. Here's a CSV example.
+
+The following text can be copied into a file called `measures.csv`:
+
+```{python}
+#| echo: false
+#| output: asis
+
+print('```bash')
+print_file(DATA)
+print('```')
+```
+
+## Schema
+
+A sharing schema is needed to define the sharing rules. Here's an example
+schema that defines one rule for which columns to select, one for which rows to
+include, and one that binds them together with a recipient organization. Look
+at the `notes` column for an explanation of each rule.
+
+The following text can be copied into a file called `schema.csv`:
+
+```{python}
+#| echo: false
+#| output: asis
+
+print('```bash')
+print_file(SCHEMA)
+print('```')
+```
+
+See @sec-schemas for more information on schemas.
+
+## CLI
+
+Run `odm-share` from the command line to filter your data using a schema:
+
+```bash
+odm-share schema.csv measures.csv
+```
+
+This will produce one output file per organization (as specified in the schema)
+with the filename pattern `<input_name>-<org>.csv`.
+
+Using the above schema and data examples would result in the following:
+
+`measures-OHRI.csv`
+```{python}
+#| echo: false
+outpath = f'{Path(DATA).stem}-OHRI.csv'
+share(SCHEMA, DATA)
+display.Markdown(load_csv_md(outpath))
+```
+<br/> <!-- needed because `display` doesn't add bottom margin -->
+See @sec-cli for the CLI reference and more examples.
+
+## API
+
+The following code does the exact same as the above CLI command but using the
+functions exported by the library:
+
+```{python}
+import odm_sharing.sharing as sh
+
+# `SCHEMA` and `DATA` refers to the examples defined above, namely `schema.csv`
+#  and `measures.csv`, respectively.
+
+results = sh.extract(SCHEMA, DATA)
+for org, table_data in results.items():
+    data_frame = table_data['measures']
+    print(data_frame)
+```
+
+See @sec-api for the API reference and more examples.

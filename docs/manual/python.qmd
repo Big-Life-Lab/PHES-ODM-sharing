@@ -1,0 +1,65 @@
+# Python {#sec-python}
+
+The recommended version for most users is 3.11.9. A higher version will work
+fine, but cause a very long installation time for packages (like this one)
+which is based on Python 3.8.
+
+## Install
+
+### Windows & macOS
+
+The main download page can be found [here](https://www.python.org/downloads/).
+
+Direct download links for version 3.11.9:
+
+- [Windows](https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe)
+- [macOS](https://www.python.org/ftp/python/3.11.9/python-3.11.9-macos11.pkg)
+
+### Linux
+
+Linux users should install Python using their distribution's package manager.
+Installing a specific version is more complicated, so we'll keep it simple and
+use the latest version. On Ubuntu that would be:
+
+```bash
+sudo apt update
+sudo apt install python3
+```
+
+## Test installation
+
+You can now test that Python is working by entering the following in a terminal,
+
+```bash
+python --version
+```
+
+which should output `Python 3.x.x`.
+
+If you get a "command not found" error, then:
+
+1. Make sure you typed it correctly.
+2. Some distributions don't include the `python` alias. Try using `python3`
+   directly, like this: `python3 --version`.
+
+## Setup Pip
+
+(Replace `python`/`pip` with `python3`/`pip3` as needed.)
+
+Pip should be bundled with python. Ensure that it's working by running:
+
+```bash
+pip --version
+```
+
+If it's not working, then try the following:
+
+```bash
+python -m ensurepip
+```
+
+Lastly, upgrade pip:
+
+```bash
+pip install --upgrade pip
+```
