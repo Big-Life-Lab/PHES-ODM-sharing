@@ -11,7 +11,7 @@ distribution. `python` and `pip` is used below, but they may also be called
 
 ## System dependencies
 
-- Python >= 3.8 (see @sec-python)
+- Python >= 3.9 (see @sec-python)
 - SQLite 3 (see @sec-sqlite)
 
 ## Package
@@ -40,12 +40,12 @@ section.
     cd odm-sharing
     ```
 
-2. if python != 3.8, then install pyenv and setup repo to run python 3.8
+2. if python != 3.9, then install pyenv and setup repo to run python 3.9
 
     ```bash
     sudo apt-get install pyenv
-    pyenv install 3.8
-    pyenv local 3.8
+    pyenv install 3.9
+    pyenv local 3.9
     ```
 
 3. create a virtual env for the repo, using the selected python version
@@ -71,7 +71,7 @@ section.
     source .env/bin/activate
     ```
 
-6. verify that python now has the correct version (3.8)
+6. verify that python now has the correct version (3.9)
 
     ```bash
     python --version

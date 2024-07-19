@@ -218,7 +218,9 @@ def load(schema_path: str) -> Dict[RuleId, Rule]:
     filename = Path(schema_path).name
     ctx = SchemaCtx(filename)
     data = pd.read_csv(schema_path)
-    data.fillna('', inplace=True)  # replace NA values with empty string
+
+    # replace all different NA values with an empty string
+    data = data.fillna('')
 
     # XXX: loading is aborted on header errors since row-parsing depends on it
     validate_headers(ctx, data.columns.to_list())
@@ -229,7 +231,11 @@ def load(schema_path: str) -> Dict[RuleId, Rule]:
     for i, row in enumerate(data.itertuples(index=False)):
         ctx.row_ix = i + 1
         try:
-            rule = init_rule(ctx, row._asdict())
+
+            # type-checkers can't handle dicts with values of multiple types
+            row_dict = row._asdict()  # type: ignore
+
+            rule = init_rule(ctx, row_dict)
             validate_rule(ctx, rule)
             result[rule.id] = rule
         except ParseError as e:

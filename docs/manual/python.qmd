@@ -1,19 +1,10 @@
 # Python {#sec-python}
 
-The recommended version for most users is 3.11.9. A higher version will work
-fine, but cause a very long installation time for packages (like this one)
-which is based on Python 3.8.
-
 ## Install
 
 ### Windows & macOS
 
-The main download page can be found [here](https://www.python.org/downloads/).
-
-Direct download links for version 3.11.9:
-
-- [Windows](https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe)
-- [macOS](https://www.python.org/ftp/python/3.11.9/python-3.11.9-macos11.pkg)
+Python can be downloaded from [here](https://www.python.org/downloads/).
 
 ### Linux
 
