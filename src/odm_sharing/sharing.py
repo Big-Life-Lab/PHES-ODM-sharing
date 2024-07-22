@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Tuple
 
 import pandas as pd
 from functional import seq
@@ -29,12 +29,12 @@ def parse(schema_path: str, orgs: List[str] = []) -> OrgTableQueries:
     return queries.generate(tree)
 
 
-def connect(data_source: str, tables: Set[str] = set()) -> Connection:
+def connect(data_source: str, tables: List[str] = []) -> Connection:
     '''returns a connection object that can be used together with a query
     object to retrieve data from `data_source`
 
     :raises DataSourceError:'''
-    return cons.connect(data_source, tables)
+    return cons.connect(data_source, set(tables))
 
 
 def get_data(c: Connection, tq: TableQuery) -> pd.DataFrame:

@@ -195,7 +195,7 @@ def share(
 
     # XXX: only tables found in the schema are considered in the data source
     logging.info(f'connecting to {qt(input)}')
-    con = sh.connect(input, table_filter)
+    con = cons.connect(input, table_filter)
 
     # one debug file per run
     with get_debug_writer(debug) as debug_file:
