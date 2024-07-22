@@ -34,5 +34,10 @@ quartodoc:
         - sharing.get_counts
         - sharing.get_columns
 
+theme:
+  - default
+  - style.scss
+
 pdf-engine: pdflatex
 toc: true
+toc-depth: 2
