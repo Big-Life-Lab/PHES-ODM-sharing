@@ -42,7 +42,7 @@ def _connect_excel(path: str, table_whitelist: Set[str]) -> Connection:
     logging.info('importing excel workbook')
     db = _create_memory_db()
     xl = pd.ExcelFile(path)
-    included_tables = set(map(str, xl.sheet_names))
+    included_tables = set(map(str, xl.sheet_names))  # XXX: may be int
     if table_whitelist:
         included_tables &= table_whitelist
     for table in included_tables:
