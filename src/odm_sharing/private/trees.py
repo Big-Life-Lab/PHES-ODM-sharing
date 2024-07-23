@@ -278,7 +278,7 @@ def parse_filter_values(ctx: Ctx, op: Op, is_interval: bool, val_str: str
     if op == Op.RANGE:
         if is_interval:
             return parse_list(ctx, val_str, 2, 2, INTERVAL_SEP)
-        else: # is set
+        else:  # is set
             return parse_list(ctx, val_str, min=1)
     else:
         if seq(ALL_SEPARATORS).map(lambda x: x in val_str).any():
