@@ -4,21 +4,15 @@
 
 ```{python}
 #|echo: False
+import sys
 import tempfile
-from os.path import join
-from shutil import copy2
+
+sys.path.append('..')
+from common import copy_assets
 
 temp_dir = tempfile.gettempdir()
 
-# copy assets to current directory to avoid long paths in examples
-ASSET_DIR = '../assets/minimal/'
-FILENAMES = [
-    'data.xlsx',
-    'measures.csv',
-    'schema.csv',
-]
-for fn in FILENAMES:
-    copy2(join(ASSET_DIR, fn), fn)
+copy_assets(['schema.csv', 'measures.csv', 'data.xlsx'])
 ```
 
 ## Share a single table in CSV format
