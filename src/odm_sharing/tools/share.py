@@ -94,7 +94,7 @@ def write_debug(
 
     (select_id, columns) = sh.get_columns(con, table_query)
     write_header(file, 2, 'columns')
-    for col in sorted(columns):
+    for col in columns:
         write_line(file, f'- {col}')
     write_line(file)
 
