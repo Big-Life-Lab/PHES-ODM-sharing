@@ -1,1 +1,2 @@
 jupyter==1.0.0
+quartodoc==0.7.5

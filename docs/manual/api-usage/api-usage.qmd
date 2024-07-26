@@ -1,0 +1,157 @@
+# API Usage {#sec-api-usage}
+
+<!-- all code examples are executed to make sure the code is valid -->
+
+```{python}
+#|echo: False
+import tempfile
+from os.path import join
+from shutil import copy2
+
+temp_dir = tempfile.gettempdir()
+
+# copy assets to current directory to avoid long paths in examples
+ASSET_DIR = '../assets/minimal/'
+FILENAMES = [
+    'data.xlsx',
+    'measures.csv',
+    'schema.csv',
+]
+for fn in FILENAMES:
+    copy2(join(ASSET_DIR, fn), fn)
+```
+
+## Share a single table in CSV format
+
+`extract` is an simple high-level function for retrieving filtered data. It can
+be seen as equivalent to the `odm-share` CLI tool.
+
+The following example extracts data from table "measures" (residing in
+`measures.csv`) according to the sharing rules in `schema.csv`, and stores the
+result for each organization in a separate CSV file:
+
+```{python}
+import pandas as pd
+import odm_sharing.sharing as sh
+
+# NOTE: the CSV filename must be a valid table name
+filtered_data = sh.extract('schema.csv', 'measures.csv')
+for org_name, table_data in filtered_data.items():
+    df: pd.DataFrame = table_data['measures']
+    df.to_csv(f'{temp_dir}/measures-for-{org_name}.csv')
+```
+
+## Share multiple tables in Excel format
+
+The above example can be rewritten for Excel files as follows:
+
+```{python}
+import pandas as pd
+import odm_sharing.sharing as sh
+
+# NOTE: Excel sheet names must be valid table names
+data = sh.extract('schema.csv', 'data.xlsx')
+for org, table_data in data.items():
+    with pd.ExcelWriter(f'{temp_dir}/data-for-{org}.xlsx') as writer:
+        for table_name, df in table_data.items():
+            df.to_excel(writer, sheet_name=table_name, index=False)
+```
+
+## Parse a sharing schema
+
+The `parse` function turns a schema file into queries that later can be used to
+filter data.
+
+```{python}
+import pandas as pd
+import odm_sharing.sharing as sh
+
+org_table_queries = sh.parse('schema.csv')
+for org, table_queries in org_table_queries.items():
+    print('org:', org)
+    for table, query in table_queries.items():
+        print('tbl:', table)
+
+        # NOTE: query internals are considered private and are subject to
+        # change
+        print('sql:', query.data_query.sql)
+```
+
+## Connecting to data sources
+
+The `connect` function establishes a connection to a data source to be queried.
+Both files and databases can be accessed.
+
+```{python}
+import odm_sharing.sharing as sh
+
+excel_con = sh.connect('data.xlsx')
+sqlite_memory_con = sh.connect('sqlite://')
+sqlite_file_con = sh.connect(f'sqlite:///{temp_dir}/data.db')
+```
+
+The following examples require extra packages to be installed, depending on the
+database driver used:
+
+```python
+mysql_con = sh.connect('mysql://<user>:<pass>@<hostname>/<dbname>')
+mssql_con = sh.connect('mssql+pyodbc://<user>:<pass>@<dsn>')
+```
+
+See
+[SQLAlchemy](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)
+for more database URL examples.
+
+## Get filtered data
+
+The following example shows how to use the `connect`, `parse` and `get_data`
+functions together, to extract filtered data from a data source. This is
+essentially the same thing as using `extract`.
+
+```{python}
+import odm_sharing.sharing as sh
+
+con = sh.connect('measures.csv')
+queries = sh.parse('schema.csv')
+for org, table_queries in queries.items():
+    for table, query in table_queries.items():
+        print(sh.get_data(con, query))
+```
+
+## Get column names
+
+The `get_columns` function provides a way to know which columns will be
+selected without performing the actual data extraction.
+
+```{python}
+import odm_sharing.sharing as sh
+
+con = sh.connect('measures.csv')
+queries = sh.parse('schema.csv')
+for org, table_queries in queries.items():
+    for table, query in table_queries.items():
+        (select_rule_id, columns) = sh.get_columns(con, query)
+        print('columns:')
+        for col in columns:
+            print('-', col)
+```
+
+## Get rule counts
+
+The `get_counts` function can be used to show how many rows are included by
+each rule's filter. This is useful for debugging a schema during its
+development.
+
+```{python}
+import odm_sharing.sharing as sh
+
+con = sh.connect('measures.csv')
+queries = sh.parse('schema.csv')
+for org, table_queries in queries.items():
+    for table, query in table_queries.items():
+        print('rule counts:')
+        rule_counts = sh.get_counts(con, query)
+        for rule_id, count in rule_counts.items():
+            print(f'- #{rule_id}: {count}')
+
+```
