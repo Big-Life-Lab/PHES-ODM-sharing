@@ -57,7 +57,8 @@ class TestQueries(unittest.TestCase):
                  operator='=', value='a'),
             Rule(id=3, table='t', mode=RuleMode.FILTER, key='y',
                  operator='in', value='1;2'),
-            Rule(id=4, table='', mode=RuleMode.SHARE, key='ohri', value='1;2;3'),
+            Rule(id=4, table='', mode=RuleMode.SHARE, key='ohri',
+                 value='1;2;3'),
         ]
         ruletree = trees.parse(ruleset)
         q = queries.generate(ruletree)['ohri']['t']
@@ -87,7 +88,6 @@ class TestQueries(unittest.TestCase):
         actual2 = q2.rule_count_queries[share_id].sql
         self.assertEqual(actual1, expected1)
         self.assertEqual(actual2, expected2)
-
 
     def test_sanitize(self) -> None:
         '''special characters are stripped, and parameter values separated, to

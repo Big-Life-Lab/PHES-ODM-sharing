@@ -1,0 +1,16 @@
+name: type-check
+
+on: [pull_request]
+
+jobs:
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version-file: '.python-version-ci'
+          cache: 'pip'
+      - run: pip install -r requirements.txt
+      - run: pip install -r requirements-dev.txt
+      - run: mypy

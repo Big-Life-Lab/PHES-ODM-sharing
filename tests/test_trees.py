@@ -4,7 +4,7 @@ from typing import List
 
 import odm_sharing.private.trees as trees
 from odm_sharing.private.rules import ParseError, Rule, RuleMode, load
-from odm_sharing.private.trees import INTERVAL_SEP, Op, parse
+from odm_sharing.private.trees import Op, parse
 
 
 class TestParseList(unittest.TestCase):
@@ -292,6 +292,7 @@ class TestParse(unittest.TestCase):
                 (5, literal, 'sweSed')
 '''
         self.assertEqual(actual, expected)
+
 
 if __name__ == '__main__':
     unittest.main()
