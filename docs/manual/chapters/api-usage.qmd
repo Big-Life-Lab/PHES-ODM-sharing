@@ -4,10 +4,8 @@
 
 ```{python}
 #|echo: False
-import sys
 import tempfile
 
-sys.path.append('..')
 from common import copy_assets
 
 temp_dir = tempfile.gettempdir()

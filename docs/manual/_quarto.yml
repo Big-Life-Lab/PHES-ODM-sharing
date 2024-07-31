@@ -1,22 +1,23 @@
 project:
   type: book
   output-dir: build
+  execute-dir: file
 
 book:
   title: 'PHES-ODM Sharing Library Manual'
   author: 'OHRI'
   chapters:
     - index.qmd
-    - install.qmd
-    - getting-started.qmd
-    - cli-reference.qmd
-    - cli-usage.qmd
+    - chapters/install.qmd
+    - chapters/getting-started.qmd
+    - chapters/cli-reference.qmd
+    - chapters/cli-usage.qmd
     - api-reference/index.qmd
-    - api-usage/api-usage.qmd
+    - chapters/api-usage.qmd
   appendices:
-    - schemas.qmd
-    - python.qmd
-    - sqlite.qmd
+    - chapters/schemas.qmd
+    - chapters/python.qmd
+    - chapters/sqlite.qmd
 
 quartodoc:
   renderer: _renderer.py
@@ -36,7 +37,7 @@ quartodoc:
 
 theme:
   - default
-  - style.scss
+  - assets/style.scss
 
 pdf-engine: pdflatex
 toc: true

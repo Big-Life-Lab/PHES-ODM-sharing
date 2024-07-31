@@ -8,7 +8,7 @@ from tabulate import tabulate
 
 
 MODULE_DIR = dirname(abspath(inspect.getfile(inspect.currentframe())))
-ASSET_DIR = join(MODULE_DIR, 'assets/minimal/')
+ASSET_DIR = join(MODULE_DIR, '../assets/')
 SCHEMA = join(ASSET_DIR, 'schema.csv')
 DATA = join(ASSET_DIR, 'measures.csv')
 
