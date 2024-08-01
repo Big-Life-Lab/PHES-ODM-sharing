@@ -171,11 +171,10 @@ def validate_rule(ctx: SchemaCtx, rule: Rule) -> None:
                        modes: Union[set, list]) -> None:
         has = bool(val)
         should_have = mode in modes
-        for_modes = f'for modes {fmt_set(modes)}'
         if has and not should_have:
-            err(f'{ctx.column} must be empty/NA {for_modes}')
+            err(f'{ctx.column} must be empty/NA for mode {qt(mode)}')
         elif not has and should_have:
-            err(f'{ctx.column} required {for_modes}')
+            err(f'{ctx.column} required for modes {fmt_set(modes)}')
 
     def check_set(ctx: SchemaCtx, actual: str, expected: Union[set, list]
                   ) -> None:
