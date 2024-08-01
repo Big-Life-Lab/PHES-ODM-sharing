@@ -219,7 +219,8 @@ def share(
                         data.to_csv(path, index=False)
                     elif outfmt == OutFmt.EXCEL:
                         logging.info(f'- {qt(table)}')
-                        data.to_excel(excel_file, sheet_name=table)
+                        data.to_excel(excel_file, sheet_name=table,
+                                      index=False)
                     else:
                         assert False, f'format {outfmt} not impl'
             except IndexError:
