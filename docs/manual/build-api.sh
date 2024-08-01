@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 set -e
-projdir=$(dirname $0)
 
+projdir=$(dirname $0)
 cd $projdir
 
 # build API reference
 quartodoc build
 
-cd api-reference
+builddir=$projdir/api-reference
+cd $builddir
 
 # fix
 if [[ -f index.qmd.qmd ]]; then

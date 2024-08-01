@@ -6,7 +6,7 @@ import IPython.display as display
 
 from odm_sharing.tools.share import share
 
-from common import DATA, SCHEMA, load_csv_md, print_file
+from common import DATA, SCHEMA, copy_assets, load_csv_md, print_file
 ```
 
 # Getting started {#sec-getting-started}
@@ -74,16 +74,18 @@ See @sec-cli-ref for the CLI reference and @sec-cli-usage for more examples.
 
 ## API
 
+```{python}
+#|echo: False
+copy_assets(['schema.csv', 'measures.csv'])
+```
+
 The following code does the exact same as the above CLI command but using the
 functions exported by the library:
 
 ```{python}
 import odm_sharing.sharing as sh
 
-# `SCHEMA` and `DATA` refers to the examples defined above, namely `schema.csv`
-#  and `measures.csv`, respectively.
-
-results = sh.extract(SCHEMA, DATA)
+results = sh.extract('schema.csv', 'measures.csv')
 for org, table_data in results.items():
     data_frame = table_data['measures']
     print(data_frame)
