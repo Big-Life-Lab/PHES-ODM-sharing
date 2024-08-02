@@ -235,7 +235,7 @@ def share(
 @app.command()
 def main_cli(
     schema: str = typer.Argument(default=..., help=SCHEMA_DESC),
-    input: str = typer.Argument(default='', help=INPUT_DESC),
+    input: str = typer.Argument(default=..., help=INPUT_DESC),
     orgs: List[str] = typer.Option(default=ORGS_DEFAULT, help=ORGS_DESC),
     outfmt: OutFmt = typer.Option(default=OUTFMT_DEFAULT, help=OUTFMT_DESC),
     outdir: str = typer.Option(default=OUTDIR_DEFAULT, help=OUTDIR_DESC),
