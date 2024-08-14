@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Dict, List, Tuple
 
+import numpy as np
 import pandas
 from functional import seq
 
@@ -8,7 +9,7 @@ import odm_sharing.private.cons as cons
 import odm_sharing.private.queries as queries
 import odm_sharing.private.rules as rules
 import odm_sharing.private.trees as trees
-from odm_sharing.private.common import ColumnName, OrgName, TableName
+from odm_sharing.private.common import ColumnName, OrgName, TableName, F, T
 from odm_sharing.private.cons import Connection
 from odm_sharing.private.queries import OrgTableQueries, Query, TableQuery
 from odm_sharing.private.rules import RuleId
@@ -38,6 +39,9 @@ def connect(data_source: str, tables: List[str] = []) -> Connection:
     creates a connection to a data source that later can be used with a query
     to retrieve data
 
+    Warning: Even tho using a database as input is supported, it hasn't been
+    tested properly.
+
     :param data_source: filepath or database URL
     :param tables: table name whitelist, disabled if empty
 
@@ -51,6 +55,9 @@ def connect(data_source: str, tables: List[str] = []) -> Connection:
 def get_data(c: Connection, tq: TableQuery) -> pandas.DataFrame:
     '''retrieves filtered data from a specific table of a data source
 
+    Warning: Boolean values from CSV/Excel files will be normalized as
+    TRUE/FALSE.
+
     :param c: the data source connection
     :param tq: the table query
 
@@ -59,7 +66,36 @@ def get_data(c: Connection, tq: TableQuery) -> pandas.DataFrame:
     :raises DataSourceError: if an error occured while retrieving data
     '''
     dq = tq.data_query
-    return cons.exec(c, dq.sql, dq.args)
+    df = cons.exec(c, dq.sql, dq.args)
+
+    # At this point bool values are 0/1, so we have to convert it to
+    # FALSE/TRUE (which is the ODM standard).
+    #
+    # XXX: selected columns are only a subset of all columns, and may not even
+    # include any of the previously found bool columns
+    for col in c.bool_cols[tq.table_name]:
+        if col not in df:
+            continue
+        kind = df[col].dtype
+        if kind == object:  # potentially str
+            df[col] = df[col].replace({'0': F, '1': T})
+        elif kind == np.int64:
+            df[col] = df[col].astype(str).replace({'0': F, '1': T})
+        elif kind == np.float64:
+            df[col] = df[col].astype(str).replace(
+                {'nan': '', '0': F, '1': T, '0.0': F, '1.0': T})
+        else:
+            assert False, f'invalid bool type {kind}'
+
+    # normalize None/empty to empty string
+    #
+    # XXX: bool columns may end up storing empty values as NULL in the
+    # database, which in turn are extracted as None
+    for series in df:
+        if df[series].dtype == object:  # str
+            df[series] = df[series].replace({None: ''})
+
+    return df
 
 
 def get_counts(c: Connection, tq: TableQuery) -> Dict[RuleId, int]:
@@ -107,6 +143,9 @@ def extract(
     orgs: List[str] = [],
 ) -> Dict[OrgName, Dict[TableName, pandas.DataFrame]]:
     '''high-level function for retrieving filtered data
+
+    Warning: Boolean values from CSV/Excel files will be normalized as
+    TRUE/FALSE.
 
     :param schema_path: rule schema filepath
     :param data_source: filepath or database URL

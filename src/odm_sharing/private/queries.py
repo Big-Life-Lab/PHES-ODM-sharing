@@ -45,6 +45,7 @@ PartialQuery = Query  # incomplete query
 @dataclass(frozen=True)
 class TableQuery:
     '''collection of queries for a single table'''
+    table_name: str
 
     columns: List[str]
     '''columns specified in the select-rule (unless "all" is used), which can
@@ -265,6 +266,7 @@ def gen_table_query(share_node: Node, table_node: Node) -> TableQuery:
         seq(rule_queries.items()).smap(gen_count_query_sql2).dict())
 
     return TableQuery(
+        table_name=table_node.str_val,
         data_query=data_query,
         rule_count_queries=count_queries,
         select_rule_id=select_id,
