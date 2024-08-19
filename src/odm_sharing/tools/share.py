@@ -147,7 +147,7 @@ def get_excel_writer(in_name: str, debug: bool, org: str, outdir: str,
         filename = gen_filename(in_name, org, '', 'xlsx')
         logging.info('writing ' + filename)
         excel_path = os.path.join(outdir, filename)
-        return pd.ExcelWriter(excel_path)
+        return pd.ExcelWriter(excel_path, engine='openpyxl')
     else:
         return None
 
