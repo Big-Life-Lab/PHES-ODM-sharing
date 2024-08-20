@@ -17,12 +17,8 @@ def share_csv(schema_path, data_path) -> List[str]:
 
 def share_excel(schema_path, data_path, outfmt) -> List[str]:
     with TemporaryDirectory() as dir:
-        share(schema_path, data_path, outdir=dir, outfmt=outfmt)
-        if outfmt == OutFmt.CSV:
-            outfile = join(dir, 'testdata-OHRI-mytable.csv')
-        else:
-            outfile = join(dir, 'testdata-OHRI.xlsx')
-        return readfile(outfile)
+        outfiles = share(schema_path, data_path, outdir=dir, outfmt=outfmt)
+        return readfile(outfiles[0])
 
 
 class TestCli(OdmTestCase):
