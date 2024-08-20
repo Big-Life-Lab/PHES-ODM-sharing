@@ -189,6 +189,9 @@ def share(
     logging.info(f'connecting to {qt(input)}')
     con = cons.connect(input, table_filter)
 
+    # create outdir
+    os.makedirs(outdir, exist_ok=True)
+
     # one debug file per run
     output_paths = []
     with get_debug_writer(debug) as debug_file:

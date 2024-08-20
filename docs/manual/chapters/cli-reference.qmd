@@ -35,7 +35,8 @@ Options:
 
 - `--outdir=PATH`
 
-    output file directory, defaults to the current directory
+    output file directory, defaults to the current directory. It's created if
+    it doesn't exist.
 
 - `-d`, `--debug`:
 
