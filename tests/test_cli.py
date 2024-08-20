@@ -5,12 +5,7 @@ from typing import List
 
 from odm_sharing.tools.share import OutFmt, share
 
-from common import OdmTestCase
-
-
-def readfile(path: str) -> str:
-    with open(path) as f:
-        return f.read()
+from common import OdmTestCase, readfile
 
 
 def share_csv(schema_path, data_path) -> List[str]:
