@@ -13,4 +13,4 @@ jobs:
         cache: 'pip'
     - run: pip install -r requirements.txt
     - run: pip install .
-    - run: python -m unittest discover tests
+    - run: ./run-unit-tests.sh
