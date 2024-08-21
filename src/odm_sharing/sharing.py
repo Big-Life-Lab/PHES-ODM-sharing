@@ -8,13 +8,10 @@ import odm_sharing.private.cons as cons
 import odm_sharing.private.queries as queries
 import odm_sharing.private.rules as rules
 import odm_sharing.private.trees as trees
-from odm_sharing.private.common import OrgName, TableName
+from odm_sharing.private.common import ColumnName, OrgName, TableName
 from odm_sharing.private.cons import Connection
 from odm_sharing.private.queries import OrgTableQueries, Query, TableQuery
 from odm_sharing.private.rules import RuleId
-
-
-ColumnName = str
 
 
 def parse(schema_path: str, orgs: List[str] = []) -> OrgTableQueries:
