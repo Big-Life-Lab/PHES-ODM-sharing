@@ -52,7 +52,7 @@ odm-share schema.csv mssql+pyodbc://user:pass@mydsn
 - Share CSV files from an Excel file:
 
     ```bash
-    odm-share --outfmt=CSV schema.csv data.xlsx
+    odm-share --outfmt=csv schema.csv data.xlsx
     ```
 
 - Create a sharable excel file in the "~/files" directory, for the "OHRI" and
