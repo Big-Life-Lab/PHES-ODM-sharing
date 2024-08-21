@@ -1,5 +1,5 @@
 import unittest
-from os.path import abspath, dirname, join
+from os.path import join
 from typing import List
 # from pprint import pprint
 
@@ -46,8 +46,9 @@ class TestParseList(OdmTestCase):
         self.assertEqual(actual, expected)
 
 
-class TestParseFilterValues(unittest.TestCase):
+class TestParseFilterValues(OdmTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.ctx = trees.Ctx('test')
 
     def parse(self, op: Op, val_str: str) -> List[str]:
@@ -69,14 +70,7 @@ class TestParseFilterValues(unittest.TestCase):
             self.parse(Op.EQ, 'a;b')
 
 
-class TestParse(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.maxDiff = None
-
-    def setUp(self) -> None:
-        self.dir = dirname(abspath(__file__))
-
+class TestParse(OdmTestCase):
     def get_actual(self, schema_fn: str) -> str:
         rules = load(join(self.dir, 'common', schema_fn))
         tree = parse(rules)
