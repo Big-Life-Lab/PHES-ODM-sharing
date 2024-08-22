@@ -7,8 +7,7 @@ cd $projdir
 # build API reference
 quartodoc build
 
-builddir=$projdir/api-reference
-cd $builddir
+cd api-reference
 
 # fix
 if [[ -f index.qmd.qmd ]]; then
