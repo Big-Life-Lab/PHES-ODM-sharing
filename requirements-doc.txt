@@ -1,2 +1,3 @@
+griffe==0.47.0
 jupyter==1.0.0
 quartodoc==0.7.5
