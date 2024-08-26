@@ -485,11 +485,20 @@ def parse(rules: Union[Dict[RuleId, Rule], List[Rule]],
 
     :return: an opaque rule-tree object for query generation
     '''
+    ctx = Ctx(filename)
+
     if isinstance(rules, dict):
         rules = list(rules.values())
     org_whitelist = set(orgs)
+    orgs_in_schema = seq(rules)\
+        .filter(lambda r: r.mode == RuleMode.SHARE)\
+        .map(lambda r: r.key)\
+        .set()
 
-    ctx = Ctx(filename)
+    if not (org_whitelist <= orgs_in_schema):
+        invalid = org_whitelist - orgs_in_schema
+        fail(ctx, f'the specified orgs {fmt_set(invalid)} are not part of ' +
+                  f'any share-rule in the schema {fmt_set(orgs_in_schema)}.')
 
     # make sure schema has the required (share and select) rules
     validate_schema(ctx, rules)
@@ -508,5 +517,6 @@ def parse(rules: Union[Dict[RuleId, Rule], List[Rule]],
         for table in tables:
             add_node(ctx, rule.id, table, rule.mode, rule.key, rule.operator,
                      rule.value)
+
     assert ctx.root
     return cast(RuleTree, ctx.root)
