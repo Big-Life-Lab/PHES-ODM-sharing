@@ -34,6 +34,9 @@ class TestRules(OdmTestCase):
         with self.assertRaisesRegex(rules.ParseError, "already exists"):
             rules.load(join(self.dir, 'rules', 'schema-35.csv'))
 
+    def test_header_whitespace_allowed(self) -> None:
+        rules.load(join(self.dir, 'rules', 'schema-33.csv'))
+
 
 if __name__ == '__main__':
     unittest.main()

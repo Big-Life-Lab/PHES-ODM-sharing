@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Union
 
 import pandas as pd
+from functional import seq
 
 from odm_sharing.private.stdext import StrValueEnum
 from odm_sharing.private.utils import fmt_set, qt
@@ -222,6 +223,9 @@ def load(schema_path: str) -> Dict[RuleId, Rule]:
 
     # replace all different NA values with an empty string
     data = data.fillna('')
+
+    # trim column names to avoid silly str-compare issues (#33)
+    data.columns = seq(data.columns).map(str.strip).list()
 
     # XXX: loading is aborted on header errors since row-parsing depends on it
     validate_headers(ctx, data.columns.to_list())
