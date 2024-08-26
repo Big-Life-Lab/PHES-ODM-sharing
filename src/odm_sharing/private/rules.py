@@ -237,6 +237,9 @@ def load(schema_path: str) -> Dict[RuleId, Rule]:
             row_dict = row._asdict()  # type: ignore
 
             rule = init_rule(ctx, row_dict)
+            if rule.id in result:
+                ctx.column = RULE_ID
+                fail(ctx, f'rule with id {rule.id} already exists')
             validate_rule(ctx, rule)
             result[rule.id] = rule
         except ParseError as e:
