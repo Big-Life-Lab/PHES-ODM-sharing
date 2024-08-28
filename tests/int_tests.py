@@ -8,7 +8,7 @@ from odm_sharing.tools.share import OutFmt, share
 from common import OdmTestCase, readfile
 
 
-class IntTestDelatolla(OdmTestCase):
+class IntTests(OdmTestCase):
     def test_excel_delatolla(self) -> None:
         delatolla_dir = join(self.dir, 'int', 'delatolla')
         schema_path = join(delatolla_dir, 'schema.csv')
