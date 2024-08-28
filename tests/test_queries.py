@@ -1,18 +1,20 @@
 import unittest
+from os.path import join
 
 import odm_sharing.private.queries as queries
 import odm_sharing.private.rules as rules
 import odm_sharing.private.trees as trees
 from odm_sharing.private.rules import Rule, RuleMode
 
+from common import OdmTestCase
 
-class TestQueries(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.maxDiff = None
+
+class TestQueries(OdmTestCase):
+    def get_ruleset(self, schema_fn: str):
+        return rules.load(join(self.dir, 'common', schema_fn))
 
     def test_in_interval_and_gte(self) -> None:
-        ruleset = rules.load('tests/4.4.csv')
+        ruleset = self.get_ruleset('4.4.csv')
         ruletree = trees.parse(ruleset)
         q = queries.generate(ruletree)['ohri']['measures']
 
@@ -35,7 +37,7 @@ class TestQueries(unittest.TestCase):
         self.assertEqual(actual_args, expected_args)
 
     def test_in_set(self) -> None:
-        ruleset = rules.load('tests/filter-set.csv')
+        ruleset = self.get_ruleset('filter-set.csv')
         ruletree = trees.parse(ruleset)
         q = queries.generate(ruletree)['PHAC']['samples']
         actual_sql = q.data_query.sql

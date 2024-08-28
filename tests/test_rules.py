@@ -3,9 +3,12 @@ import unittest
 import odm_sharing.private.rules as rules
 from odm_sharing.private.rules import Rule, RuleMode, SchemaCtx, init_rule
 
+from common import OdmTestCase
 
-class TestRules(unittest.TestCase):
+
+class TestRules(OdmTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.ctx = SchemaCtx('test')
 
     def test_init_rule(self) -> None:

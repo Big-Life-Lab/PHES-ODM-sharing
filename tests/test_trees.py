@@ -1,4 +1,5 @@
 import unittest
+from os.path import join
 from typing import List
 # from pprint import pprint
 
@@ -6,9 +7,12 @@ import odm_sharing.private.trees as trees
 from odm_sharing.private.rules import ParseError, Rule, RuleMode, load
 from odm_sharing.private.trees import Op, parse
 
+from common import OdmTestCase
 
-class TestParseList(unittest.TestCase):
+
+class TestParseList(OdmTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.ctx = trees.Ctx('test')
 
     def test_no_constraint(self) -> None:
@@ -42,8 +46,9 @@ class TestParseList(unittest.TestCase):
         self.assertEqual(actual, expected)
 
 
-class TestParseFilterValues(unittest.TestCase):
+class TestParseFilterValues(OdmTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.ctx = trees.Ctx('test')
 
     def parse(self, op: Op, val_str: str) -> List[str]:
@@ -65,16 +70,11 @@ class TestParseFilterValues(unittest.TestCase):
             self.parse(Op.EQ, 'a;b')
 
 
-def get_actual(schema_path: str) -> str:
-    rules = load(schema_path)
-    tree = parse(rules)
-    return tree.__repr__()
-
-
-class TestParse(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.maxDiff = None
+class TestParse(OdmTestCase):
+    def get_actual(self, schema_fn: str) -> str:
+        rules = load(join(self.dir, 'common', schema_fn))
+        tree = parse(rules)
+        return tree.__repr__()
 
     def test_simple(self) -> None:
         rules = [
@@ -96,7 +96,7 @@ class TestParse(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_select_one(self) -> None:
-        actual = get_actual('tests/3.1.1.csv')
+        actual = self.get_actual('3.1.1.csv')
         expected = '''(0, root, '')
     (2, share, 'ohri')
         (1, table, 'samples')
@@ -106,7 +106,7 @@ class TestParse(unittest.TestCase):
         self.assertEqual(actual, expected, actual)
 
     def test_select_two(self) -> None:
-        actual = get_actual('tests/3.1.2.csv')
+        actual = self.get_actual('3.1.2.csv')
         expected = '''(0, root, '')
     (2, share, 'ohri')
         (1, table, 'measures')
@@ -117,7 +117,7 @@ class TestParse(unittest.TestCase):
         self.assertEqual(actual, expected, actual)
 
     def test_select_all(self) -> None:
-        actual = get_actual('tests/3.1.3.csv')
+        actual = self.get_actual('3.1.3.csv')
         expected = '''(0, root, '')
     (2, share, 'ohri')
         (1, table, 'measures')
@@ -126,7 +126,7 @@ class TestParse(unittest.TestCase):
         self.assertEqual(actual, expected, actual)
 
     def test_select_multiple_tables(self) -> None:
-        actual = get_actual('tests/3.1.4.csv')
+        actual = self.get_actual('3.1.4.csv')
         expected = '''(0, root, '')
     (2, share, 'ohri')
         (1, table, 'measures')
@@ -139,7 +139,7 @@ class TestParse(unittest.TestCase):
         self.assertEqual(actual, expected, actual)
 
     def test_filter(self) -> None:
-        actual = get_actual('tests/3.2.csv')
+        actual = self.get_actual('3.2.csv')
         expected = '''(0, root, '')
     (9, share, 'ohri')
         (1, table, 'samples')
@@ -169,7 +169,7 @@ class TestParse(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_group_or(self) -> None:
-        actual = get_actual('tests/4.1.csv')
+        actual = self.get_actual('4.1.csv')
         expected = '''(0, root, '')
     (15, share, 'ohri')
         (11, table, 'measures')
@@ -185,7 +185,7 @@ class TestParse(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_group_and(self) -> None:
-        actual = get_actual('tests/4.3.csv')
+        actual = self.get_actual('4.3.csv')
         expected = '''(0, root, '')
     (15, share, 'ohri')
         (11, table, 'samples')
@@ -201,7 +201,7 @@ class TestParse(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_group_or_and(self) -> None:
-        actual = get_actual('tests/4.4.csv')
+        actual = self.get_actual('4.4.csv')
         expected = '''(0, root, '')
     (19, share, 'ohri')
         (11, table, 'measures')
@@ -231,7 +231,7 @@ class TestParse(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_share_multi(self) -> None:
-        actual = get_actual('tests/5.1.csv')
+        actual = self.get_actual('5.1.csv')
         expected = '''(0, root, '')
     (31, share, 'OPH')
         (11, table, 'measures')
@@ -280,7 +280,7 @@ class TestParse(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_filter_multi_value(self) -> None:
-        actual = get_actual('tests/filter-set.csv')
+        actual = self.get_actual('filter-set.csv')
         expected = '''(0, root, '')
     (6, share, 'PHAC')
         (4, table, 'samples')

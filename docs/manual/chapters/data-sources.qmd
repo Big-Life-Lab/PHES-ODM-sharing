@@ -1,0 +1,27 @@
+# Data Sources {#sec-data-sources}
+
+## Data Types
+
+Boolean values from CSV/Excel input are discriminated and normalized to make
+filtering work correctly. This may cause certain columns to be incorrectly
+recognized as boolean, and columns intended as boolean to not be recognized.
+Columns with the following values are recognized as boolean:
+
+- CSV:
+    - NA-values: empty string, `NA`
+    - Booleans formatted as string, in any case: `FALSE`, `true`
+- Excel:
+    - NA-values: empty cell, `NA`
+    - Booleans formatted as string, in any case: `FALSE`, `true`
+    - Boolean values formatted as such: `FALSE`, `TRUE`
+    - Boolean formulas: `=FALSE()`, `=TRUE()`
+
+Columns with only NA-values won't be recognized, since their intended type is
+ambiguous.
+
+If the first cells in a column have values other than what is show above, they
+won't be recognized as boolean. There may also be false-positives if any of the
+boolean values shown above are used in a column meant for text.
+
+Finally, boolean values included in the filtered output are converted to the
+string values `FALSE`/`TRUE`.

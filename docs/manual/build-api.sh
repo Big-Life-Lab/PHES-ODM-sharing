@@ -7,8 +7,10 @@ cd $projdir
 # build API reference
 quartodoc build
 
-builddir=$projdir/api-reference
-cd $builddir
+cd api-reference
+
+# XXX: `sed -i` must be written as `sed -i'' -e` for portability:
+# https://stackoverflow.com/questions/4247068/sed-command-with-i-option-failing-on-mac-but-works-on-linux
 
 # fix
 if [[ -f index.qmd.qmd ]]; then
@@ -17,8 +19,8 @@ if [[ -f index.qmd.qmd ]]; then
     mv index.qmd.qmd index.qmd
 
     # HACK: remove 'None' header and desc
-    sed -i 's/^#*\s*None$//' index.qmd
+    sed -i'' -e 's/^#*\s*None$//' index.qmd
 
     # HACK: add cross-reference to title
-    sed -i 's/^# .*/\0 {#sec-api-ref}/' index.qmd
+    sed -i'' -e 's/^# .*/\0 {#sec-api-ref}/' index.qmd
 fi

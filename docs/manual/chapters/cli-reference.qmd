@@ -51,6 +51,16 @@ One or multiple sharable output files will be created in the chosen output
 directory according to the chosen output format and organization(s). Each
 output file will have the input name followed by the recipient org name.
 
+::: {.callout-warning}
+Boolean values from CSV/Excel files will be normalized as TRUE/FALSE in the
+output. See @sec-data-sources for more information.
+:::
+
+::: {.callout-warning}
+Even tho using a database as input is supported, it hasn't been tested
+properly.
+:::
+
 ## Errors
 
 Error messages will be printed to the terminal (STDERR) when something is

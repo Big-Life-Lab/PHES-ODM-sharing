@@ -1,0 +1,6 @@
+id,bool1,bool2,bool3,bool4,bool5,int1,int2,str1,str2
+1,TRUE,FALSE,,NA,,0,,a,
+2,TRUE,TRUE,FALSE,TRUE,,1,NA,b,NA
+3,TRUE,,TRUE,TRUE,,2,2,c,c
+4,TRUE,,NA,TRUE,,3,3,d,d
+5,FALSE,,,FALSE,FALSE,4,4,e,e

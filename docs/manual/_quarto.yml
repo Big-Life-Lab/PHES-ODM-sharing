@@ -15,6 +15,7 @@ book:
     - api-reference/index.qmd
     - chapters/api-usage.qmd
   appendices:
+    - chapters/data-sources.qmd
     - chapters/schemas.qmd
     - chapters/python.qmd
     - chapters/sqlite.qmd
