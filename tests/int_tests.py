@@ -1,5 +1,5 @@
 import unittest
-from os.path import join
+from os.path import exists, join
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -21,6 +21,15 @@ class IntTests(OdmTestCase):
                 fn = Path(path).name
                 expected = readfile(join(delatolla_dir, 'expected', fn))
                 self.assertEqual(actual, expected)
+
+    def test_outdir_creation(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            subdir = join(tmpdir, 'mysubdir')
+            schema_path = join(self.dir, 'common', 'passthrough-schema.csv')
+            data_path = join(self.dir, 'common', 'mytable.csv')
+            self.assertFalse(exists(subdir))
+            share(schema_path, data_path, outdir=subdir)
+            self.assertTrue(exists(subdir))
 
 
 if __name__ == '__main__':
