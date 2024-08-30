@@ -21,7 +21,7 @@ Arguments:
 
 - INPUT
 
-  spreadsheet file path or [SQLAlchemy database URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)
+  CSV/Excel/SQLite file path, or [SQLAlchemy database URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)
 
 Options:
 

@@ -213,6 +213,16 @@ def _connect_db(url: str) -> Connection:
 ###############################################################################
 
 
+def _detect_sqlite(path: str) -> bool:
+    # https://www.sqlite.org/fileformat.html
+    MAGIC = b'SQLite format 3'
+    try:
+        with open(path, 'rb') as f:
+            return f.read(len(MAGIC)) == MAGIC
+    except Exception:
+        return False
+
+
 def connect(data_source: str, tables: Set[str] = set()) -> Connection:
     '''
     connects to a data source and returns the connection
@@ -233,6 +243,8 @@ def connect(data_source: str, tables: Set[str] = set()) -> Connection:
             return _connect_csv(data_source)
         elif data_source.endswith('.xlsx'):
             return _connect_excel(data_source, tables)
+        elif _detect_sqlite(data_source):
+            return _connect_db(f'sqlite:///{data_source}')
         else:
             return _connect_db(data_source)
     except (OSError, sa.exc.OperationalError) as e:
