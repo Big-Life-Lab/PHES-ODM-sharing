@@ -3,14 +3,25 @@ name: unit-test
 on: [pull_request]
 
 jobs:
-  unit-test:
+  test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+
     - uses: actions/setup-python@v4
       with:
         python-version-file: '.python-version-ci'
-        cache: 'pip'
-    - run: pip install -r requirements.txt
+
+    - name: cache dependencies
+      uses: actions/cache@v4
+      id: cache-pip
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+    - name: install dependencies
+      run: pip install -r requirements.txt
+      if: steps.cache-pip.outputs.cache-hit != 'true'
+
     - run: pip install .
     - run: ./run-unit-tests.sh
