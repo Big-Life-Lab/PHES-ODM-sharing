@@ -1,4 +1,4 @@
-name: unit-test
+name: test
 
 on: [pull_request]
 
@@ -24,4 +24,4 @@ jobs:
       if: steps.cache-pip.outputs.cache-hit != 'true'
 
     - run: pip install .
-    - run: ./run-unit-tests.sh
+    - run: ./run-all-tests.sh
