@@ -31,7 +31,8 @@ Options:
 
 - `--outfmt=FORMAT`
 
-    output format (excel or csv), defaults to input format
+    output format (`excel` or `csv`), defaults to input format when input is a
+    file and `excel` when it's a database
 
 - `--outdir=PATH`
 
