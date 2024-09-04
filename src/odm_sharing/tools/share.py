@@ -44,6 +44,7 @@ creating sharable output files. This shows which tables and columns are
 selected, and how many rows each filter returns.'''
 
 QUIET_DESC = 'Don\'t log to STDOUT.'
+LIST_DESC = 'Write output file-paths to STDOUT, separated by newlines.'
 
 # default cli args
 DEBUG_DEFAULT = False
@@ -51,6 +52,7 @@ ORGS_DEFAULT: List[str] = []
 OUTDIR_DEFAULT = './'
 OUTFMT_DEFAULT = OutFmt.AUTO
 QUIET_DEFAULT = False
+LIST_DEFAULT = False
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
@@ -141,17 +143,6 @@ def get_debug_writer(debug: bool) -> Union[TextIO, contextlib.nullcontext]:
         return contextlib.nullcontext()
 
 
-def get_excel_writer(in_name: str, debug: bool, org: str, outdir: str,
-                     outfmt: OutFmt) -> Optional[pd.ExcelWriter]:
-    if not debug and outfmt == OutFmt.EXCEL:
-        filename = gen_filename(in_name, org, '', 'xlsx')
-        logging.info('writing ' + filename)
-        excel_path = os.path.join(outdir, filename)
-        return pd.ExcelWriter(excel_path)
-    else:
-        return None
-
-
 def infer_outfmt(path: str) -> Optional[OutFmt]:
     '''returns None when not recognized'''
     (_, ext) = os.path.splitext(path)
@@ -169,7 +160,8 @@ def share(
     outfmt: OutFmt = OUTFMT_DEFAULT,
     outdir: str = OUTDIR_DEFAULT,
     debug: bool = DEBUG_DEFAULT,
-) -> None:
+) -> List[str]:
+    '''returns list of output files'''
     schema_path = schema
     schema_filename = Path(schema_path).name
     in_name = Path(input).stem
@@ -191,13 +183,14 @@ def share(
         table_filter = get_tables(org_queries)
     except rules.ParseError:
         # XXX: error messages are already printed at this point
-        return
+        return []
 
     # XXX: only tables found in the schema are considered in the data source
     logging.info(f'connecting to {qt(input)}')
     con = cons.connect(input, table_filter)
 
     # one debug file per run
+    output_paths = []
     with get_debug_writer(debug) as debug_file:
         for org, table_queries in org_queries.items():
             org_data = {}
@@ -209,14 +202,20 @@ def share(
                     org_data[table] = sh.get_data(con, tq)
 
             # one excel file per org
-            excel_file = get_excel_writer(in_name, debug, org, outdir, outfmt)
+            excel_fn = gen_filename(in_name, org, '', 'xlsx')
+            excel_path = os.path.join(outdir, excel_fn)
+            excel_file = None
+            if not debug and outfmt == OutFmt.EXCEL:
+                excel_file = pd.ExcelWriter(excel_path, engine='openpyxl')
+                logging.info('writing ' + excel_fn)
             try:
                 for table, data in org_data.items():
                     if outfmt == OutFmt.CSV:
                         filename = gen_filename(in_name, org, table, 'csv')
-                        logging.info('writing ' + filename)
                         path = os.path.join(outdir, filename)
+                        logging.info('writing ' + filename)
                         data.to_csv(path, index=False)
+                        output_paths.append(path)
                     elif outfmt == OutFmt.EXCEL:
                         logging.info(f'- {qt(table)}')
                         data.to_excel(excel_file, sheet_name=table,
@@ -225,12 +224,17 @@ def share(
                         assert False, f'format {outfmt} not impl'
             except IndexError:
                 # XXX: this is thrown from excel writer when nothing is written
+                # XXX: no need to return paths since excel file didn't finish
+                assert outfmt == OutFmt.EXCEL
                 error('failed to write output, most likely due to empty input')
-                return
+                return []
             finally:
                 if excel_file:
                     excel_file.close()
+            if excel_file:
+                output_paths.append(excel_path)
     logging.info('done')
+    return output_paths
 
 
 @app.command()
@@ -244,10 +248,16 @@ def main_cli(
                                         help=DEBUG_DESC)] = DEBUG_DEFAULT,
     quiet: Annotated[bool, typer.Option("-q", "--quiet",
                                         help=QUIET_DESC)] = QUIET_DEFAULT,
+    list_output: Annotated[bool, typer.Option("-l", "--list",
+                                              help=LIST_DESC)] = LIST_DEFAULT,
 ) -> None:
     if not quiet:
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-    share(schema, input, orgs, outfmt, outdir, debug)
+    paths = share(schema, input, orgs, outfmt, outdir, debug)
+    if list_output:
+        cwd = os.getcwd()
+        relpaths = seq(paths).map(lambda abs: os.path.relpath(abs, cwd))
+        print(linesep.join(relpaths))
 
 
 def main() -> None:
