@@ -293,6 +293,10 @@ class TestParse(OdmTestCase):
 '''
         self.assertEqual(actual, expected)
 
+    def test_invalid_org_error(self):
+        with self.assertRaisesRegex(ParseError, 'org.*not.*in.*schema'):
+            trees.parse([], 'org123')
+
 
 if __name__ == '__main__':
     unittest.main()
