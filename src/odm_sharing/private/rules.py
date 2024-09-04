@@ -54,8 +54,10 @@ class ParseError(Exception):
     pass
 
 
+RULE_ID = 'ruleID'
+
 HEADERS = [
-    'ruleID',
+    RULE_ID,
     'table',
     'mode',
     'key',
@@ -124,7 +126,7 @@ def init_rule(ctx: SchemaCtx, schema_row: dict) -> Rule:
     '''constructs a rule from a schema row, or raises list of ParseError(s)'''
 
     def get_field_name(column: str) -> str:
-        return ('id' if column == 'ruleID' else column)
+        return ('id' if column == RULE_ID else column)
 
     def init_default_rule() -> Rule:
         # XXX: `mode` doesn't have a default value, but it'll be overwritten
@@ -181,7 +183,7 @@ def validate_rule(ctx: SchemaCtx, rule: Rule) -> None:
         if actual not in expected:
             err(f'got {qt(actual)}, expected {fmt_set(expected)}')
 
-    ctx.column = 'ruleID'
+    ctx.column = RULE_ID
     if rule.id <= 0:
         err(f'{ctx.column} must be greater than zero')
 
@@ -235,6 +237,9 @@ def load(schema_path: str) -> Dict[RuleId, Rule]:
             row_dict = row._asdict()  # type: ignore
 
             rule = init_rule(ctx, row_dict)
+            if rule.id in result:
+                ctx.column = RULE_ID
+                fail(ctx, f'rule with id {rule.id} already exists')
             validate_rule(ctx, rule)
             result[rule.id] = rule
         except ParseError as e:
