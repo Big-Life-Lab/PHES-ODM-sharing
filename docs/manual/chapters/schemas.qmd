@@ -133,13 +133,17 @@ the filter argument is:
 **column name** **operator** **value**
 ```
 
-Where the "column name" the name of a column (specified in the `key` column)
-from the table(s) specified in the `table` column, and the "value" is the value
-or range of values that determine whether a row is selected for sharing, stored
-in the `value` column. The "operator" is a placeholder for the symbol indicates
-that the nature of the filter to be applied, and the desired relationship
-between the `key` and the `value`. The currently accepted values for the
-`operator` column are:
+"column name" is the name of a column (specified in the `key` column) from the
+table(s) specified in the `table` column.
+
+"value" is the value, or range of values, that determine whether a row is
+selected for sharing. It's stored in the `value` column. String values can
+optionally be quoted with double-quotes (`"`) to allow commas, while
+single-quotes are assumed to be part of the value.
+
+"operator" is a placeholder for the symbol indicates that the nature of the
+filter to be applied, and the desired relationship between the `key` and the
+`value`. The currently accepted values for the `operator` column are:
 
 -   **=**: Denotes exact equivalence. This should be used for categorical or
     character variables.
