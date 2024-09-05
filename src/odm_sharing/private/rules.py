@@ -172,7 +172,8 @@ def validate_rule(ctx: SchemaCtx, rule: Rule) -> None:
 
     def check_required(ctx: SchemaCtx, val: str, mode: RuleMode,
                        modes: Union[set, list]) -> None:
-        has = bool(val)
+        # XXX: empty filter string value must be allowed
+        has = bool(val) or (mode == RuleMode.FILTER and val == '')
         should_have = mode in modes
         if has and not should_have:
             err(f'{ctx.column} must be empty/NA for mode {qt(mode)}')
