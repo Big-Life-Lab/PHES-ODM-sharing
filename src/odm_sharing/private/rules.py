@@ -77,7 +77,7 @@ FILTER_OPERATORS = set([
 ])
 
 ALL_MODES = set(RuleMode)
-GROUP_OPERATORS = set(['AND', 'OR'])
+GROUP_OPERATORS = set(['and', 'or'])
 RULE_FIELD_TYPES = Rule.__annotations__
 RULE_FIELDS = set(RULE_FIELD_TYPES.keys())
 HEADER_LIST_STR = ','.join(HEADERS)
@@ -202,7 +202,7 @@ def validate_rule(ctx: SchemaCtx, rule: Rule) -> None:
         if rule.mode == RuleMode.FILTER:
             check_set(ctx, rule.operator, FILTER_OPERATORS)
         elif rule.mode == RuleMode.GROUP:
-            check_set(ctx, rule.operator, GROUP_OPERATORS)
+            check_set(ctx, rule.operator.lower(), GROUP_OPERATORS)
 
     ctx.column = 'value'
     check_required(ctx, rule.value, rule.mode, ALL_MODES)
