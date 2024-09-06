@@ -2,6 +2,7 @@ import contextlib
 import logging
 import os
 import sys
+from collections import namedtuple
 from enum import Enum
 from os import linesep
 from pathlib import Path
@@ -21,6 +22,9 @@ import odm_sharing.private.rules as rules
 import odm_sharing.private.trees as trees
 from odm_sharing.private.rules import Rule, RuleId, RuleMode
 from odm_sharing.private.utils import qt
+
+
+FilePath = namedtuple('FilePath', ['abspath', 'relpath', 'filename'])
 
 
 class OutFmt(str, Enum):
@@ -135,6 +139,14 @@ def gen_filename(in_name: str, org: str, table: str, ext: str) -> str:
         return f'{in_name}-{org}-{table}.{ext}'
 
 
+def gen_filepath(outdir: str, in_name: str, org: str, table: str, ext: str
+                 ) -> FilePath:
+    filename = gen_filename(in_name, org, table, ext)
+    abspath = os.path.join(outdir, filename)
+    relpath = os.path.relpath(abspath, os.getcwd())
+    return FilePath(abspath=abspath, relpath=relpath, filename=filename)
+
+
 def get_debug_writer(debug: bool) -> Union[TextIO, contextlib.nullcontext]:
     # XXX: this function is only used for brewity with the below `with` clause
     if debug:
@@ -205,20 +217,19 @@ def share(
                     org_data[table] = sh.get_data(con, tq)
 
             # one excel file per org
-            excel_fn = gen_filename(in_name, org, '', 'xlsx')
-            excel_path = os.path.join(outdir, excel_fn)
+            excel_path = gen_filepath(outdir, in_name, org, '', 'xlsx')
             excel_file = None
             if not debug and outfmt == OutFmt.EXCEL:
-                excel_file = pd.ExcelWriter(excel_path, engine='openpyxl')
-                logging.info('writing ' + excel_fn)
+                excel_file = pd.ExcelWriter(excel_path.abspath,
+                                            engine='openpyxl')
+                logging.info('writing ' + excel_path.relpath)
             try:
                 for table, data in org_data.items():
                     if outfmt == OutFmt.CSV:
-                        filename = gen_filename(in_name, org, table, 'csv')
-                        path = os.path.join(outdir, filename)
-                        logging.info('writing ' + filename)
-                        data.to_csv(path, index=False)
-                        output_paths.append(path)
+                        p = gen_filepath(outdir, in_name, org, table, 'csv')
+                        logging.info('writing ' + p.relpath)
+                        data.to_csv(p.abspath, index=False)
+                        output_paths.append(p.relpath)
                     elif outfmt == OutFmt.EXCEL:
                         logging.info(f'- {qt(table)}')
                         data.to_excel(excel_file, sheet_name=table,
@@ -235,7 +246,7 @@ def share(
                 if excel_file:
                     excel_file.close()
             if excel_file:
-                output_paths.append(excel_path)
+                output_paths.append(excel_path.relpath)
     logging.info('done')
     return output_paths
 
