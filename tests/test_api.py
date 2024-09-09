@@ -56,6 +56,14 @@ class TestApi(OdmTestCase):
         self._test_extract_true(fn)
         self._test_extract_strict_subset(fn)
 
+    def test_excel_string_filter(self) -> None:
+        '''tests that '=' and '<' filters work with strings'''
+        schema_path = join(self.dir, 'api', 'str-filter-schema.csv')
+        data_path = join(self.dir, 'common', 'testdata.xlsx')
+        df = sh.extract(schema_path, data_path)['OHRI']['mytable']
+        self.assertEqual(df['str1'].to_list(), ['a'])
+        self.assertEqual(df['str2'].to_list(), [''])
+
 
 if __name__ == '__main__':
     unittest.main()
