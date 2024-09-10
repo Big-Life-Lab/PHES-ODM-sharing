@@ -24,4 +24,5 @@ won't be recognized as boolean. There may also be false-positives if any of the
 boolean values shown above are used in a column meant for text.
 
 Finally, boolean values included in the filtered output are converted to the
-string values `FALSE`/`TRUE`.
+string values `FALSE`/`TRUE`. This is also the case when using databases as
+input.

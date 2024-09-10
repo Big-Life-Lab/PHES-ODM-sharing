@@ -194,9 +194,17 @@ def _connect_excel(path: str, table_whitelist: Set[str]) -> Connection:
 
 def _connect_db(url: str) -> Connection:
     ''':raises sa.exc.OperationalError:'''
-    return Connection(sa.create_engine(url), defaultdict(set))
+    handle = sa.create_engine(url)
 
+    # find bool cols
+    bool_cols = defaultdict(set)
+    db_info = sa.inspect(handle)
+    for table in db_info.get_table_names():
+        for col_info in db_info.get_columns(table):
+            if isinstance(col_info['type'], sa.sql.sqltypes.BOOLEAN):
+                bool_cols[table].add(col_info['name'])
 
+    return Connection(handle, bool_cols)
 
 
 def _detect_sqlite(path: str) -> bool:
