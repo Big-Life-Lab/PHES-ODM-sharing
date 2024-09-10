@@ -13,10 +13,6 @@ from openpyxl.workbook import Workbook
 from odm_sharing.private.common import ColumnName, TableName, F, T
 
 
-# types
-###############################################################################
-
-
 Sheet = xl.worksheet._read_only.ReadOnlyWorksheet
 
 
@@ -30,20 +26,12 @@ class DataSourceError(Exception):
     pass
 
 
-# constants
-###############################################################################
-
-
 F_FORMULA = '=FALSE()'
 T_FORMULA = '=TRUE()'
 
 BOOL_FORMULAS = [F_FORMULA, T_FORMULA]
 BOOL_VALS = [F, T]
 NA_VALS = ['', 'NA']
-
-
-# private functions
-###############################################################################
 
 
 def _create_memory_db() -> sa.engine.Engine:
@@ -209,8 +197,6 @@ def _connect_db(url: str) -> Connection:
     return Connection(sa.create_engine(url), defaultdict(set))
 
 
-# public functions
-###############################################################################
 
 
 def _detect_sqlite(path: str) -> bool:
