@@ -1,4 +1,5 @@
 import logging
+import os
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -34,8 +35,14 @@ BOOL_VALS = [F, T]
 NA_VALS = ['', 'NA']
 
 
-def _create_memory_db() -> sa.engine.Engine:
-    return sa.create_engine('sqlite://', echo=False)
+def _create_temp_db() -> sa.engine.Engine:
+    path = ''  # in-memory by default
+    custom_path = os.environ.get('ODM_TEMP_DB', '')
+    if custom_path:
+        # XXX: extra initial slash required for both rel and abs paths
+        path = '/' + custom_path
+        logging.info(f'using temp db {custom_path}')
+    return sa.create_engine(f'sqlite://{path}', echo=False)
 
 
 def _write_table_to_db(db: sa.engine.Engine, table: str, df: pd.DataFrame
@@ -46,8 +53,8 @@ def _write_table_to_db(db: sa.engine.Engine, table: str, df: pd.DataFrame
 
 def _datasets_to_db(datasets: Dict[TableName, pd.DataFrame]
                     ) -> sa.engine.Engine:
-    '''creates an in-memory db and writes the datasets as tables'''
-    db = _create_memory_db()
+    '''creates a temp db and writes the datasets as tables'''
+    db = _create_temp_db()
     for table, df in datasets.items():
         _write_table_to_db(db, table, df)
     return db
