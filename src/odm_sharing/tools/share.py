@@ -6,7 +6,7 @@ from collections import namedtuple
 from enum import Enum
 from os import linesep
 from pathlib import Path
-from typing import Dict, List, Optional, Set, TextIO, Union
+from typing import Dict, List, Set, TextIO, Union
 from typing_extensions import Annotated
 
 import pandas as pd
@@ -155,14 +155,13 @@ def get_debug_writer(debug: bool) -> Union[TextIO, contextlib.nullcontext]:
         return contextlib.nullcontext()
 
 
-def infer_outfmt(path: str) -> Optional[OutFmt]:
+def infer_outfmt(path: str) -> OutFmt:
     '''returns None when not recognized'''
     (_, ext) = os.path.splitext(path)
     if ext == '.csv':
         return OutFmt.CSV
-    elif ext == '.xlsx':
+    else:
         return OutFmt.EXCEL
-    return None
 
 
 def share(
@@ -179,13 +178,8 @@ def share(
     in_name = Path(input).stem
 
     if outfmt == OutFmt.AUTO:
-        fmt = infer_outfmt(input)
-        if not fmt:
-            logging.warning('unable to infer output format from input path, ' +
-                            'defaulting to excel')
-            outfmt = OutFmt.EXCEL
-        else:
-            outfmt = fmt
+        outfmt = infer_outfmt(input)
+        logging.info(f'inferred output format as {outfmt}')
 
     logging.info(f'loading schema {qt(schema_filename)}')
     try:

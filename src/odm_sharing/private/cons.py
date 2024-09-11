@@ -223,6 +223,16 @@ def _detect_sqlite(path: str) -> bool:
         return False
 
 
+def _detect_sqlalchemy(path: str) -> bool:
+    if not path:
+        return False
+    try:
+        sa.engine.url.make_url(path)
+        return True
+    except sa.exc.ArgumentError:
+        return False
+
+
 def connect(data_source: str, tables: Set[str] = set()) -> Connection:
     '''
     connects to a data source and returns the connection
@@ -245,8 +255,10 @@ def connect(data_source: str, tables: Set[str] = set()) -> Connection:
             return _connect_excel(data_source, tables)
         elif _detect_sqlite(data_source):
             return _connect_db(f'sqlite:///{data_source}')
-        else:
+        elif _detect_sqlalchemy(data_source):
             return _connect_db(data_source)
+        else:
+            raise DataSourceError('unrecognized data source format')
     except (OSError, sa.exc.OperationalError) as e:
         raise DataSourceError(str(e))
 
