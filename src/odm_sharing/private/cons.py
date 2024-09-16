@@ -1,4 +1,5 @@
 import logging
+import os
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -11,10 +12,6 @@ from functional import seq
 from openpyxl.workbook import Workbook
 
 from odm_sharing.private.common import ColumnName, TableName, F, T
-
-
-# types
-###############################################################################
 
 
 Sheet = xl.worksheet._read_only.ReadOnlyWorksheet
@@ -30,10 +27,6 @@ class DataSourceError(Exception):
     pass
 
 
-# constants
-###############################################################################
-
-
 F_FORMULA = '=FALSE()'
 T_FORMULA = '=TRUE()'
 
@@ -42,12 +35,14 @@ BOOL_VALS = [F, T]
 NA_VALS = ['', 'NA']
 
 
-# private functions
-###############################################################################
-
-
-def _create_memory_db() -> sa.engine.Engine:
-    return sa.create_engine('sqlite://', echo=False)
+def _create_temp_db() -> sa.engine.Engine:
+    path = ''  # in-memory by default
+    custom_path = os.environ.get('ODM_TEMP_DB', '')
+    if custom_path:
+        # XXX: extra initial slash required for both rel and abs paths
+        path = '/' + custom_path
+        logging.info(f'using temp db {custom_path}')
+    return sa.create_engine(f'sqlite://{path}', echo=False)
 
 
 def _write_table_to_db(db: sa.engine.Engine, table: str, df: pd.DataFrame
@@ -58,8 +53,8 @@ def _write_table_to_db(db: sa.engine.Engine, table: str, df: pd.DataFrame
 
 def _datasets_to_db(datasets: Dict[TableName, pd.DataFrame]
                     ) -> sa.engine.Engine:
-    '''creates an in-memory db and writes the datasets as tables'''
-    db = _create_memory_db()
+    '''creates a temp db and writes the datasets as tables'''
+    db = _create_temp_db()
     for table, df in datasets.items():
         _write_table_to_db(db, table, df)
     return db
@@ -206,11 +201,17 @@ def _connect_excel(path: str, table_whitelist: Set[str]) -> Connection:
 
 def _connect_db(url: str) -> Connection:
     ''':raises sa.exc.OperationalError:'''
-    return Connection(sa.create_engine(url), defaultdict(set))
+    handle = sa.create_engine(url)
 
+    # find bool cols
+    bool_cols = defaultdict(set)
+    db_info = sa.inspect(handle)
+    for table in db_info.get_table_names():
+        for col_info in db_info.get_columns(table):
+            if isinstance(col_info['type'], sa.sql.sqltypes.BOOLEAN):
+                bool_cols[table].add(col_info['name'])
 
-# public functions
-###############################################################################
+    return Connection(handle, bool_cols)
 
 
 def _detect_sqlite(path: str) -> bool:
