@@ -13,6 +13,7 @@ from odm_sharing.private.common import ColumnName, OrgName, TableName, F, T
 from odm_sharing.private.cons import Connection
 from odm_sharing.private.queries import OrgTableQueries, Query, TableQuery
 from odm_sharing.private.rules import RuleId
+from odm_sharing.private.utils import qt
 
 
 def parse(schema_path: str, orgs: List[str] = []) -> OrgTableQueries:
@@ -53,6 +54,12 @@ def connect(data_source: str, tables: List[str] = []) -> Connection:
     return cons.connect([ds], set(tables))
 
 
+def _check_con_query(c: Connection, tq: TableQuery) -> None:
+    if tq.table_name not in c.tables:
+        msg = f'table {qt(tq.table_name)} is missing from input'
+        raise cons.DataSourceError(msg)
+
+
 def get_data(c: Connection, tq: TableQuery) -> pandas.DataFrame:
     '''retrieves filtered data from a specific table of a data source
 
@@ -66,6 +73,8 @@ def get_data(c: Connection, tq: TableQuery) -> pandas.DataFrame:
 
     :raises DataSourceError: if an error occured while retrieving data
     '''
+
+    _check_con_query(c, tq)
     dq = tq.data_query
     df = cons.exec(c, dq.sql, dq.args)
 
@@ -113,6 +122,7 @@ def get_counts(c: Connection, tq: TableQuery) -> Dict[RuleId, int]:
         count = int(cons.exec(c, q.sql, q.args).iat[0, 0])
         return (rule_id, count)
 
+    _check_con_query(c, tq)
     return seq(tq.rule_count_queries.items()).smap(get_rule_count).dict()
 
 
@@ -129,6 +139,7 @@ def get_columns(c: Connection, tq: TableQuery
     :raises DataSourceError: if an error occured while retrieving the column
     names
     '''
+    _check_con_query(c, tq)
     if tq.columns:
         return (tq.select_rule_id, tq.columns)
     else:

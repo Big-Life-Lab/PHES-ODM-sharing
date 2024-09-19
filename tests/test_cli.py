@@ -6,6 +6,7 @@ from typing import List
 
 from functional import seq
 from odm_sharing.tools.share import OutFmt, share
+from odm_sharing.private.cons import DataSourceError
 
 from common import OdmTestCase, readfile
 
@@ -56,6 +57,16 @@ class TestCli(OdmTestCase):
         ]
         with TemporaryDirectory() as dir:
             self._multi_impl(schema_path, data_paths, dir)
+
+    def test_multi_csv_missing(self) -> None:
+        schema_path = join(self.dir, 'cli', 'multi-schema.csv')
+        data_paths = [
+            join(self.dir, 'cli', 'mytable1.csv'),
+        ]
+        with TemporaryDirectory() as dir:
+            expr = '.*mytable2.*missing'
+            with self.assertRaisesRegex(DataSourceError, expr):
+                self._multi_impl(schema_path, data_paths, dir)
 
 
 if __name__ == '__main__':

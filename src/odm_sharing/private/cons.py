@@ -21,6 +21,7 @@ Sheet = xl.worksheet._read_only.ReadOnlyWorksheet
 @dataclass(frozen=True)
 class Connection:
     handle: sa.engine.Engine
+    tables: Set[TableName]
     bool_cols: Dict[TableName, Set[ColumnName]]
 
 
@@ -143,6 +144,7 @@ def _connect_csv(data_sources: List[DataSource]) -> Connection:
 
     # XXX: NA-values are not normalized to avoid mutating user data (#31)
     dfs = {}
+    tables = set()
     bool_cols = {}
     for ds in data_sources:
         table = ds.table if ds.table else Path(ds.path).stem
@@ -152,8 +154,9 @@ def _connect_csv(data_sources: List[DataSource]) -> Connection:
         bool_cols[table] = _find_bool_cols(df, BOOL_VALS)
         _normalize_bool_values(df, bool_cols[table])
         dfs[table] = df
+        tables.add(table)
     db = _datasets_to_db(dfs)
-    return Connection(db, bool_cols)
+    return Connection(db, tables, bool_cols)
 
 
 def _iter_sheets(wb: Workbook, included_tables: Set[str]) -> Generator:
@@ -209,22 +212,23 @@ def _connect_excel(path: str, table_whitelist: Set[str]) -> Connection:
 
     # write to db
     db = _datasets_to_db(dfs)
-    return Connection(db, bool_cols)
+    return Connection(db, included_tables, bool_cols)
 
 
 def _connect_db(url: str) -> Connection:
     ''':raises sa.exc.OperationalError:'''
     handle = sa.create_engine(url)
+    db_info = sa.inspect(handle)
+    tables = set(db_info.get_table_names())
 
     # find bool cols
     bool_cols = defaultdict(set)
-    db_info = sa.inspect(handle)
-    for table in db_info.get_table_names():
+    for table in tables:
         for col_info in db_info.get_columns(table):
             if isinstance(col_info['type'], sa.sql.sqltypes.BOOLEAN):
                 bool_cols[table].add(col_info['name'])
 
-    return Connection(handle, bool_cols)
+    return Connection(handle, tables, bool_cols)
 
 
 def _detect_sqlite(path: str) -> bool:
