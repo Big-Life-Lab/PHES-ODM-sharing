@@ -130,18 +130,10 @@ def get_tables(org_queries: sh.queries.OrgTableQueries) -> Set[str]:
     return result
 
 
-def gen_filename(in_name: str, org: str, table: str, ext: str) -> str:
-    if in_name == table or not table:
-        # this avoids duplicating the table name when both input and output is
-        # CSV
-        return f'{in_name}-{org}.{ext}'
-    else:
-        return f'{in_name}-{org}-{table}.{ext}'
-
-
-def gen_filepath(outdir: str, in_name: str, org: str, table: str, ext: str
+def gen_filepath(outdir: str, schema_name: str, org: str, table: str, ext: str
                  ) -> FilePath:
-    filename = gen_filename(in_name, org, table, ext)
+    parts = [schema_name, org] + ([table] if table else [])
+    filename = '-'.join(parts) + f'.{ext}'
     abspath = os.path.join(outdir, filename)
     relpath = os.path.relpath(abspath, os.getcwd())
     return FilePath(abspath=abspath, relpath=relpath, filename=filename)
@@ -211,7 +203,7 @@ def share(
                     org_data[table] = sh.get_data(con, tq)
 
             # one excel file per org
-            excel_path = gen_filepath(outdir, in_name, org, '', 'xlsx')
+            excel_path = gen_filepath(outdir, schema_name, org, '', 'xlsx')
             excel_file = None
             if not debug and outfmt == OutFmt.EXCEL:
                 excel_file = pd.ExcelWriter(excel_path.abspath,
@@ -220,7 +212,8 @@ def share(
             try:
                 for table, data in org_data.items():
                     if outfmt == OutFmt.CSV:
-                        p = gen_filepath(outdir, in_name, org, table, 'csv')
+                        p = gen_filepath(outdir, schema_name, org, table,
+                                         'csv')
                         logging.info('writing ' + p.relpath)
                         data.to_csv(p.abspath, index=False)
                         output_paths.append(p.relpath)
