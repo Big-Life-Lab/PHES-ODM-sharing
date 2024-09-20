@@ -18,8 +18,9 @@ the following command can be used:
 odm-share schema.csv measures.csv
 ```
 
-It will make an output file called `measures-<org>.csv` for each organization
-specified in the schema, with filtered data that is ready to share.
+It will make an output file called `<schema_name>-<org>-measures.csv` for each
+organization specified in the schema, with filtered data that is ready to
+share.
 
 ### Using an Excel file
 
@@ -29,8 +30,8 @@ Excel files can be used as input to share multiple tables at once:
 odm-share schema.csv data.xlsx
 ```
 
-It will make an output file called `<org>.xlsx` for each organization in the
-schema.
+It will make an output file called `<schema_name>-<org>.xlsx` for each
+organization in the schema.
 
 ### Using a database
 
