@@ -3,21 +3,22 @@ from os.path import join
 from tempfile import TemporaryDirectory
 from typing import List
 
+from functional import seq
 from odm_sharing.tools.share import OutFmt, share
 
 from common import OdmTestCase, readfile
 
 
-def share_csv(schema_path, data_path) -> List[str]:
+def share_csv(schema_path: str, data_path: str) -> List[str]:
     with TemporaryDirectory() as dir:
-        share(schema_path, data_path, outdir=dir)
-        outfile = join(dir, 'mytable-OHRI.csv')
+        share(schema_path, [data_path], outdir=dir)
+        outfile = join(dir, 'passthrough-schema-OHRI-mytable.csv')
         return readfile(outfile)
 
 
-def share_excel(schema_path, data_path, outfmt) -> List[str]:
+def share_excel(schema_path, data_path: str, outfmt) -> List[str]:
     with TemporaryDirectory() as dir:
-        outfiles = share(schema_path, data_path, outdir=dir, outfmt=outfmt)
+        outfiles = share(schema_path, [data_path], outdir=dir, outfmt=outfmt)
         return readfile(outfiles[0])
 
 
@@ -35,6 +36,25 @@ class TestCli(OdmTestCase):
         src_content = readfile(join(self.dir, 'common', 'mytable.csv'))
         dst_content = share_excel(schema_path, data_path, OutFmt.CSV)
         self.assertEqual(src_content, dst_content)
+
+    def _multi_impl(self, schema_path: str, inputs: List[str], outdir: str):
+        share(schema_path, inputs, outdir=outdir)
+        outfiles = [
+            join(outdir, 'multi-schema-OHRI-mytable1.csv'),
+            join(outdir, 'multi-schema-OHRI-mytable2.csv'),
+        ]
+        actual = (''.join(seq(outfiles).map(readfile))).splitlines()
+        expected = ['x', 'a', 'x', 'b']
+        self.assertEqual(actual, expected)
+
+    def test_multi_csv(self) -> None:
+        schema_path = join(self.dir, 'cli', 'multi-schema.csv')
+        data_paths = [
+            join(self.dir, 'cli', 'mytable1.csv'),
+            join(self.dir, 'cli', 'mytable2.csv'),
+        ]
+        with TemporaryDirectory() as dir:
+            self._multi_impl(schema_path, data_paths, dir)
 
 
 if __name__ == '__main__':
