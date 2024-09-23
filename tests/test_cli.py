@@ -1,11 +1,10 @@
 import unittest
 from os.path import join
-from shutil import copyfile
 from tempfile import TemporaryDirectory
 from typing import List
 
 from functional import seq
-from odm_sharing.tools.share import OutFmt, share
+from odm_sharing.tools.share import OutFmt, parse_input_datasources, share
 from odm_sharing.private.cons import DataSourceError
 
 from common import OdmTestCase, readfile
@@ -13,14 +12,16 @@ from common import OdmTestCase, readfile
 
 def share_csv(schema_path, data_path) -> List[str]:
     with TemporaryDirectory() as dir:
-        share(schema_path, data_path, outdir=dir)
+        dss = parse_input_datasources([data_path])
+        share(schema_path, dss, outdir=dir)
         outfile = join(dir, 'passthrough-schema-OHRI-mytable.csv')
         return readfile(outfile)
 
 
 def share_excel(schema_path, data_path: str, outfmt) -> List[str]:
     with TemporaryDirectory() as dir:
-        outfiles = share(schema_path, [data_path], outdir=dir, outfmt=outfmt)
+        dss = parse_input_datasources([data_path])
+        outfiles = share(schema_path, dss, outdir=dir, outfmt=outfmt)
         return readfile(outfiles[0])
 
 
@@ -40,7 +41,8 @@ class TestCli(OdmTestCase):
         self.assertEqual(src_content, dst_content)
 
     def _multi_impl(self, schema_path: str, inputs: List[str], outdir: str):
-        share(schema_path, inputs, outdir=outdir)
+        dss = parse_input_datasources(inputs)
+        share(schema_path, dss, outdir=outdir)
         outfiles = [
             join(outdir, 'multi-schema-OHRI-mytable1.csv'),
             join(outdir, 'multi-schema-OHRI-mytable2.csv'),

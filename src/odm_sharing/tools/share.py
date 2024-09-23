@@ -4,6 +4,7 @@ import os
 import sys
 from collections import namedtuple
 from enum import Enum
+from itertools import zip_longest
 from os import linesep
 from pathlib import Path
 from typing import Dict, List, Set, TextIO, Union
@@ -42,6 +43,9 @@ OUTFMT_DESC = 'Output format.'
 QUIET_DESC = 'Don\'t log to STDOUT.'
 SCHEMA_DESC = 'Sharing schema file path.'
 
+TABLES_DESC = '''Comma separated list of tables associated with (CSV) input
+files. Ex.: --tables=measures,samples'''
+
 DEBUG_DESC = '''Output debug info to STDOUT (and ./debug.txt) instead of
 creating sharable output files. This shows which tables and columns are
 selected, and how many rows each filter returns.'''
@@ -56,6 +60,7 @@ ORGS_DEFAULT: List[str] = []
 OUTDIR_DEFAULT = './'
 OUTFMT_DEFAULT = OutFmt.AUTO
 QUIET_DEFAULT = False
+TABLES_DEFAULT: str = ''
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
@@ -155,15 +160,17 @@ def infer_outfmt(path: str) -> OutFmt:
         return OutFmt.EXCEL
 
 
-def parse_input_datasources(inputs: List[str]) -> List[DataSource]:
-    return seq(inputs)\
-        .map(lambda s: DataSource(table='', path=s))\
+def parse_input_datasources(paths: List[str], tables: List[str] = [],
+                            ) -> List[DataSource]:
+    pairs = zip_longest(tables, paths, fillvalue='')
+    return seq(pairs)\
+        .map(lambda p: DataSource(table=p[0], path=p[1]))\
         .list()
 
 
 def share(
     schema: str,
-    inputs: List[str],
+    data_sources: List[DataSource],
     orgs: List[str] = ORGS_DEFAULT,
     outfmt: OutFmt = OUTFMT_DEFAULT,
     outdir: str = OUTDIR_DEFAULT,
@@ -173,7 +180,6 @@ def share(
     schema_path = schema
     schema_filename = Path(schema_path).name
     schema_name = Path(schema_path).stem
-    data_sources = parse_input_datasources(inputs)
     first_input = data_sources[0].path
     if outfmt == OutFmt.AUTO:
         outfmt = infer_outfmt(first_input)
@@ -248,6 +254,7 @@ def share(
 def main_cli(
     schema: str = typer.Argument(default=..., help=SCHEMA_DESC),
     inputs: List[str] = typer.Argument(default=..., help=INPUT_DESC),
+    tables: str = typer.Option(default=TABLES_DEFAULT, help=TABLES_DESC),
     orgs: List[str] = typer.Option(default=ORGS_DEFAULT, help=ORGS_DESC),
     outfmt: OutFmt = typer.Option(default=OUTFMT_DEFAULT, help=OUTFMT_DESC),
     outdir: str = typer.Option(default=OUTDIR_DEFAULT, help=OUTDIR_DESC),
@@ -260,7 +267,9 @@ def main_cli(
 ) -> None:
     if not quiet:
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-    paths = share(schema, inputs, orgs, outfmt, outdir, debug)
+    table_list = tables.strip().split(',')
+    data_sources = parse_input_datasources(inputs, table_list)
+    paths = share(schema, data_sources, orgs, outfmt, outdir, debug)
     if list_output:
         cwd = os.getcwd()
         relpaths = seq(paths).map(lambda abs: os.path.relpath(abs, cwd))

@@ -4,6 +4,7 @@ import sys
 import unittest
 from os.path import exists, join
 from pathlib import Path
+from shutil import copyfile
 from tempfile import TemporaryDirectory
 from typing import List
 
@@ -79,6 +80,22 @@ class MiscIntTests(OdmTestCase):
             self.assertFalse(exists(subdir))
             run([schema_path, data_path], outdir=subdir)
             self.assertTrue(exists(subdir))
+
+    def test_tables_param(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            srcdir = join(self.dir, 'cli')
+            schema_path = join(srcdir, 'multi-schema.csv')
+            a = join(tmpdir, 'a.csv')
+            b = join(tmpdir, 'b.csv')
+            copyfile(join(srcdir, 'mytable1.csv'), a)
+            copyfile(join(srcdir, 'mytable2.csv'), b)
+            run([
+                '--tables=mytable1,mytable2',
+                schema_path,
+                a,
+                b,
+            ], outdir=tmpdir)
+
 
 if __name__ == '__main__':
     unittest.main()

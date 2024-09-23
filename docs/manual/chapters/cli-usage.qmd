@@ -22,6 +22,20 @@ It will make an output file called `<schema_name>-<org>-measures.csv` for each
 organization specified in the schema, with filtered data that is ready to
 share.
 
+In the above example, the input filename has to equal the table name in the
+schema. The table name can also be specify explicitly, to allow other
+filenames:
+
+```bash
+odm-share --tables=measures schema.csv my_measures.csv
+```
+
+Multiple CSV files can also be used as input:
+
+```bash
+odm-share --tables=measures,samples schema.csv a.csv b.csv
+```
+
 ### Using an Excel file
 
 Excel files can be used as input to share multiple tables at once:
@@ -49,6 +63,12 @@ odm-share schema.csv mssql+pyodbc://user:pass@mydsn
 ```
 
 ### Using additional options
+
+- Specify tables associated with CSV input files:
+
+    ```bash
+    odm-share --tables=measures,samples schema.csv a.csv b.csv
+    ```
 
 - Share CSV files from an Excel file:
 

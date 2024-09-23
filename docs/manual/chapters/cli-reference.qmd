@@ -25,6 +25,10 @@ Arguments:
 
 Options:
 
+- `--tables=NAME[,...]`
+
+    comma separated list of tables associated with (CSV) input files
+
 - `--orgs=NAME[,...]`
 
     comma separated list of organizations to output data for, defaults to all
