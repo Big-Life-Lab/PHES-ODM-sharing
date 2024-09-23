@@ -47,7 +47,7 @@ creating sharable output files. This shows which tables and columns are
 selected, and how many rows each filter returns.'''
 
 ORGS_DESC = '''Comma separated list of organizations to share with, defaults to
-all.'''
+all. Ex.: --orgs=OHRI,TOH'''
 
 # default cli args
 DEBUG_DEFAULT = False
