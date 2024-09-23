@@ -12,6 +12,7 @@ from functional import seq
 from openpyxl.workbook import Workbook
 
 from odm_sharing.private.common import ColumnName, TableName, F, T
+from odm_sharing.private.utils import qt
 
 
 Sheet = xl.worksheet._read_only.ReadOnlyWorksheet
@@ -21,6 +22,12 @@ Sheet = xl.worksheet._read_only.ReadOnlyWorksheet
 class Connection:
     handle: sa.engine.Engine
     bool_cols: Dict[TableName, Set[ColumnName]]
+
+
+@dataclass
+class DataSource:
+    table: str
+    path: str
 
 
 class DataSourceError(Exception):
@@ -129,18 +136,24 @@ def _normalize_bool_values(df: pd.DataFrame, bool_cols: Set[ColumnName]
             df[col] = df[col].replace({F: '0', T: '1'})
 
 
-def _connect_csv(path: str) -> Connection:
+def _connect_csv(data_sources: List[DataSource]) -> Connection:
     '''copies file data to in-memory db
 
     :raises OSError:'''
+
     # XXX: NA-values are not normalized to avoid mutating user data (#31)
-    logging.info('importing csv file')
-    table = Path(path).stem
-    df = pd.read_csv(path, na_filter=False)
-    bool_cols = _find_bool_cols(df, BOOL_VALS)
-    _normalize_bool_values(df, bool_cols)
-    db = _datasets_to_db({table: df})
-    return Connection(db, {table: bool_cols})
+    dfs = {}
+    bool_cols = {}
+    for ds in data_sources:
+        table = ds.table if ds.table else Path(ds.path).stem
+        path = ds.path
+        logging.info(f'importing {qt(table)} from {path}')
+        df = pd.read_csv(path, na_filter=False)
+        bool_cols[table] = _find_bool_cols(df, BOOL_VALS)
+        _normalize_bool_values(df, bool_cols[table])
+        dfs[table] = df
+    db = _datasets_to_db(dfs)
+    return Connection(db, bool_cols)
 
 
 def _iter_sheets(wb: Workbook, included_tables: Set[str]) -> Generator:
@@ -234,9 +247,10 @@ def _detect_sqlalchemy(path: str) -> bool:
         return False
 
 
-def connect(data_source: str, tables: Set[str] = set()) -> Connection:
+def connect(data_sources: List[DataSource], tables: Set[str] = set()
+            ) -> Connection:
     '''
-    connects to a data source and returns the connection
+    connects to one or more data sources and returns the connection
 
     :param tables: when connecting to an excel file, this acts as a sheet
         whitelist
@@ -248,16 +262,23 @@ def connect(data_source: str, tables: Set[str] = set()) -> Connection:
     # as 0/1, which we'll have to convert back (using previously detected bool
     # columns) to 'FALSE'/'TRUE' before returning the data to the user. This
     # happens in `odm_sharing.sharing.get_data`.
-
+    if not data_sources:
+        raise DataSourceError('no data source')
     try:
-        if data_source.endswith('.csv'):
-            return _connect_csv(data_source)
-        elif data_source.endswith('.xlsx'):
-            return _connect_excel(data_source, tables)
-        elif _detect_sqlite(data_source):
-            return _connect_db(f'sqlite:///{data_source}')
-        elif _detect_sqlalchemy(data_source):
-            return _connect_db(data_source)
+        first = data_sources[0]
+        path = first.path
+        is_csv = path.endswith('.csv')
+        if not is_csv and len(data_sources) > 1:
+            logging.warning('ignoring additional inputs (for CSV only)')
+
+        if is_csv:
+            return _connect_csv(data_sources)
+        elif path.endswith('.xlsx'):
+            return _connect_excel(path, tables)
+        elif _detect_sqlite(path):
+            return _connect_db(f'sqlite:///{path}')
+        elif _detect_sqlalchemy(path):
+            return _connect_db(path)
         else:
             raise DataSourceError('unrecognized data source format')
     except (OSError, sa.exc.OperationalError) as e:

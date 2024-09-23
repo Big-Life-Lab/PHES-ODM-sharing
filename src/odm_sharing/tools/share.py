@@ -22,6 +22,7 @@ import odm_sharing.private.rules as rules
 import odm_sharing.private.trees as trees
 from odm_sharing.private.rules import Rule, RuleId, RuleMode
 from odm_sharing.private.utils import qt
+from odm_sharing.private.cons import DataSource
 
 
 FilePath = namedtuple('FilePath', ['abspath', 'relpath', 'filename'])
@@ -35,7 +36,7 @@ class OutFmt(str, Enum):
 
 
 SCHEMA_DESC = 'Sharing schema file path.'
-INPUT_DESC = 'Input spreadsheet file-path or SQLAlchemy database-url.'
+INPUT_DESC = 'Input spreadsheet file-path(s) or SQLAlchemy database-url.'
 
 ORGS_DESC = '''Comma separated list of organizations to share with, defaults to
 all.'''
@@ -156,9 +157,15 @@ def infer_outfmt(path: str) -> OutFmt:
         return OutFmt.EXCEL
 
 
+def parse_input_datasources(inputs: List[str]) -> List[DataSource]:
+    return seq(inputs)\
+        .map(lambda s: DataSource(table='', path=s))\
+        .list()
+
+
 def share(
     schema: str,
-    input: str,
+    inputs: List[str],
     orgs: List[str] = ORGS_DEFAULT,
     outfmt: OutFmt = OUTFMT_DEFAULT,
     outdir: str = OUTDIR_DEFAULT,
@@ -167,10 +174,11 @@ def share(
     '''returns list of output files'''
     schema_path = schema
     schema_filename = Path(schema_path).name
-    in_name = Path(input).stem
-
+    schema_name = Path(schema_path).stem
+    data_sources = parse_input_datasources(inputs)
+    first_input = data_sources[0].path
     if outfmt == OutFmt.AUTO:
-        outfmt = infer_outfmt(input)
+        outfmt = infer_outfmt(first_input)
         logging.info(f'inferred output format as {outfmt}')
 
     logging.info(f'loading schema {qt(schema_filename)}')
@@ -184,8 +192,8 @@ def share(
         return []
 
     # XXX: only tables found in the schema are considered in the data source
-    logging.info(f'connecting to {qt(input)}')
-    con = cons.connect(input, table_filter)
+    logging.info('connecting...')
+    con = cons.connect(data_sources, table_filter)
 
     # create outdir
     os.makedirs(outdir, exist_ok=True)
@@ -241,7 +249,7 @@ def share(
 @app.command()
 def main_cli(
     schema: str = typer.Argument(default=..., help=SCHEMA_DESC),
-    input: str = typer.Argument(default=..., help=INPUT_DESC),
+    inputs: List[str] = typer.Argument(default=..., help=INPUT_DESC),
     orgs: List[str] = typer.Option(default=ORGS_DEFAULT, help=ORGS_DESC),
     outfmt: OutFmt = typer.Option(default=OUTFMT_DEFAULT, help=OUTFMT_DESC),
     outdir: str = typer.Option(default=OUTDIR_DEFAULT, help=OUTDIR_DESC),
@@ -254,7 +262,7 @@ def main_cli(
 ) -> None:
     if not quiet:
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-    paths = share(schema, input, orgs, outfmt, outdir, debug)
+    paths = share(schema, inputs, orgs, outfmt, outdir, debug)
     if list_output:
         cwd = os.getcwd()
         relpaths = seq(paths).map(lambda abs: os.path.relpath(abs, cwd))

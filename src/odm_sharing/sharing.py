@@ -49,7 +49,8 @@ def connect(data_source: str, tables: List[str] = []) -> Connection:
 
     :raises DataSourceError: if the connection couldn't be established
     '''
-    return cons.connect(data_source, set(tables))
+    ds = cons.DataSource(table='', path=data_source)
+    return cons.connect([ds], set(tables))
 
 
 def get_data(c: Connection, tq: TableQuery) -> pandas.DataFrame:
