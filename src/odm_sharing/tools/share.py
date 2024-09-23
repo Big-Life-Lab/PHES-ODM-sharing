@@ -35,29 +35,27 @@ class OutFmt(str, Enum):
     EXCEL = 'excel'
 
 
-SCHEMA_DESC = 'Sharing schema file path.'
 INPUT_DESC = 'Input spreadsheet file-path(s) or SQLAlchemy database-url.'
-
-ORGS_DESC = '''Comma separated list of organizations to share with, defaults to
-all.'''
-
-OUTFMT_DESC = 'Output format.'
+LIST_DESC = 'Write output file-paths to STDOUT, separated by newlines.'
 OUTDIR_DESC = 'Output directory.'
+OUTFMT_DESC = 'Output format.'
+QUIET_DESC = 'Don\'t log to STDOUT.'
+SCHEMA_DESC = 'Sharing schema file path.'
 
 DEBUG_DESC = '''Output debug info to STDOUT (and ./debug.txt) instead of
 creating sharable output files. This shows which tables and columns are
 selected, and how many rows each filter returns.'''
 
-QUIET_DESC = 'Don\'t log to STDOUT.'
-LIST_DESC = 'Write output file-paths to STDOUT, separated by newlines.'
+ORGS_DESC = '''Comma separated list of organizations to share with, defaults to
+all.'''
 
 # default cli args
 DEBUG_DEFAULT = False
+LIST_DEFAULT = False
 ORGS_DEFAULT: List[str] = []
 OUTDIR_DEFAULT = './'
 OUTFMT_DEFAULT = OutFmt.AUTO
 QUIET_DEFAULT = False
-LIST_DEFAULT = False
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
