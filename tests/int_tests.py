@@ -1,10 +1,13 @@
 import os
+import subprocess
+import sys
 import unittest
 from os.path import exists, join
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import List
 
-from odm_sharing.tools.share import OutFmt, share
+from odm_sharing.tools.share import OutFmt
 
 from common import OdmTestCase, readfile
 
@@ -14,6 +17,26 @@ def _remove_file(path):
         os.remove(path)
     except FileNotFoundError:
         pass
+
+
+def run(
+    args: List[str], outdir: str, outfmt: OutFmt = OutFmt.AUTO
+) -> subprocess.CompletedProcess:
+    res = subprocess.run([
+            'odm-share',
+            '--quiet',
+            '--list',
+            '--outdir', outdir,
+            '--outfmt', outfmt.CSV.value,
+        ] + args,
+        capture_output=True)
+    if res.stderr:
+        sys.stderr.buffer.write(res.stderr)
+        raise Exception('failed to run')
+    assert res.returncode == 0
+    assert res.stdout
+    paths = res.stdout.decode().splitlines()
+    return paths
 
 
 class DelatollaIntTests(OdmTestCase):
@@ -30,8 +53,7 @@ class DelatollaIntTests(OdmTestCase):
         data_path = join(self.delatolla_dir, data_filename)
         schema_path = join(self.delatolla_dir, 'schema.csv')
         with TemporaryDirectory() as tmpdir:
-            paths = share(schema_path, data_path, outdir=tmpdir,
-                          outfmt=OutFmt.CSV)
+            paths = run([schema_path, data_path], tmpdir, OutFmt.CSV)
             for path in paths:
                 actual = readfile(path)
                 fn = Path(path).name
@@ -55,7 +77,7 @@ class MiscIntTests(OdmTestCase):
             schema_path = join(self.dir, 'common', 'passthrough-schema.csv')
             data_path = join(self.dir, 'common', 'mytable.csv')
             self.assertFalse(exists(subdir))
-            share(schema_path, data_path, outdir=subdir)
+            run([schema_path, data_path], outdir=subdir)
             self.assertTrue(exists(subdir))
 
 

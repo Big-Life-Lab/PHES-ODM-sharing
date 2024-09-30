@@ -36,6 +36,10 @@ class TestCons(OdmTestCase):
         for path in invalid_urls:
             self.assertFalse(cons._detect_sqlalchemy(path))
 
+    def test_input_mix_not_allowed(self) -> None:
+        with self.assertRaisesRegex(cons.DataSourceError, 'mix.*type'):
+            cons.connect(['a.csv', 'b.xlsx'])
+
 
 if __name__ == '__main__':
     unittest.main()

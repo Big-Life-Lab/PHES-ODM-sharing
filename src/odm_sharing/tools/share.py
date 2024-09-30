@@ -35,7 +35,7 @@ class OutFmt(str, Enum):
 
 
 SCHEMA_DESC = 'Sharing schema file path.'
-INPUT_DESC = 'Input spreadsheet file-path or SQLAlchemy database-url.'
+INPUT_DESC = 'Input spreadsheet file-path(s) or SQLAlchemy database-url.'
 
 ORGS_DESC = '''Comma separated list of organizations to share with, defaults to
 all.'''
@@ -130,18 +130,10 @@ def get_tables(org_queries: sh.queries.OrgTableQueries) -> Set[str]:
     return result
 
 
-def gen_filename(in_name: str, org: str, table: str, ext: str) -> str:
-    if in_name == table or not table:
-        # this avoids duplicating the table name when both input and output is
-        # CSV
-        return f'{in_name}-{org}.{ext}'
-    else:
-        return f'{in_name}-{org}-{table}.{ext}'
-
-
-def gen_filepath(outdir: str, in_name: str, org: str, table: str, ext: str
+def gen_filepath(outdir: str, schema_name: str, org: str, table: str, ext: str
                  ) -> FilePath:
-    filename = gen_filename(in_name, org, table, ext)
+    parts = [schema_name, org] + ([table] if table else [])
+    filename = '-'.join(parts) + f'.{ext}'
     abspath = os.path.join(outdir, filename)
     relpath = os.path.relpath(abspath, os.getcwd())
     return FilePath(abspath=abspath, relpath=relpath, filename=filename)
@@ -166,7 +158,7 @@ def infer_outfmt(path: str) -> OutFmt:
 
 def share(
     schema: str,
-    input: str,
+    inputs: List[str],
     orgs: List[str] = ORGS_DEFAULT,
     outfmt: OutFmt = OUTFMT_DEFAULT,
     outdir: str = OUTDIR_DEFAULT,
@@ -175,10 +167,10 @@ def share(
     '''returns list of output files'''
     schema_path = schema
     schema_filename = Path(schema_path).name
-    in_name = Path(input).stem
-
+    schema_name = Path(schema_path).stem
+    first_input = inputs[0]
     if outfmt == OutFmt.AUTO:
-        outfmt = infer_outfmt(input)
+        outfmt = infer_outfmt(first_input)
         logging.info(f'inferred output format as {outfmt}')
 
     logging.info(f'loading schema {qt(schema_filename)}')
@@ -192,8 +184,8 @@ def share(
         return []
 
     # XXX: only tables found in the schema are considered in the data source
-    logging.info(f'connecting to {qt(input)}')
-    con = cons.connect(input, table_filter)
+    logging.info('connecting...')
+    con = cons.connect(inputs, table_filter)
 
     # create outdir
     os.makedirs(outdir, exist_ok=True)
@@ -211,7 +203,7 @@ def share(
                     org_data[table] = sh.get_data(con, tq)
 
             # one excel file per org
-            excel_path = gen_filepath(outdir, in_name, org, '', 'xlsx')
+            excel_path = gen_filepath(outdir, schema_name, org, '', 'xlsx')
             excel_file = None
             if not debug and outfmt == OutFmt.EXCEL:
                 excel_file = pd.ExcelWriter(excel_path.abspath,
@@ -220,7 +212,8 @@ def share(
             try:
                 for table, data in org_data.items():
                     if outfmt == OutFmt.CSV:
-                        p = gen_filepath(outdir, in_name, org, table, 'csv')
+                        p = gen_filepath(outdir, schema_name, org, table,
+                                         'csv')
                         logging.info('writing ' + p.relpath)
                         data.to_csv(p.abspath, index=False)
                         output_paths.append(p.relpath)
@@ -248,7 +241,7 @@ def share(
 @app.command()
 def main_cli(
     schema: str = typer.Argument(default=..., help=SCHEMA_DESC),
-    input: str = typer.Argument(default=..., help=INPUT_DESC),
+    inputs: List[str] = typer.Argument(default=..., help=INPUT_DESC),
     orgs: List[str] = typer.Option(default=ORGS_DEFAULT, help=ORGS_DESC),
     outfmt: OutFmt = typer.Option(default=OUTFMT_DEFAULT, help=OUTFMT_DESC),
     outdir: str = typer.Option(default=OUTDIR_DEFAULT, help=OUTDIR_DESC),
@@ -261,7 +254,7 @@ def main_cli(
 ) -> None:
     if not quiet:
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-    paths = share(schema, input, orgs, outfmt, outdir, debug)
+    paths = share(schema, inputs, orgs, outfmt, outdir, debug)
     if list_output:
         cwd = os.getcwd()
         relpaths = seq(paths).map(lambda abs: os.path.relpath(abs, cwd))
