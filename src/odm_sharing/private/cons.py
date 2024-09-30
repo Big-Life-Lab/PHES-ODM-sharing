@@ -244,10 +244,22 @@ def _detect_sqlalchemy(path: str) -> bool:
         return False
 
 
+def _check_datasources(paths: List[str]) -> None:
+    if not paths:
+        raise DataSourceError('no data source')
+    (_, ext) = os.path.splitext(paths[0])
+    all_same_ext = seq(paths).map(lambda p: p.endswith(ext)).all()
+    if not all_same_ext:
+        raise DataSourceError(
+            'mixing multiple data source types is not allowed')
+
+
 def connect(paths: List[str], tables: Set[str] = set()
             ) -> Connection:
     '''
     connects to one or more data sources and returns the connection
+
+    :param paths: must all be of the same (file)type.
 
     :param tables: when connecting to an excel file, this acts as a sheet
         whitelist
@@ -259,8 +271,7 @@ def connect(paths: List[str], tables: Set[str] = set()
     # as 0/1, which we'll have to convert back (using previously detected bool
     # columns) to 'FALSE'/'TRUE' before returning the data to the user. This
     # happens in `odm_sharing.sharing.get_data`.
-    if not paths:
-        raise DataSourceError('no data source')
+    _check_datasources(paths)
     try:
         path = paths[0]
         is_csv = path.endswith('.csv')
