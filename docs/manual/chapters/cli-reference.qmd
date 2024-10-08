@@ -10,7 +10,7 @@ from common import ASSET_DIR
 # CLI Reference {#sec-cli-ref}
 
 ```bash
-odm-share [OPTION]... SCHEMA INPUT
+odm-share [OPTION]... SCHEMA INPUT...
 ```
 
 Arguments:
@@ -19,9 +19,9 @@ Arguments:
 
   sharing schema file path
 
-- INPUT
+- INPUT...
 
-  CSV/Excel/SQLite file path, or [SQLAlchemy database URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)
+  CSV files, an Excel/SQLite file, or an [SQLAlchemy database URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)
 
 Options:
 
@@ -51,16 +51,16 @@ Options:
 
 One or multiple sharable output files will be created in the chosen output
 directory according to the chosen output format and organization(s). Each
-output file will have the input name followed by the recipient org name.
+output file will get an associative name.
 
 ::: {.callout-warning}
-Boolean values from CSV/Excel files will be normalized as TRUE/FALSE in the
-output. See @sec-data-sources for more information.
+Boolean values will be normalized as TRUE/FALSE in the output. See
+@sec-data-sources for more information.
 :::
 
 ::: {.callout-warning}
-Even tho using a database as input is supported, it hasn't been tested
-properly.
+Even tho using a database as input is supported, it hasn't been tested much
+yet.
 :::
 
 ## Errors
