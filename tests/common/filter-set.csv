@@ -1,0 +1,4 @@
+ruleID,table,mode,key,operator,value,notes
+4,samples,select,,,all,
+5,samples,filter,saMaterial,in,rawWW;sweSed,
+6,,share,PHAC,,4;5,

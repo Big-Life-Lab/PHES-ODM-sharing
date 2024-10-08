@@ -1,0 +1,14 @@
+---
+title: Introduction
+---
+
+![](assets/odm-logo.png){width=100px}
+
+The PHES-ODM Sharing Library supports wastewater-based surveillance and
+epidemiology by facilitating the collection, standardization, and transparency
+of data by providing a more harmonized ODM data format to share data between
+different data curators and data repositories.
+
+In the upcoming chapters, we'll explore how to install and use the package.
+
+<!-- preface and acknowledgements sections can be added here if needed -->

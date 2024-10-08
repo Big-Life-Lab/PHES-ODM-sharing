@@ -1,0 +1,11 @@
+ruleID,table,mode,key,operator,value,notes
+11,measures,select,NA,NA,all,
+12,measures,filter,aDateEnd,=,2022-02-01,
+13,measures,filter,aDateEnd,=,2023-02-01,
+14,NA,group,NA,OR,12;13,
+15,samples,select,NA,NA,all,
+16,samples,filter,siteID,=,ottawa-1,
+17,samples,filter,siteID,=,laval-1,
+18,NA,group,NA,OR,16;17,
+31,NA,share,OPH;PHAC,NA,11;14;15,
+32,NA,share,LPH,NA,11;14;15;18,

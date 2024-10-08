@@ -1,0 +1,7 @@
+sampleID,siteID,aDateEnd,reportDate,measure,value,unit,aggregation,reportable,contactID
+o.04.08.20,Ottawa-1,2020-04-08,,covN1,0.000260146,gcPMMoV,meanNr,TRUE,delatollaLab
+o.04.08.20,Ottawa-1,2020-04-08,,covN2,0.00012698899999999999,gcPMMoV,meanNr,TRUE,delatollaLab
+o.04.08.20,Ottawa-1,2020-04-08,,nPPMoV,27.35,Ct,mean,TRUE,delatollaLab
+o.01.28.24,Ottawa-1,2024-01-28,2024-01-29,covN1,0.00039488,gcPMMoV,meanNr,TRUE,delatollaLab
+o.01.28.24,Ottawa-1,2024-01-28,2024-01-29,covN2,0.000247411,gcPMMoV,meanNr,TRUE,delatollaLab
+o.01.28.24,Ottawa-1,2024-01-28,2024-01-29,nPPMoV,28.37666667,Ct,mean,TRUE,delatollaLab

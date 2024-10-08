@@ -1,0 +1,84 @@
+```{python}
+#| echo: false
+from os.path import join
+
+from odm_sharing.tools.share import share
+
+from common import ASSET_DIR
+```
+
+# CLI Reference {#sec-cli-ref}
+
+```bash
+odm-share [OPTION]... SCHEMA INPUT...
+```
+
+Arguments:
+
+- SCHEMA
+
+  sharing schema file path
+
+- INPUT...
+
+  CSV files, an Excel/SQLite file, or an [SQLAlchemy database URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)
+
+Options:
+
+- `--orgs=NAME[,...]`
+
+    comma separated list of organizations to output data for, defaults to all
+
+- `--outfmt=FORMAT`
+
+    output format (`excel` or `csv`), defaults to input format when input is a
+    file and `excel` when it's a database
+
+- `--outdir=PATH`
+
+    output file directory, defaults to the current directory. It's created if
+    it doesn't exist.
+
+- `-d`, `--debug`:
+
+    output debug info to STDOUT (and ./debug.txt) instead of creating sharable
+    output files. This shows which tables and columns are selected, and how
+    many rows each filter returns.
+
+- `-q`, `--quiet`:
+
+    don't log to STDOUT
+
+One or multiple sharable output files will be created in the chosen output
+directory according to the chosen output format and organization(s). Each
+output file will get an associative name.
+
+::: {.callout-warning}
+Boolean values will be normalized as TRUE/FALSE in the output. See
+@sec-data-sources for more information.
+:::
+
+::: {.callout-warning}
+Even tho using a database as input is supported, it hasn't been tested much
+yet.
+:::
+
+## Errors
+
+Error messages will be printed to the terminal (STDERR) when something is
+wrong. The message starts with telling where the error originated, including
+the filename and line number or rule id. Here's a few examples:
+
+When headers are missing from the schema:
+
+```{python}
+#| echo: false
+x = share(join(ASSET_DIR, 'schema-missing-headers.csv'), ['assets/measures.csv'])
+```
+
+When no share-rules are contained in the schema:
+
+```{python}
+#| echo: false
+x = share(join(ASSET_DIR, 'schema-missing-rules.csv'), ['assets/measures.csv'])
+```
