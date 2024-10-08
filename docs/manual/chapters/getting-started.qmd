@@ -66,7 +66,7 @@ Using the above schema and data examples would result in the following:
 ```{python}
 #| echo: false
 outpath = f'{Path(DATA).stem}-OHRI.csv'
-share(SCHEMA, DATA)
+share(SCHEMA, [DATA])
 display.Markdown(load_csv_md(outpath))
 ```
 <br/> <!-- needed because `display` doesn't add bottom margin -->
