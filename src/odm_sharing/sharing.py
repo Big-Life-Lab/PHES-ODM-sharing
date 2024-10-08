@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 import pandas
@@ -35,7 +35,10 @@ def parse(schema_path: str, orgs: List[str] = []) -> OrgTableQueries:
     return queries.generate(tree)
 
 
-def connect(data_source: str, tables: List[str] = []) -> Connection:
+def connect(
+    data_sources: Union[str, List[str]],
+    tables: List[str] = [],
+) -> Connection:
     '''
     creates a connection to a data source that later can be used with a query
     to retrieve data
@@ -43,14 +46,16 @@ def connect(data_source: str, tables: List[str] = []) -> Connection:
     Warning: Even tho using a database as input is supported, it hasn't been
     tested properly.
 
-    :param data_source: filepath or database URL
+    :param data_sources: filepath(s) or database URL
     :param tables: table name whitelist, disabled if empty
 
     :return: the data source connection object
 
     :raises DataSourceError: if the connection couldn't be established
     '''
-    return cons.connect([data_source], set(tables))
+    if isinstance(data_sources, str):
+        data_sources = [data_sources]
+    return cons.connect(data_sources, set(tables))
 
 
 def _check_con_query(c: Connection, tq: TableQuery) -> None:
@@ -150,7 +155,7 @@ def get_columns(c: Connection, tq: TableQuery
 
 def extract(
     schema_path: str,
-    data_source: str,
+    data_sources: Union[str, List[str]],
     orgs: List[str] = [],
 ) -> Dict[OrgName, Dict[TableName, pandas.DataFrame]]:
     '''high-level function for retrieving filtered data
@@ -159,7 +164,7 @@ def extract(
     TRUE/FALSE.
 
     :param schema_path: rule schema filepath
-    :param data_source: filepath or database URL
+    :param data_sources: filepath(s) or database URL
     :param orgs: organization whitelist, disabled if empty
 
     :return: a dataset per table per org. `OrgName` and `TableName` are
@@ -168,7 +173,7 @@ def extract(
     :raises DataSourceError: if an error occured while extracting data from the
     data source
     '''
-    con = connect(data_source)
+    con = connect(data_sources)
     queries = parse(schema_path, orgs)
     result: Dict[OrgName, Dict[TableName, pandas.DataFrame]] = {}
     for org, tablequeries in queries.items():
