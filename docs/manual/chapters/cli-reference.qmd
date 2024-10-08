@@ -73,12 +73,12 @@ When headers are missing from the schema:
 
 ```{python}
 #| echo: false
-share(join(ASSET_DIR, 'schema-missing-headers.csv'), 'assets/measures.csv')
+x = share(join(ASSET_DIR, 'schema-missing-headers.csv'), ['assets/measures.csv'])
 ```
 
 When no share-rules are contained in the schema:
 
 ```{python}
 #| echo: false
-share(join(ASSET_DIR, 'schema-missing-rules.csv'), 'assets/measures.csv')
+x = share(join(ASSET_DIR, 'schema-missing-rules.csv'), ['assets/measures.csv'])
 ```
