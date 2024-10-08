@@ -9,18 +9,36 @@ from common import DATA, SCHEMA
 
 ## Examples
 
-### Using a CSV file
+### Using CSV files
 
-To share a single table `measures.csv`, using the sharing schema `schema.csv`,
-the following command can be used:
+::: {.callout-note}
+Please keep in mind that CSV files currently need to have the same names as the
+tables they're representing. `measures.csv` represents the table "measures",
+etc.
+:::
+
+::: {.callout-note}
+In this example, the terminal is pointing to the same directory as the schema
+and input files. If that isn't the case, then their full relative/absolute
+paths must be spelled out.
+:::
+
+To share tables `measures.csv` and `samples.csv`, using sharing schema
+`schema.csv`, the following command can be used:
 
 ```bash
-odm-share schema.csv measures.csv
+odm-share schema.csv measures.csv samples.csv
 ```
 
-It will make an output file called `<schema_name>-<org>-measures.csv` for each
-organization specified in the schema, with filtered data that is ready to
-share.
+It will create one output file per table for each organization specified in
+the schema, with data filtered according to the schema rules, ready to share.
+
+The above command can also be simplified with a wildcard (`*`) if you have a
+directory with only the files you want to share, like this:
+
+```bash
+odm-share schema.csv mytables/*.csv
+```
 
 ### Using an Excel file
 
@@ -77,7 +95,7 @@ odm-share --debug schema.csv data.xlsx
 ```
 ```{python}
 #| echo: false
-share(SCHEMA, DATA, debug=True)
+share(SCHEMA, [DATA], debug=True)
 ```
 
 Here we can see the columns that would be selected, as well as the number of
