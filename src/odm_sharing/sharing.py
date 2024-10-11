@@ -1,4 +1,4 @@
-from pathlib import Path
+from io import IOBase
 from typing import Dict, List, Tuple, Union
 
 import numpy as np
@@ -10,16 +10,17 @@ import odm_sharing.private.queries as queries
 import odm_sharing.private.rules as rules
 import odm_sharing.private.trees as trees
 from odm_sharing.private.common import ColumnName, OrgName, TableName, F, T
-from odm_sharing.private.cons import Connection
+from odm_sharing.private.cons import Connection, CsvFile
 from odm_sharing.private.queries import OrgTableQueries, Query, TableQuery
 from odm_sharing.private.rules import RuleId
-from odm_sharing.private.utils import qt
+from odm_sharing.private.utils import get_filename, qt
 
 
-def parse(schema_path: str, orgs: List[str] = []) -> OrgTableQueries:
+def parse(schema_file: Union[str, IOBase],
+          orgs: List[str] = []) -> OrgTableQueries:
     '''loads and parses a schema file into query objects
 
-    :param schema_path: schema filepath
+    :param schema_file: schema file path/object
     :param orgs: organization whitelist, disabled if empty
 
     :return: a query per table per org. `OrgName` and `TableName` are
@@ -29,14 +30,14 @@ def parse(schema_path: str, orgs: List[str] = []) -> OrgTableQueries:
     :raises OSError: if the schema file can't be loaded
     :raises ParseError: if the schema parsing fails
     '''
-    ruleset = rules.load(schema_path)
-    filename = Path(schema_path).name
+    ruleset = rules.load(schema_file)
+    filename = get_filename(schema_file)
     tree = trees.parse(ruleset, orgs, filename)
     return queries.generate(tree)
 
 
 def connect(
-    data_sources: Union[str, List[str]],
+    data_sources: Union[str, List[str], List[CsvFile]],
     tables: List[str] = [],
 ) -> Connection:
     '''
@@ -46,14 +47,16 @@ def connect(
     Warning: Even tho using a database as input is supported, it hasn't been
     tested properly.
 
-    :param data_sources: filepath(s) or database URL
+    :param data_sources: filepath, database URL, list of CSV filepaths, or list
+        of [CsvFiles](#odm_sharing.sharing.CsvFile).
     :param tables: table name whitelist, disabled if empty
 
     :return: the data source connection object
 
     :raises DataSourceError: if the connection couldn't be established
     '''
-    if isinstance(data_sources, str):
+    # normalize single str/path input as list
+    if not isinstance(data_sources, list):
         data_sources = [data_sources]
     return cons.connect(data_sources, set(tables))
 
@@ -154,8 +157,8 @@ def get_columns(c: Connection, tq: TableQuery
 
 
 def extract(
-    schema_path: str,
-    data_sources: Union[str, List[str]],
+    schema_file: Union[str, IOBase],
+    data_sources: Union[str, List[str], List[CsvFile]],
     orgs: List[str] = [],
 ) -> Dict[OrgName, Dict[TableName, pandas.DataFrame]]:
     '''high-level function for retrieving filtered data
@@ -163,8 +166,9 @@ def extract(
     Warning: Boolean values from CSV/Excel files will be normalized as
     `TRUE`/`FALSE`.
 
-    :param schema_path: rule schema filepath
-    :param data_sources: filepath(s) or database URL
+    :param schema_file: rule schema file path/object
+    :param data_sources: filepath, database URL, list of CSV filepaths, or list
+        of [CsvFiles](#odm_sharing.sharing.CsvFile).
     :param orgs: organization whitelist, disabled if empty
 
     :return: a dataset per table per org. `OrgName` and `TableName` are
@@ -174,7 +178,7 @@ def extract(
     data source
     '''
     con = connect(data_sources)
-    queries = parse(schema_path, orgs)
+    queries = parse(schema_file, orgs)
     result: Dict[OrgName, Dict[TableName, pandas.DataFrame]] = {}
     for org, tablequeries in queries.items():
         result[org] = {}
