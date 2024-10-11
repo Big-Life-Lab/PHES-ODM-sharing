@@ -1,17 +1,19 @@
 import sys
+from io import IOBase
 
 from dataclasses import dataclass, field
 from enum import EnumMeta
-from pathlib import Path
 from typing import Any, Dict, List, Union
 
 import pandas as pd
 from functional import seq
 
 from odm_sharing.private.stdext import StrValueEnum
-from odm_sharing.private.utils import fmt_set, qt
+from odm_sharing.private.utils import fmt_set, get_filename, qt
 
 RuleId = int
+SchemaFile = IOBase
+SchemaPath = str
 
 
 class RuleMode(StrValueEnum):
@@ -212,15 +214,17 @@ def validate_rule(ctx: SchemaCtx, rule: Rule) -> None:
         raise ParseError(errors)
 
 
-def load(schema_path: str) -> Dict[RuleId, Rule]:
+def load(schema: Union[SchemaPath, SchemaFile]) -> Dict[RuleId, Rule]:
     '''loads a sharing schema
+
+    :param schema: file path/object
 
     :returns: rules parsed from schema, by rule id
     :raises OSError, ParseError:
     '''
-    filename = Path(schema_path).name
+    filename = get_filename(schema)
     ctx = SchemaCtx(filename)
-    data = pd.read_csv(schema_path)
+    data = pd.read_csv(schema)  # type: ignore
 
     # replace all different NA values with an empty string
     data = data.fillna('')
