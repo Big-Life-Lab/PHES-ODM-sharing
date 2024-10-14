@@ -20,3 +20,11 @@ def fmt_set(values: Iterable) -> str:
     curly-brackets'''
     items = ','.join(map(qt, values))
     return f'{{{items}}}'
+
+
+def gen_output_filename(input_name: str, schema_name: str, org: str,
+                        table: str, ext: str) -> str:
+    parts = (([input_name] if input_name else []) +
+             [schema_name, org] +
+             ([table] if table else []))
+    return '-'.join(parts) + f'.{ext}'
