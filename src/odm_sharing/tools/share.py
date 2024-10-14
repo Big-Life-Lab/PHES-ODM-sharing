@@ -21,7 +21,7 @@ import odm_sharing.private.queries as queries
 import odm_sharing.private.rules as rules
 import odm_sharing.private.trees as trees
 from odm_sharing.private.rules import Rule, RuleId, RuleMode
-from odm_sharing.private.utils import qt
+from odm_sharing.private.utils import gen_output_filename, qt
 
 
 FilePath = namedtuple('FilePath', ['abspath', 'relpath', 'filename'])
@@ -130,10 +130,9 @@ def get_tables(org_queries: sh.queries.OrgTableQueries) -> Set[str]:
     return result
 
 
-def gen_filepath(outdir: str, schema_name: str, org: str, table: str, ext: str
-                 ) -> FilePath:
-    parts = [schema_name, org] + ([table] if table else [])
-    filename = '-'.join(parts) + f'.{ext}'
+def gen_filepath(outdir: str, input_name: str, schema_name: str, org: str,
+                 table: str, ext: str) -> FilePath:
+    filename = gen_output_filename(input_name, schema_name, org, table, ext)
     abspath = os.path.join(outdir, filename)
     relpath = os.path.relpath(abspath, os.getcwd())
     return FilePath(abspath=abspath, relpath=relpath, filename=filename)
@@ -155,6 +154,16 @@ def infer_outfmt(inputs: List[str]) -> OutFmt:
     return OutFmt.EXCEL
 
 
+def get_output_prefix_from_input(input: str) -> str:
+    # - ignore CSV files since their names may double as table names, which
+    #   are already included in the generated output name
+    # - ignore non-existing files like database URLs
+    if (not input.endswith('.csv') and os.path.exists(input)):
+        return Path(input).stem
+    else:
+        return ''
+
+
 def share(
     schema: str,
     inputs: List[str],
@@ -167,6 +176,7 @@ def share(
     schema_path = schema
     schema_filename = Path(schema_path).name
     schema_name = Path(schema_path).stem
+    output_prefix = get_output_prefix_from_input(inputs[0])
     if outfmt == OutFmt.AUTO:
         outfmt = infer_outfmt(inputs)
         logging.info(f'inferred output format as {outfmt}')
@@ -201,7 +211,8 @@ def share(
                     org_data[table] = sh.get_data(con, tq)
 
             # one excel file per org
-            excel_path = gen_filepath(outdir, schema_name, org, '', 'xlsx')
+            excel_path = gen_filepath(outdir, output_prefix, schema_name, org,
+                                      '', 'xlsx')
             excel_file = None
             if not debug and outfmt == OutFmt.EXCEL:
                 excel_file = pd.ExcelWriter(excel_path.abspath,
@@ -210,8 +221,8 @@ def share(
             try:
                 for table, data in org_data.items():
                     if outfmt == OutFmt.CSV:
-                        p = gen_filepath(outdir, schema_name, org, table,
-                                         'csv')
+                        p = gen_filepath(outdir, output_prefix, schema_name,
+                                         org, table, 'csv')
                         logging.info('writing ' + p.relpath)
                         data.to_csv(p.abspath, index=False)
                         output_paths.append(p.relpath)
