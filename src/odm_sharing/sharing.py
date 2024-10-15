@@ -68,7 +68,7 @@ def get_data(c: Connection, tq: TableQuery) -> pandas.DataFrame:
     '''retrieves filtered data from a specific table of a data source
 
     Warning: Boolean values from CSV/Excel files will be normalized as
-    TRUE/FALSE.
+    `TRUE`/`FALSE`.
 
     :param c: the data source connection
     :param tq: the table query
@@ -161,7 +161,7 @@ def extract(
     '''high-level function for retrieving filtered data
 
     Warning: Boolean values from CSV/Excel files will be normalized as
-    TRUE/FALSE.
+    `TRUE`/`FALSE`.
 
     :param schema_path: rule schema filepath
     :param data_sources: filepath(s) or database URL
