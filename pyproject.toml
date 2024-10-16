@@ -1,6 +1,6 @@
 [project]
 name = "odm_sharing"
-version = "0.1.0"
+version = "1.0.0"
 authors = [
     { name="OHRI", email="PHES-ODM@ohri.ca" }
 ]
