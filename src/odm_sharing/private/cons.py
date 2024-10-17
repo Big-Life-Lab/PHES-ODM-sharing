@@ -2,8 +2,9 @@ import logging
 import os
 from collections import defaultdict
 from dataclasses import dataclass
+from io import IOBase
 from pathlib import Path
-from typing import Dict, Generator, List, Set
+from typing import Dict, Generator, List, Set, Tuple, Union, cast
 
 import openpyxl as xl
 import pandas as pd
@@ -15,6 +16,19 @@ from odm_sharing.private.common import ColumnName, TableName, F, T
 from odm_sharing.private.utils import qt
 
 
+@dataclass(frozen=True)
+class CsvFile:
+    '''a table's CSV file'''
+
+    table: str
+    '''table name'''
+
+    file: IOBase
+    '''file object'''
+
+
+CsvPath = str
+CsvDataSourceList = Union[List[CsvPath], List[CsvFile]]
 Sheet = xl.worksheet._read_only.ReadOnlyWorksheet
 
 
@@ -131,19 +145,39 @@ def _normalize_bool_values(df: pd.DataFrame, bool_cols: Set[ColumnName]
             df[col] = df[col].replace({F: '0', T: '1'})
 
 
-def _connect_csv(paths: List[str]) -> Connection:
-    '''copies file data to in-memory db
-
-    :raises OSError:'''
-
+def _import_csv(data_source: Union[CsvPath, CsvFile]
+                ) -> Tuple[TableName, pd.DataFrame]:
     # XXX: NA-values are not normalized to avoid mutating user data (#31)
-    dfs = {}
-    tables = set()
-    bool_cols = {}
-    for path in paths:
+    ds = data_source
+    if isinstance(ds, CsvPath):
+        path = ds
+        assert path.endswith('.csv')
         table = Path(path).stem
         logging.info(f'importing {qt(table)} from {path}')
         df = pd.read_csv(path, na_filter=False)
+        return (table, df)
+    else:
+        assert isinstance(ds, CsvFile)
+        logging.info(f'importing {qt(ds.table)} from a file')
+        df = pd.read_csv(ds.file, na_filter=False)  # type: ignore
+        return (ds.table, df)
+
+
+def _connect_csv(data_sources: CsvDataSourceList) -> Connection:
+    '''copies file data to in-memory db
+
+    :raises DataSourceError:
+    :raises OSError:
+    '''
+    assert len(data_sources) > 0
+    if isinstance(data_sources[0], CsvPath):
+        _check_csv_paths(cast(List[CsvPath], data_sources))
+
+    dfs = {}
+    tables = set()
+    bool_cols = {}
+    for ds in data_sources:
+        (table, df) = _import_csv(ds)
         bool_cols[table] = _find_bool_cols(df, BOOL_VALS)
         _normalize_bool_values(df, bool_cols[table])
         dfs[table] = df
@@ -244,22 +278,31 @@ def _detect_sqlalchemy(path: str) -> bool:
         return False
 
 
-def _check_datasources(paths: List[str]) -> None:
-    if not paths:
-        raise DataSourceError('no data source')
-    (_, ext) = os.path.splitext(paths[0])
-    all_same_ext = seq(paths).map(lambda p: p.endswith(ext)).all()
-    if not all_same_ext:
+def _check_csv_paths(paths: List[str]) -> None:
+    if not seq(paths).map(lambda p: p.endswith('.csv')).all():
         raise DataSourceError(
-            'mixing multiple data source types is not allowed')
+            'mixing CSV files with other file types is not allowed')
 
 
-def connect(paths: List[str], tables: Set[str] = set()
-            ) -> Connection:
+def _detect_csv_input(data_sources: Union[str, CsvDataSourceList]) -> bool:
+    is_str = isinstance(data_sources, str)
+    is_list = isinstance(data_sources, list)
+    is_path_list = is_list and isinstance(data_sources[0], str)
+    is_file_list = is_list and not is_path_list
+    return ((is_str and cast(str, data_sources).endswith('.csv')) or
+            (is_path_list and cast(str, data_sources[0]).endswith('.csv')) or
+            is_file_list)
+
+
+def connect(
+    data_sources: Union[str, CsvDataSourceList],
+    tables: Set[str] = set()
+) -> Connection:
     '''
     connects to one or more data sources and returns the connection
 
-    :param paths: must all be of the same (file)type.
+    :param data_sources: filepath or database URL, or list of multiple CSV
+        paths/files
 
     :param tables: when connecting to an excel file, this acts as a sheet
         whitelist
@@ -271,16 +314,24 @@ def connect(paths: List[str], tables: Set[str] = set()
     # as 0/1, which we'll have to convert back (using previously detected bool
     # columns) to 'FALSE'/'TRUE' before returning the data to the user. This
     # happens in `odm_sharing.sharing.get_data`.
-    _check_datasources(paths)
+    if not data_sources:
+        raise DataSourceError('no data source')
     try:
-        path = paths[0]
-        is_csv = path.endswith('.csv')
-        if not is_csv and len(paths) > 1:
-            logging.warning('ignoring additional inputs (for CSV only)')
+        if _detect_csv_input(data_sources):
+            csv_data_sources = (
+                [data_sources] if isinstance(data_sources, str)
+                else data_sources)
+            return _connect_csv(csv_data_sources)
 
-        if is_csv:
-            return _connect_csv(paths)
-        elif path.endswith('.xlsx'):
+        is_list = isinstance(data_sources, list)
+        if is_list:
+            if len(data_sources) > 1:
+                raise DataSourceError('specifying multiple inputs is only ' +
+                                      'allowed for CSV files')
+
+        path = (cast(str, data_sources[0]) if is_list
+                else cast(str, data_sources))
+        if path.endswith('.xlsx'):
             return _connect_excel(path, tables)
         elif _detect_sqlite(path):
             return _connect_db(f'sqlite:///{path}')
