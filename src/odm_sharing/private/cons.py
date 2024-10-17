@@ -318,7 +318,9 @@ def connect(
         raise DataSourceError('no data source')
     try:
         if _detect_csv_input(data_sources):
-            csv_data_sources = cast(CsvDataSourceList, data_sources)
+            csv_data_sources = (
+                [data_sources] if isinstance(data_sources, str)
+                else data_sources)
             return _connect_csv(csv_data_sources)
 
         is_list = isinstance(data_sources, list)
