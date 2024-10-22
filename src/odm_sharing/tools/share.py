@@ -147,12 +147,12 @@ def get_debug_writer(debug: bool) -> Union[TextIO, contextlib.nullcontext]:
         return contextlib.nullcontext()
 
 
-def infer_outfmt(path: str) -> OutFmt:
-    (_, ext) = os.path.splitext(path)
-    if ext == '.csv':
+def infer_outfmt(inputs: List[str]) -> OutFmt:
+    first = inputs[0]
+    (_, ext) = os.path.splitext(first)
+    if ext == '.csv' and len(inputs) == 1:
         return OutFmt.CSV
-    else:
-        return OutFmt.EXCEL
+    return OutFmt.EXCEL
 
 
 def share(
@@ -167,9 +167,8 @@ def share(
     schema_path = schema
     schema_filename = Path(schema_path).name
     schema_name = Path(schema_path).stem
-    first_input = inputs[0]
     if outfmt == OutFmt.AUTO:
-        outfmt = infer_outfmt(first_input)
+        outfmt = infer_outfmt(inputs)
         logging.info(f'inferred output format as {outfmt}')
 
     logging.info(f'loading schema {qt(schema_filename)}')
