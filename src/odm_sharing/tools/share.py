@@ -148,7 +148,6 @@ def get_debug_writer(debug: bool) -> Union[TextIO, contextlib.nullcontext]:
 
 
 def infer_outfmt(path: str) -> OutFmt:
-    '''returns None when not recognized'''
     (_, ext) = os.path.splitext(path)
     if ext == '.csv':
         return OutFmt.CSV
