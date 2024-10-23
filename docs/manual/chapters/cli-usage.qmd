@@ -1,0 +1,104 @@
+```{python}
+#| echo: false
+from odm_sharing.tools.share import share
+
+from common import DATA, SCHEMA
+```
+
+# CLI Usage {#sec-cli-usage}
+
+## Examples
+
+### Using CSV files
+
+::: {.callout-note}
+Please keep in mind that CSV files currently need to have the same names as the
+tables they're representing. `measures.csv` represents the table "measures",
+etc.
+:::
+
+::: {.callout-note}
+In this example, the terminal is pointing to the same directory as the schema
+and input files. If that isn't the case, then their full relative/absolute
+paths must be spelled out.
+:::
+
+To share tables `measures.csv` and `samples.csv`, using sharing schema
+`schema.csv`, the following command can be used:
+
+```bash
+odm-share schema.csv measures.csv samples.csv
+```
+
+It will create one output file per table for each organization specified in
+the schema, with data filtered according to the schema rules, ready to share.
+
+The above command can also be simplified with a wildcard (`*`) if you have a
+directory with only the files you want to share, like this:
+
+```bash
+odm-share schema.csv mytables/*.csv
+```
+
+### Using an Excel file
+
+Excel files can be used as input to share multiple tables at once:
+
+```bash
+odm-share schema.csv data.xlsx
+```
+
+It will make an output file called `<schema_name>-<org>.xlsx` for each
+organization in the schema.
+
+### Using a database
+
+To use a MySQL database as input (with the pymysql package):
+
+```bash
+odm-share schema.csv mysql+pymysql://user:pass@host/db
+```
+
+Same as above, using a MS SQL Server database through ODBC (with the pyodbc
+package):
+
+```bash
+odm-share schema.csv mssql+pyodbc://user:pass@mydsn
+```
+
+### Using additional options
+
+- Share CSV files from an Excel file:
+
+    ```bash
+    odm-share --outfmt=csv schema.csv data.xlsx
+    ```
+
+- Create a sharable excel file in the "~/files" directory, for the "OHRI" and
+  "TOH" organizations, applying the rules from schema.csv on the input from
+  data.xlsx:
+
+    ```bash
+    odm-share --orgs=OHRI,TOH --outdir=~/files schema.csv data.xlsx
+    ```
+
+## Debugging
+
+Debug mode provides information about what would happen when using a specific
+schema, without pulling the actual data to be shared. Debugging is enabled by
+passing the `--debug` flag, or simply `-d`.
+
+Here's an example using the sample files from [getting started](getting-started.qmd):
+
+```bash
+odm-share --debug schema.csv data.xlsx
+```
+```{python}
+#| echo: false
+share(SCHEMA, [DATA], debug=True)
+```
+
+Here we can see the columns that would be selected, as well as the number of
+rows each rule would produce. Specifically, we can see that 4 rows would be
+selected by rule #1, but the filter in rule #2 reduces that number to 2, which
+is the final count as confirmed in the count for rule #3.

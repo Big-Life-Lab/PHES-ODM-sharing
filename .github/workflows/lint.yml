@@ -1,0 +1,15 @@
+name: lint
+
+on: [pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version-file: '.python-version-ci'
+      - uses: py-actions/flake8@v2
+        with:
+          path: 'src tests'

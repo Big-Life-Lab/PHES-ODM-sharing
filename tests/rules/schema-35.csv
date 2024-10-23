@@ -1,0 +1,4 @@
+ruleID,table,mode,key,operator,value,notes
+1,mytable,select,NA,NA,all,
+2,mytable,filter,bool3,=,TRUE,
+2,NA,share,OHRI,NA,1;2,

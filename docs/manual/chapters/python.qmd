@@ -1,0 +1,56 @@
+# Python {#sec-python}
+
+## Install
+
+### Windows & macOS
+
+Python can be downloaded from [here](https://www.python.org/downloads/).
+
+### Linux
+
+Linux users should install Python using their distribution's package manager.
+Installing a specific version is more complicated, so we'll keep it simple and
+use the latest version. On Ubuntu that would be:
+
+```bash
+sudo apt update
+sudo apt install python3
+```
+
+## Test installation
+
+You can now test that Python is working by entering the following in a terminal,
+
+```bash
+python --version
+```
+
+which should output `Python 3.x.x`.
+
+If you get a "command not found" error, then:
+
+1. Make sure you typed it correctly.
+2. Some distributions don't include the `python` alias. Try using `python3`
+   directly, like this: `python3 --version`.
+
+## Setup Pip
+
+(Replace `python`/`pip` with `python3`/`pip3` as needed.)
+
+Pip should be bundled with python. Ensure that it's working by running:
+
+```bash
+pip --version
+```
+
+If it's not working, then try the following:
+
+```bash
+python -m ensurepip
+```
+
+Lastly, upgrade pip:
+
+```bash
+pip install --upgrade pip
+```
