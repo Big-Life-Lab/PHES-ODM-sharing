@@ -155,7 +155,7 @@ def infer_outfmt(path: str) -> OutFmt:
         return OutFmt.EXCEL
 
 
-def get_input_name(input: str) -> str:
+def get_output_prefix_from_input(input: str) -> str:
     # - ignore CSV files since their names may double as table names, which
     #   are already included in the generated output name
     # - ignore non-existing files like database URLs
@@ -178,7 +178,7 @@ def share(
     schema_filename = Path(schema_path).name
     schema_name = Path(schema_path).stem
     first_input = inputs[0]
-    input_name = get_input_name(first_input)
+    output_prefix = get_output_prefix_from_input(first_input)
     if outfmt == OutFmt.AUTO:
         outfmt = infer_outfmt(first_input)
         logging.info(f'inferred output format as {outfmt}')
@@ -213,7 +213,7 @@ def share(
                     org_data[table] = sh.get_data(con, tq)
 
             # one excel file per org
-            excel_path = gen_filepath(outdir, input_name, schema_name, org, '',
+            excel_path = gen_filepath(outdir, output_prefix, schema_name, org, '',
                                       'xlsx')
             excel_file = None
             if not debug and outfmt == OutFmt.EXCEL:
@@ -223,7 +223,7 @@ def share(
             try:
                 for table, data in org_data.items():
                     if outfmt == OutFmt.CSV:
-                        p = gen_filepath(outdir, input_name, schema_name, org,
+                        p = gen_filepath(outdir, output_prefix, schema_name, org,
                                          table, 'csv')
                         logging.info('writing ' + p.relpath)
                         data.to_csv(p.abspath, index=False)
