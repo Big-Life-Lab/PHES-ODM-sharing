@@ -65,9 +65,8 @@ Using the above schema and data examples would result in the following:
 `measures-OHRI.csv`
 ```{python}
 #| echo: false
-outpath = f'{Path(DATA).stem}-OHRI.csv'
-share(SCHEMA, [DATA])
-display.Markdown(load_csv_md(outpath))
+outpaths = share(SCHEMA, [DATA])
+display.Markdown(load_csv_md(outpaths[0]))
 ```
 <br/> <!-- needed because `display` doesn't add bottom margin -->
 See @sec-cli-ref for the CLI reference and @sec-cli-usage for more examples.
