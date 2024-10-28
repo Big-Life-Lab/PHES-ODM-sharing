@@ -39,7 +39,7 @@ class TestCli(OdmTestCase):
         self.assertEqual(src_content, dst_content)
 
     def _multi_impl(self, schema_path: str, inputs: List[str], outdir: str):
-        share(schema_path, inputs, outdir=outdir)
+        share(schema_path, inputs, outdir=outdir, outfmt=OutFmt.CSV)
         outfiles = [
             join(outdir, 'multi-schema-OHRI-mytable1.csv'),
             join(outdir, 'multi-schema-OHRI-mytable2.csv'),
