@@ -12,15 +12,14 @@ from common import OdmTestCase, readfile
 
 def share_csv(schema_path: str, data_path: str) -> List[str]:
     with TemporaryDirectory() as dir:
-        share(schema_path, [data_path], outdir=dir)
-        outfile = join(dir, 'passthrough-schema-OHRI-mytable.csv')
-        return readfile(outfile)
+        outpaths = share(schema_path, [data_path], outdir=dir)
+        return readfile(outpaths[0])
 
 
 def share_excel(schema_path, data_path: str, outfmt) -> List[str]:
     with TemporaryDirectory() as dir:
-        outfiles = share(schema_path, [data_path], outdir=dir, outfmt=outfmt)
-        return readfile(outfiles[0])
+        outpaths = share(schema_path, [data_path], outdir=dir, outfmt=outfmt)
+        return readfile(outpaths[0])
 
 
 class TestCli(OdmTestCase):
@@ -39,12 +38,8 @@ class TestCli(OdmTestCase):
         self.assertEqual(src_content, dst_content)
 
     def _multi_impl(self, schema_path: str, inputs: List[str], outdir: str):
-        share(schema_path, inputs, outdir=outdir)
-        outfiles = [
-            join(outdir, 'multi-schema-OHRI-mytable1.csv'),
-            join(outdir, 'multi-schema-OHRI-mytable2.csv'),
-        ]
-        actual = (''.join(seq(outfiles).map(readfile))).splitlines()
+        outpaths = share(schema_path, inputs, outdir=outdir, outfmt=OutFmt.CSV)
+        actual = (''.join(seq(outpaths).map(readfile))).splitlines()
         expected = ['x', 'a', 'x', 'b']
         self.assertEqual(actual, expected)
 

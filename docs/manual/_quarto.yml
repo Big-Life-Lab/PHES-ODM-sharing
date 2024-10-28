@@ -35,6 +35,7 @@ quartodoc:
         - sharing.get_data
         - sharing.get_counts
         - sharing.get_columns
+        - sharing.CsvFile
 
 theme:
   - default
