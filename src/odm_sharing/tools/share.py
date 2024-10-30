@@ -96,7 +96,12 @@ def write_debug(
     ruleset: Dict[RuleId, Rule]
 ) -> None:
     '''write debug output'''
+    write_line(file, '')
     write_header(file, 1, f'org {qt(org_name)} - table {qt(table_name)}')
+
+    write_header(file, 2, 'data sql')
+    write_line(file, table_query.data_query.sql)
+    write_line(file, '')
 
     (select_id, columns) = sh.get_columns(con, table_query)
     write_header(file, 2, 'columns')
