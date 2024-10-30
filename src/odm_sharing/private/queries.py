@@ -130,7 +130,7 @@ def gen_data_sql(
     elif n.kind == NodeKind.FILTER:
         # filter has op as value, children define field, kind and literals
         op = parse_op(n.str_val)
-        key_ident = ident(recurse(n.sons[0]))
+        key_ident = recurse(n.sons[0])
 
         def gen_range_sql(range_kind: RangeKind, values: List[str]) -> str:
             '''generates sql for a range of values'''
