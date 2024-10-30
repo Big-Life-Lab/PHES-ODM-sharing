@@ -64,6 +64,14 @@ class TestApi(OdmTestCase):
         self.assertEqual(df['str1'].to_list(), ['a'])
         self.assertEqual(df['str2'].to_list(), [''])
 
+    def test_header_with_dot(self) -> None:
+        HEADER = 'Protocol.ID'
+        dir = join(self.dir, 'api', 'issue-69')
+        res = sh.extract(join(dir, 'schema.csv'), join(dir, 'protocols.csv'))
+        df = res['org1']['protocols']
+        self.assertEqual(df.columns.to_list(), [HEADER])
+        self.assertEqual(df[HEADER].to_list(), ['a', 'b', 'c'])
+
 
 if __name__ == '__main__':
     unittest.main()
