@@ -92,8 +92,8 @@ class TestQueries(OdmTestCase):
         self.assertEqual(actual2, expected2)
 
     def test_sanitize(self) -> None:
-        '''special characters are stripped, and parameter values separated, to
-        prevent injections'''
+        '''double-quotes are not allowed in identifiers and parameter values
+        are separated, to prevent injections'''
         injection = '" OR 1=1 --'
         ruleset = [
             Rule(id=1, table='t', mode=RuleMode.SELECT, value=injection),
@@ -102,10 +102,8 @@ class TestQueries(OdmTestCase):
             Rule(id=3, table='', mode=RuleMode.SHARE, key='ohri', value='1;2'),
         ]
         ruletree = trees.parse(ruleset)
-        q = queries.generate(ruletree)['ohri']['t']
-        actual = q.data_query.sql
-        expected = 'SELECT "OR11" FROM "t" WHERE ("OR11" = ?)'
-        self.assertEqual(actual, expected)
+        with self.assertRaisesRegex(rules.ParseError, 'quote.*not allowed'):
+            queries.generate(ruletree)
 
 
 if __name__ == '__main__':

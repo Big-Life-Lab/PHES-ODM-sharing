@@ -1,4 +1,3 @@
-import re
 from collections import defaultdict
 from dataclasses import dataclass, field
 from functools import partial
@@ -17,6 +16,7 @@ from odm_sharing.private.trees import (
     Node,
     NodeKind,
     Op,
+    ParseError,
     RangeKind,
     RuleTree,
     parse_op,
@@ -60,12 +60,19 @@ class TableQuery:
 OrgTableQueries = Dict[OrgName, Dict[TableName, TableQuery]]
 
 
-INVALID_IDENT_PATTERN = re.compile(r'\W+', re.ASCII)
-
-
 def ident(x: str) -> str:
-    '''sanitize and quote sql identifier'''
-    return dqt(INVALID_IDENT_PATTERN.sub('', x))
+    '''make a sanitized/quoted sql identifier
+
+    :raises ParseError:
+    '''
+    # Double-quotes should be used as the delimiter for column-name
+    # identifiers. (https://stackoverflow.com/a/2901499)
+    #
+    # It should be enough to simply disallow double-quotes in the name.
+    if '"' in x:
+        raise ParseError('the following column-name contains double-quotes, ' +
+                         f'which is not allowed: \'{x}\'')
+    return dqt(x)
 
 
 def convert(val: str) -> str:
@@ -90,6 +97,8 @@ def gen_data_sql(
     to be generated, but it'll also work on any node in the table-subtree.
     :param args: (output) sql arguments
     :param rule_queries: (output) see ``gen_data_query``
+
+    :raises ParseError:
     '''
 
     def recurse(node: Node) -> str:
@@ -177,6 +186,8 @@ def gen_data_query(
     :param rule_queries: (output) partial filter and select queries
 
     :return: complete query
+
+    :raises ParseError:
     '''
     args: List[str] = []
     sql = gen_data_sql(table_node, args, rule_queries)
@@ -226,7 +237,10 @@ def gen_count_query_sql(
     rule_id: int,
     filter_query: PartialQuery,
 ) -> Tuple[RuleId, Query]:
-    '''generate count query for table from partial filter query'''
+    '''generate count query for table from partial filter query
+
+    :raises ParseError:
+    '''
     sql = (
         f'SELECT COUNT(*) FROM {ident(table)}' +
         (f' WHERE {filter_query.sql}' if filter_query.sql else '')
@@ -235,7 +249,10 @@ def gen_count_query_sql(
 
 
 def gen_table_query(share_node: Node, table_node: Node) -> TableQuery:
-    '''generates a table-query for a specific table node of a share node'''
+    '''generates a table-query for a specific table node of a share node
+
+    :raises ParseError:
+    '''
     assert share_node.kind == NodeKind.SHARE
     assert table_node.kind == NodeKind.TABLE
     assert table_node in share_node.sons
@@ -281,6 +298,8 @@ def generate(rule_tree: RuleTree) -> OrgTableQueries:
     :param rule_tree: the tree to generate queries from
 
     :return: query-objects for each org and table
+
+    :raises ParseError:
     '''
 
     def gen_table_query_entry(share_node: Node, table_node: Node
