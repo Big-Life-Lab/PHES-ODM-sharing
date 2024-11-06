@@ -88,8 +88,8 @@ TABLE_MODES = [RuleMode.SELECT, RuleMode.FILTER]
 
 def gen_error(ctx: SchemaCtx, desc: str) -> ParseError:
     '''returns a ParseError'''
-    col = f',{ctx.column}' if ctx.column else ''
-    msg = f'{ctx.filename}({ctx.line_num}{col}): {desc}'
+    col = f', col: {qt(ctx.column)}' if ctx.column else ''
+    msg = f'{ctx.filename}(ln: {ctx.line_num}{col}): {desc}'
     print('Error: ' + msg, file=sys.stderr)
     return ParseError(msg)
 
@@ -117,7 +117,7 @@ def coerce_value(  # type: ignore
 
         def get_expected(type_class) -> str:  # type: ignore
             if type(type_class) is EnumMeta:
-                return fmt_set(list(type_class))
+                return 'one of ' + fmt_set(list(type_class))
             else:
                 return type_class.__name__
 
@@ -185,7 +185,7 @@ def validate_rule(ctx: SchemaCtx, rule: Rule) -> None:
     def check_set(ctx: SchemaCtx, actual: str, expected: Union[set, list]
                   ) -> None:
         if actual not in expected:
-            err(f'got {qt(actual)}, expected {fmt_set(expected)}')
+            err(f'got {qt(actual)}, expected one of {fmt_set(expected)}')
 
     ctx.column = RULE_ID
     if rule.id <= 0:
