@@ -108,7 +108,7 @@ ALL_SEPARATORS = set([VAL_SEP, INTERVAL_SEP])
 
 
 def gen_error(ctx: Ctx, desc: str) -> ParseError:
-    loc = f'(rule {ctx.rule_id})' if ctx.rule_id else ''
+    loc = f'(id: {ctx.rule_id})' if ctx.rule_id else ''
     msg = f'{ctx.filename}{loc}: {desc}'
     print('Error: ' + msg, file=sys.stderr)
     return ParseError(msg)

@@ -20,7 +20,7 @@ def not_empty(x: Union[list, set, str]) -> bool:
 def fmt_set(values: Iterable) -> str:
     '''returns a comma-separated string of the items in `values`, surrounded by
     curly-brackets'''
-    items = ','.join(map(qt, values))
+    items = ', '.join(values)
     return f'{{{items}}}'
 
 
