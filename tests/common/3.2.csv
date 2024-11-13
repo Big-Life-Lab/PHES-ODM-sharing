@@ -1,0 +1,10 @@
+ruleID,table,mode,key,operator,value,notes
+1,samples;measures,select,NA,NA,all,
+2,samples,filter,siteID,=,ottawa-1,
+3,samples,filter,collPer,>=,5,
+4,samples,filter,collPer,<=,5,
+5,measures,filter,aDateEnd,=,2022-02-01,
+6,measures,filter,aDateEnd,in,2022-02-01:2022-02-28,
+7,NA,group,NA,AND,2;3;4,
+8,NA,group,NA,AND,5;6,
+9,NA,share,ohri,NA,1;7;8,

@@ -1,0 +1,5 @@
+measureRepID,sampleID,measure,value,unit,aggregation
+o.08.08.20covN1,o.08.08.20,covN1,0.00036,gcPMMoV,meanNr
+o.08.08.20covN2,o.08.08.20,covN1,0.00003,gcPMMoV,sdNr
+o.08.08.20covN4,o.08.08.20,covN2,0.00002,gcPMMoV,meanNr
+o.08.08.20covN3,o.08.08.20,covN2,0.00004,gcPMMoV,sdNr

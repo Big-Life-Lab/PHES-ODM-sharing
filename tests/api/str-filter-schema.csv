@@ -1,0 +1,11 @@
+ruleID,table,mode,key,operator,value,notes
+1,mytable,select,NA,NA,str1;str2,
+2,mytable,filter,str1,=,a,
+3,mytable,filter,str1,=,"a",
+4,mytable,filter,str1,<,b,
+5,mytable,filter,str2,=,,
+6,mytable,filter,str2,=,"",
+7,,group,,and,2;3;4,
+8,,group,,and,5;6,
+9,,group,,or,7;8,
+10,NA,share,OHRI,NA,1;9,

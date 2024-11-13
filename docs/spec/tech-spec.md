@@ -21,74 +21,6 @@ boost when running queries on big indexed databases, as well as enable us to
 output the intermediate SQL to the user in case they want to inspect or execute
 the queries themselves.
 
-## CLI
-
-**Usage**
-
-```
-./share.py [OPTION]... SCHEMA INPUT
-```
-
-Arguments:
-
-- SCHEMA
-
-  sharing schema file path
-
-- INPUT
-
-  spreadsheet file path or [SQLAlchemy database url](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)
-
-Options:
-
-- `--orgs=NAME[,...]`
-
-    comma separated list of organizations to output data for, defaults to all
-
-- `--outfmt=FORMAT`
-
-    output format (excel or csv), defaults to excel
-
-- `--outdir=PATH`
-
-    output file directory, defaults to the current directory
-
-- `-d`, `--dry-run`, `--debug`:
-
-    only output the intermediary debug information describing what would
-    happen, and don't create any output files.
-
-One or multiple sharable output files will be created in the chosen output
-directory according to the chosen output format and organization(s). Each
-output file will have the input filename followed by a postfix with the org
-name (and table name if CSV).
-
-(Debug) information about the operation will be printed to STDOUT, as well as
-written to a `debug.txt` file in the same directory.
-
-**Examples**
-
-Create a sharable excel file in the "~/ohri" directory, for the "OHRI"
-organization, applying the rules from schema.csv on the input from data.xlsx:
-
-```bash
-./share.py --orgs=OHRI --outdir=~/ohri/ schema.csv data.xlsx
-```
-
-Output to the default (current) directory, for all organizations specified in
-the schema, using a MySQL database (with the pymysql package) as input:
-
-```bash
-./share.py schema.csv mysql+pymysql://scott:tiger@localhost/foo
-```
-
-Same as above, using a MS SQL Server database through ODBC (with the pyodbc
-package):
-
-```bash
-./share.py schema.csv mssql+pyodbc://user:pass@mydsn
-```
-
 ## API
 
 ### Public modules
@@ -105,14 +37,14 @@ package):
     - `TableName = str`
 
 - high level functions:
-    - `extract(data_source: str, schema_file: str, orgs: List[str]=[]) -> ...`
+    - `extract(schema_file: str, data_source: str, orgs: List[str]=[]) -> ...`
 
         returns a Pandas DataFrame per table per org
 
         Parameters:
 
-        - data_source: a file path or database url (in SQLAlchemy format)
         - schema_file: rule schema file path
+        - data_source: a file path or database url (in SQLAlchemy format)
         - orgs: orgs to share with, or all if empty
 
         Exceptions: ConnectionError, OSError, ParseError
@@ -125,10 +57,10 @@ package):
 
         Exceptions: ConnectionError
 
-    - `parse(schema_file: str, orgs=[]) -> Dict[OrgName, Dict[TableName, Query]]`
+    - `parse(schema_path: str, orgs=[]) -> Dict[OrgName, Dict[TableName, Query]]`
 
         returns queries for each org and table, generated from the rules
-        specified in `schema_file`
+        specified in `schema_path`
 
         Exceptions: OSError, ParseError
 
@@ -178,26 +110,23 @@ Parsing of rules into abstract syntax trees.
 
 (SQL) query generation from ASTs.
 
-- generate(rt: RuleTree) -> Dict[OrgName, Query]
+- generate(rt: RuleTree) -> Dict[OrgName, Dict[TableName, TableQuery]]
 
 ### Errors
 
 The exception types that may be thrown, as well as examples of what they cover:
 
+- DataSourceError:
+    - table not found in data source
+    - unable to open/read data source
 - OSError:
-    - input file doesn't exist
-    - failed to read input file
+    - failed to read schema file
     - failed to write output file
-- ConnectionError:
-    - failed to establish connection to db
-    - failed to import data to temporary db
-    - failed to read from data source
-    - data source columns don't match query
 - ParseError:
-    - header is missing/invalid
-    - row/rule field value is missing/invalid
-    - rule is referencing a rule that doesn't exist or doesn't have the
-      expected field values
+    - headers are missing
+    - value can't be coerced to the correct type
+    - required table/key/operator/mode is missing
+    - invalid filter/group operator
 
 ### Examples
 
@@ -216,7 +145,7 @@ orgs = [org]
 high-level one-shot function:
 
 ```python
-results = s.extract(data_file, rules, orgs)
+results = s.extract(rules, data_file, orgs)
 for org, tabledata in results.items():
     for table, data in tabledata.items():
         data.to_csv(f'{org}-{table}.csv')
@@ -256,17 +185,19 @@ for table, query in table_queries.items():
 
 ### CSV rule parsing
 
-1. open schema file
-2. parse each line into a rule obj:
-    - validate and throw exception on error
-3. add each rule obj to a dictionary with rule id as key
+1. read csv, or fail with OSError
+2. normalize NA values
+3. validate headers, or fail with ParseError(s)
+4. parse each row into a rule obj:
+    - validate rule, or accumulate ParseError(s):
+        - coerce values into the right types
+        - check existence of required values
+        - check operator values
+5. return a dict with rule-ids and rules, or raise accumulated errors
 
 Error messages should contain all the necessary info to find and fix the issue,
-including the line number, row number, rule id and column name (if applicable).
-Parsing can be wrapped in a try-block to accumulate errors instead of aborting
-on the first error. This is a viable option since each line is parsed
-individually, and their relationships aren't taken into account before the next
-(AST generation) step.
+including the line number and column name (if applicable). Errors can be
+accumulated, but the result is only valid if no errors occured.
 
 ### AST generation
 
@@ -286,13 +217,14 @@ Node kinds:
 - **filter**: defines a filter with operator, key and value
 - **field**: a field name
 - **literal**: a string literal
+- **range-kind**: specifies if a range is an interval or a set
 
 Node structure:
 
-- (ruleId: int)
+- rule_id: int
 - kind: NodeKind
 - str_val: str
-- children: List[Node]
+- sons: List[Node]
 
 Tree structure:
 
@@ -305,6 +237,7 @@ specified, so the filter.field node comes before any filter.literal nodes, etc.
 - filter:
     - (**filter**, rule.operator):
         - (**field**, rule.key)
+        - (**range-kind**, 'interval'/'set') # only present for 'in' operator
         - (**literal**, x) for x in rule.value
 - group:
     - (**group**, rule.operator):
@@ -347,6 +280,7 @@ Example rules with its generated tree:
                         (literal, "mPox")
                     (filter, "in")
                         (field, "reportDate")
+                        (range-kind, "interval")
                         (literal, "2021-01-01")
                         (literal, "2021-12-31")
                 (group, "AND")
@@ -359,6 +293,57 @@ Example rules with its generated tree:
     (share, "other")
         (table, "measures")
             (select, "all")
+```
+
+#### Algorithm
+
+- Each rule in a sharing CSV sheet can only reference rules defined in a
+  previous row.
+- a node has a type/kind, a value, and a list of children
+- the children of a node is called 'sons' since it's shorter
+- nodes are first added to ctx and then later added to parent nodes with O(1)
+  lookup, this way the tree is constructed incrementally while parsing each
+  rule
+- share nodes are made to be children of a single root-node, since each org
+  gets its own node, there may be multiple share-rules, and the tree
+  can only have a single root node
+- the root-node is updated every time a new share-node is added
+- tables of each rule are cached for O(1) lookup
+
+```
+for each rule:
+    for each table in rule, or just once if no table:
+        init node, depending on rule mode:
+            select:
+                kind = select
+                value = empty if sons are specified, otherwise 'all'
+                sons = a value node for each column name
+            filter:
+                kind = filter
+                value = operator
+                sons =
+                    1. a key node for the field name
+                    2. a value node for each filter value
+            group:
+                kind = group
+                value = operator
+                sons = nodes matching the rule's list of ids
+            share:
+                kind = root
+                sons =
+                    for each organization:
+                        kind = share
+                        value = org
+                        sons =
+                            for each select-node referenced in share-rule:
+                                for each table in select-node's rule:
+                                    kind = "table"
+                                    value = table
+                                    sons =
+                                        1. select node
+                                        2. filter/group node referenced in
+                                           share-node. Multiple nodes are
+                                           implicitly grouped with an AND-node.
 ```
 
 ### SQL query generation
@@ -401,7 +386,7 @@ the table node:
 
     ```
     operator = str_val
-    result = recurse(first-child) + operator + recurse(second-child)
+    result = recurse(first-child) + (logic depending on range-kind)
     ```
 
 - **field**:
