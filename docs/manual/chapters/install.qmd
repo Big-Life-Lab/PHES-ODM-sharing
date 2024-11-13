@@ -19,11 +19,8 @@ distribution. `python` and `pip` is used below, but they may also be called
 Install the package:
 
 ```bash
-pip install git+https://github.com/Big-Life-Lab/PHES-ODM-sharing.git@impl
+pip install git+https://github.com/Big-Life-Lab/PHES-ODM-sharing.git
 ```
-
-(The `impl` branch must be used for now, until it's merged into the main
-branch.)
 
 You're done! You can now explore how to get started in @sec-getting-started.
 
