@@ -16,8 +16,8 @@ different data curators and data repositories.
 
 ## Usage
 
-See [docs/manual/getting-started.qmd](docs/manual/getting-started.qmd).
+See [getting-started.qmd](docs/manual/chapters/getting-started.qmd).
 
 ## Install
 
-See [docs/manual/install.qmd](docs/manual/install.qmd).
+See [install.qmd](docs/manual/chapters/install.qmd).
